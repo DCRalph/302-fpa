@@ -6,11 +6,12 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
+import { stackServerApp } from "~/stack";
 
 /**
  * 1. CONTEXT
@@ -104,3 +105,20 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+
+
+/**
+ * Protected (authenticated) procedure
+ * Ensures a logged-in user via Stack Auth and injects it into the context.
+ */
+const authMiddleware = t.middleware(async ({ ctx, next }) => {
+  const user = await stackServerApp.getUser();
+  if (!user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: { ...ctx, user },
+  });
+});
+
+export const protectedProcedure = publicProcedure.use(authMiddleware);

@@ -6,15 +6,259 @@ generator client {
 }
 
 datasource db {
-    provider = "sqlite"
+    provider = "postgresql"
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
+enum UserRole {
+    ADMIN
+    USER
+}
+
+model User {
+    id            String    @id @default(cuid())
+    name          String?
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+    role          UserRole  @default(USER)
+
+
+    blogPosts      BlogPost[]
+    registrations  Registration[]
+    adminNotes     AdminNote[] @relation("UserAdminNotes")
+    statusChanges  RegistrationStatusHistory[] @relation("UserStatusChanges")
+}
+
+model VerificationToken {
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
+}
+
+
+model Registration {
+    id                String   @id @default(cuid())
+    name              String
+    email             String
+    phone             String
+    school            String
+    position          String
+    experience        String
+    dietary           String?  // Optional field
+    accommodation     String?  // Optional field  
+    message           String?  // Optional field
+    registrationType  String   // early-bird, standard, student
+    status            String   @default("pending") // pending, confirmed, cancelled
+    // Optional association to an authenticated user
+    userId            String?
+    user              User?    @relation(fields: [userId], references: [id])
+    // Optional association to a ticket type for pricing/management
+    ticketTypeId      String?
+    ticketType        TicketType? @relation(fields: [ticketTypeId], references: [id])
+    // Pricing snapshot at time of registration
+    priceCents        Int?
+    currency          String   @default("FJD")
+    // Basic payment/ops fields
+    paymentStatus     String   @default("unpaid") // unpaid, pending, paid, refunded, partial
+    checkedInAt       DateTime?
+    metadata          Json?
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @updatedAt
+
+    // Management relations
+    notes             AdminNote[]
+    statusHistory     RegistrationStatusHistory[]
+    payments          Payment[]
+    attachments       Attachment[]
+
+    @@index([email])
+    @@index([registrationType])
+    @@index([status])
+    @@index([userId])
+    @@index([ticketTypeId])
+    @@index([paymentStatus])
+}
+
+model BlogPost {
+    id            String   @id @default(cuid())
+    title         String
+    slug          String?  @unique
+    excerpt       String?
+    content       String
+    coverImageUrl String?
+    published     Boolean  @default(false)
+    publishedAt   DateTime?
+    author        User     @relation(fields: [authorId], references: [id])
+    authorId      String
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+
+    categories    BlogPostCategory[]
+    tags          BlogPostTag[]
+    comments      BlogComment[]
+}
+
+// Ticket types (e.g., early-bird, standard, student) used for pricing/management
+model TicketType {
+    id           String   @id @default(cuid())
+    name         String
+    slug         String   @unique
+    description  String?
+    priceCents   Int
+    currency     String   @default("FJD")
+    isActive     Boolean  @default(true)
+    saleStartsAt DateTime?
+    saleEndsAt   DateTime?
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    registrations Registration[]
+}
+
+// Payments recorded against registrations
+model Payment {
+    id                 String       @id @default(cuid())
+    registrationId     String
+    registration       Registration  @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+    provider           String        // e.g., stripe, manual
+    providerPaymentId  String?
+    amountCents        Int
+    currency           String        @default("FJD")
+    status             String        @default("pending") // pending, succeeded, failed, refunded
+    receiptUrl         String?
+    metadata           Json?
+    createdAt          DateTime      @default(now())
+
+    @@index([registrationId])
+}
+
+// Admin notes attached to registrations
+model AdminNote {
+    id               String        @id @default(cuid())
+    registrationId   String
+    registration     Registration  @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+    authorId         String?
+    author           User?         @relation("UserAdminNotes", fields: [authorId], references: [id])
+    body             String
+    createdAt        DateTime      @default(now())
+
+    @@index([registrationId])
+}
+
+// Track registration status changes over time
+model RegistrationStatusHistory {
+    id               String        @id @default(cuid())
+    registrationId   String
+    registration     Registration  @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+    previousStatus   String?
+    newStatus        String
+    changedById      String?
+    changedBy        User?         @relation("UserStatusChanges", fields: [changedById], references: [id])
+    reason           String?
+    createdAt        DateTime      @default(now())
+
+    @@index([registrationId])
+}
+
+// File attachments (e.g., invoices, receipts) that can be linked to registrations
+model Attachment {
+    id               String        @id @default(cuid())
+    registrationId   String?
+    registration     Registration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
+    url              String
+    filename         String
+    mimeType         String?
+    sizeBytes        Int?
+    createdAt        DateTime      @default(now())
+
+    @@index([registrationId])
+}
+
+model BlogCategory {
+    id        String              @id @default(cuid())
     name      String
+    slug      String              @unique
+    createdAt DateTime            @default(now())
+    updatedAt DateTime            @updatedAt
+    posts     BlogPostCategory[]
+}
+
+model BlogTag {
+    id        String        @id @default(cuid())
+    name      String
+    slug      String        @unique
+    createdAt DateTime      @default(now())
+    updatedAt DateTime      @updatedAt
+    postTags  BlogPostTag[]
+}
+
+model BlogPostCategory {
+    post       BlogPost     @relation(fields: [postId], references: [id])
+    postId     String
+    category   BlogCategory @relation(fields: [categoryId], references: [id])
+    categoryId String
+
+    @@id([postId, categoryId])
+}
+
+model BlogPostTag {
+    post   BlogPost @relation(fields: [postId], references: [id])
+    postId String
+    tag    BlogTag  @relation(fields: [tagId], references: [id])
+    tagId  String
+
+    @@id([postId, tagId])
+}
+
+model BlogComment {
+    id          String    @id @default(cuid())
+    post        BlogPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+    postId      String
+    authorName  String
+    authorEmail String
+    content     String
+    approved    Boolean   @default(false)
+    createdAt   DateTime  @default(now())
+
+    @@index([postId])
+}
+
+// CMS-like primitives
+model Page {
+    id        String   @id @default(cuid())
+    title     String
+    slug      String   @unique
+    content   String
+    published Boolean  @default(true)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
 
-    @@index([name])
+model SiteSetting {
+    key       String   @id
+    value     Json
+    updatedAt DateTime @updatedAt
+}
+
+model NewsletterSubscription {
+    id          String   @id @default(cuid())
+    email       String   @unique
+    name        String?
+    createdAt   DateTime @default(now())
+    confirmedAt DateTime?
+}
+
+model ContactMessage {
+    id        String   @id @default(cuid())
+    name      String
+    email     String
+    phone     String?
+    subject   String?
+    message   String
+    status    String   @default("open") // open, closed
+    createdAt DateTime @default(now())
+    closedAt  DateTime?
 }

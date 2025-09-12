@@ -1,7 +1,10 @@
 import "~/styles/globals.css";
 
+import { StackProvider, StackTheme } from "@stackframe/stack";
+import { stackServerApp } from "../stack";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
+import { ThemeProvider } from 'next-themes'
 
 import { TRPCReactProvider } from "~/trpc/react";
 
@@ -22,7 +25,18 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable}`}>
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <StackProvider app={stackServerApp}>
+          <StackTheme>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              themes={["light", "dark"]}
+            >
+              <TRPCReactProvider>{children}</TRPCReactProvider>
+            </ThemeProvider>
+          </StackTheme>
+        </StackProvider>
       </body>
     </html>
   );
