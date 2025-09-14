@@ -3,7 +3,8 @@ export type ThemeSelection = ThemeChoice | "system";
 
 // Loosely typed to accommodate different user objects from auth libs
 type UpdatableUser = {
-  update: (args: any) => Promise<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  update: (args: any) => Promise<unknown>;
   clientMetadata?: unknown;
 } | null | undefined;
 

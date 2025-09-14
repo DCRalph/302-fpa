@@ -5,24 +5,28 @@ import { UserButton } from "@stackframe/stack";
 import { useUser } from "@stackframe/stack";
 import { api } from "~/trpc/react";
 import { ThemeToggle } from "~/components/theme-toggle";
+import Link from "next/link";
 
 export default function TempPage() {
   const [inputText, setInputText] = useState("");
   const user = useUser();
-  
+
   const hello = api.default.hello.useQuery(
     { text: inputText || "World" },
     { enabled: true }
   );
 
+  const auth = api.auth.me.useQuery();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b">
         <div className="container mx-auto flex items-center justify-between p-4">
-          <h1 className="text-2xl font-bold">Example Page</h1>
+          <h1 className="text-2xl font-bold">Auth Test Page</h1>
+          <Link href="/" className="text-muted-foreground hover:text-foreground">Home</Link>
           <div className="flex items-center gap-2">
-            <UserButton />
             <ThemeToggle />
+            <UserButton />
           </div>
         </div>
       </header>
@@ -41,7 +45,7 @@ export default function TempPage() {
             {user ? (
               <div className="p-4 border rounded-lg">
                 <p className="text-green-600 dark:text-green-400">
-                  ✅ You are logged in as: {user.displayName || user.primaryEmail}
+                  ✅ You are logged in as: {user.displayName ?? user.primaryEmail}
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">
                   User ID: {user.id}
@@ -54,6 +58,45 @@ export default function TempPage() {
                 </p>
               </div>
             )}
+          </section>
+
+          <section className="space-y-4">
+            <h3 className="text-xl font-semibold">User Details</h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="p-4 border rounded-lg">
+                <h4 className="font-semibold mb-2">Stack User (useUser)</h4>
+                {user ? (
+                  <div className="text-sm">
+                    <p><span className="text-muted-foreground">ID:</span> {user.id}</p>
+                    <p><span className="text-muted-foreground">Name:</span> {user.displayName ?? "—"}</p>
+                    <p><span className="text-muted-foreground">Email:</span> {user.primaryEmail ?? "—"}</p>
+                    <p><span className="text-muted-foreground">Client metadata:</span><br /> {JSON.stringify(user.clientMetadata) ?? "—"}</p>
+                    <p><span className="text-muted-foreground">Client readonly metadata :</span><br /> {JSON.stringify(user.clientReadOnlyMetadata) ?? "—"}</p>
+
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No Stack user (not signed in).</p>
+                )}
+              </div>
+
+              <div className="p-4 border rounded-lg">
+                <h4 className="font-semibold mb-2">DB User (tRPC)</h4>
+                {auth.isLoading ? (
+                  <p className="text-sm text-muted-foreground">Loading...</p>
+                ) : auth.error ? (
+                  <p className="text-sm text-red-600 dark:text-red-400">{auth.error.message}</p>
+                ) : auth.data ? (
+                  <div className="text-sm">
+                    <p><span className="text-muted-foreground">ID:</span> {auth.data.id}</p>
+                    <p><span className="text-muted-foreground">Name:</span> {auth.data.name ?? "—"}</p>
+                    <p><span className="text-muted-foreground">Email:</span> {auth.data.email ?? "—"}</p>
+                    <p><span className="text-muted-foreground">Role:</span> {auth.data.role ?? "—"}</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No DB user found.</p>
+                )}
+              </div>
+            </div>
           </section>
 
           <section className="space-y-4">
@@ -88,22 +131,9 @@ export default function TempPage() {
 
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">Theme System</h3>
-            <p className="text-muted-foreground">
-              Use the theme toggle in the header to switch between light, dark, and system themes.
-              Your preference will be saved to your user profile if you're logged in.
-            </p>
+            <ThemeToggle />
           </section>
 
-          <section className="space-y-4">
-            <h3 className="text-xl font-semibold">Features Demonstrated</h3>
-            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-              <li>Stack Auth integration with user authentication</li>
-              <li>tRPC client-side queries with real-time updates</li>
-              <li>Theme system with persistence</li>
-              <li>Responsive design with Tailwind CSS</li>
-              <li>TypeScript integration throughout</li>
-            </ul>
-          </section>
         </div>
       </main>
     </div>

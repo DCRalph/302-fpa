@@ -7,6 +7,7 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from 'next-themes'
 
 import { TRPCReactProvider } from "~/trpc/react";
+import { EnsureDbUser } from "~/components/ensureDbUser";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -22,8 +23,9 @@ const geist = Geist({
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+
   return (
-    <html lang="en" className={`${geist.variable}`}>
+    <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
       <body>
         <StackProvider app={stackServerApp}>
           <StackTheme>
@@ -33,7 +35,10 @@ export default function RootLayout({
               enableSystem
               themes={["light", "dark"]}
             >
-              <TRPCReactProvider>{children}</TRPCReactProvider>
+              <TRPCReactProvider>
+                <EnsureDbUser />
+
+                {children}</TRPCReactProvider>
             </ThemeProvider>
           </StackTheme>
         </StackProvider>

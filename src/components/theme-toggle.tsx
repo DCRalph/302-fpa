@@ -21,7 +21,11 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const metadataTheme = (user?.clientMetadata?.theme ?? null) as ThemeSelection | null;
+  type ClientMetadata = { theme?: ThemeSelection } | null | undefined;
+  const metadataTheme: ThemeSelection | null =
+    user && typeof user.clientMetadata === "object" && user.clientMetadata !== null && "theme" in (user.clientMetadata as object)
+      ? ((user.clientMetadata as ClientMetadata)?.theme ?? null)
+      : null;
 
   // Initialize from user metadata when available
   useEffect(() => {
