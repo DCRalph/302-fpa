@@ -7,6 +7,14 @@ import { HowToRegisterSection } from "~/components/landing/how-to-register-secti
 import { SystemFeaturesSection } from "~/components/landing/system-features-section";
 import { SiteFooter } from "~/components/landing/site-footer";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "302 FPA - Conference Registration System",
+  description: "Register for the 302 FPA conference and manage your attendance with our comprehensive registration system.",
+};
+
+
 export default async function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground">
