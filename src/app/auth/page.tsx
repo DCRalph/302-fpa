@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { UserButton } from "@stackframe/stack";
-import { useUser } from "@stackframe/stack";
+import { UserButton, OAuthButtonGroup, SelectedTeamSwitcher, UserAvatar, useUser } from "@stackframe/stack";
 import { api } from "~/trpc/react";
 import { ThemeToggle } from "~/components/theme-toggle";
 import Link from "next/link";
+import { Moon } from "lucide-react";
 
 export default function TempPage() {
   const [inputText, setInputText] = useState("");
@@ -58,6 +58,52 @@ export default function TempPage() {
                 </p>
               </div>
             )}
+          </section>
+
+          <section className="space-y-4">
+            <h3 className="text-xl font-semibold">Stack Auth Widgets</h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="p-4 border rounded-lg space-y-3">
+                <h4 className="font-semibold">User Button</h4>
+                <p className="text-sm text-muted-foreground">Account menu with sign-in/out and settings.</p>
+                {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
+                <UserButton showUserInfo extraItems={[{ text: "Extra Item example", icon: <Moon className="size-4" />, onClick: () => { let x; } }]} />
+              </div>
+              <div className="p-4 border rounded-lg space-y-3">
+                <h4 className="font-semibold">User Avatar</h4>
+                <p className="text-sm text-muted-foreground">Avatar rendered from Stack user profile.</p>
+                <div className="flex items-center gap-3">
+                  <UserAvatar user={user ?? undefined} />
+                  {/* <span className="text-sm text-muted-foreground">{user ? (user.displayName ?? user.primaryEmail) : "Not signed in"}</span> */}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <h3 className="text-xl font-semibold">OAuth Providers</h3>
+            {user ? (
+              <p className="text-sm text-muted-foreground">You are signed in. Sign-in/sign-up buttons are hidden.</p>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="p-4 border rounded-lg space-y-3">
+                  <h4 className="font-semibold">Sign in</h4>
+                  <OAuthButtonGroup type="sign-in" />
+                </div>
+                <div className="p-4 border rounded-lg space-y-3">
+                  <h4 className="font-semibold">Sign up</h4>
+                  <OAuthButtonGroup type="sign-up" />
+                </div>
+              </div>
+            )}
+          </section>
+
+          <section className="space-y-4">
+            <h3 className="text-xl font-semibold">Teams</h3>
+            <div className="p-4 border rounded-lg space-y-3">
+              <p className="text-sm text-muted-foreground">Switch the currently selected team (if enabled for your project).</p>
+              <SelectedTeamSwitcher allowNull nullLabel="No team" />
+            </div>
           </section>
 
           <section className="space-y-4">
