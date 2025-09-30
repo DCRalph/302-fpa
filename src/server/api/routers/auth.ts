@@ -6,7 +6,7 @@ export const authRouter = createTRPCRouter({
   me: publicProcedure.query(async () => {
     const user = await stackServerApp.getUser()
 
-    console.log("user", user);
+    // console.log("user", user);
 
     let dbUser = await db.user.findUnique({
       where: {
