@@ -6,14 +6,14 @@ import { Button } from "~/components/ui/button";
 export function HeroSection() {
   return (
     <section id="home" className="relative">
-      <div className="inset-0">
-        <Image
+      <div className="w-80 h-80 bg-pink-300" >
+        {/* <Image
           src="/images/hero-img.webp"
           alt="Conference group"
           fill
           priority
-          className="object-cover opacity-60 -z-10"
-        />
+          className="object-cover"
+        /> */}
       </div>
       <div className="container mx-auto px-4 py-20 md:py-28">
         <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
