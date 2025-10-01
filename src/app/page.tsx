@@ -10,7 +10,7 @@ import { SiteFooter } from "~/components/landing/site-footer";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "302 FPA - Conference Registration System",
+  title: "Conference Registration System",
   description: "Register for the 302 FPA conference and manage your attendance with our comprehensive registration system.",
 };
 
