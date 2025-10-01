@@ -3,7 +3,7 @@ import "~/styles/global.css";
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackServerApp } from "../stack";
 import { type Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Nunito } from "next/font/google";
 import { ThemeProvider } from 'next-themes'
 
 import { TRPCReactProvider } from "~/trpc/react";
@@ -15,9 +15,8 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-const geist = Geist({
+const nunito = Nunito({
   subsets: ["latin"],
-  variable: "--font-geist-sans",
 });
 
 export default function RootLayout({
@@ -25,7 +24,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
 
   return (
-    <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${nunito.className}`} suppressHydrationWarning>
       <body>
         <StackProvider app={stackServerApp}>
           <StackTheme>

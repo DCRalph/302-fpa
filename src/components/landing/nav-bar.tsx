@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GraduationCap } from "lucide-react";
 
 import { ThemeToggle } from "~/components/theme-toggle";
 import { AuthButtons } from "~/components/auth-buttons";
@@ -6,14 +7,14 @@ import { AuthButtons } from "~/components/auth-buttons";
 export function NavBar() {
   return (
     <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+      <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <div className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground">
-            <span className="text-sm font-semibold">FPA</span>
+          <div className="grid size-10 place-items-center rounded-4xl bg-primary text-primary-foreground">
+            <GraduationCap size={24} />
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-semibold">FPA Conference</p>
-            <p className="text-[10px] text-muted-foreground">2025</p>
+            <p className="text-[18px] font-semibold">FPA Conference</p>
+            <p className="text-[14px] text-muted-foreground">2025</p>
           </div>
         </div>
         <div className="hidden gap-6 text-sm font-medium md:flex">
