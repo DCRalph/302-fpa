@@ -6,6 +6,7 @@
       "dependencies": {
         "@prisma/client": "^6.5.0",
         "@radix-ui/react-context-menu": "^2.2.16",
+        "@radix-ui/react-separator": "^1.1.7",
         "@radix-ui/react-slot": "^1.2.3",
         "@stackframe/stack": "^2.8.36",
         "@t3-oss/env-nextjs": "^0.12.0",

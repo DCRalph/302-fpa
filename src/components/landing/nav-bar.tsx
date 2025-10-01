@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 
+import { Separator } from "../ui/separator";
+
 import { ThemeToggle } from "~/components/theme-toggle";
 import { AuthButtons } from "~/components/auth-buttons";
 
@@ -17,18 +19,22 @@ export function NavBar() {
             <p className="text-[14px] text-muted-foreground">2025</p>
           </div>
         </div>
-        <div className="hidden gap-6 text-sm font-medium md:flex">
-          <Link href="#home" className="text-muted-foreground hover:text-foreground">Home</Link>
-          <Link href="#benefits" className="text-muted-foreground hover:text-foreground">Benefits</Link>
-          <Link href="#details" className="text-muted-foreground hover:text-foreground">Details</Link>
-          <Link href="#tips" className="text-muted-foreground hover:text-foreground">Tips</Link>
-          <Link href="#features" className="text-muted-foreground hover:text-foreground">Features</Link>
-          <Link href="/auth" className="text-muted-foreground hover:text-foreground">Auth test</Link>
+        <div className="flex items-center gap-6 h-10">
+          <div className="hidden gap-6 text-sm font-medium md:flex">
+            <Link href="#home" className="text-muted-foreground hover:text-foreground">Home</Link>
+            <Link href="#benefits" className="text-muted-foreground hover:text-foreground">Benefits</Link>
+            <Link href="#details" className="text-muted-foreground hover:text-foreground">Details</Link>
+            <Link href="#tips" className="text-muted-foreground hover:text-foreground">Tips</Link>
+            <Link href="#features" className="text-muted-foreground hover:text-foreground">Features</Link>
+            <Link href="/auth" className="text-muted-foreground hover:text-foreground">Auth test</Link>
+          </div>
+          <Separator orientation="vertical" className="hidden md:block"/>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <AuthButtons />
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <AuthButtons />
-        </div>
+
       </div>
     </nav>
   );
