@@ -124,8 +124,20 @@
   body {
     @apply bg-background text-foreground;
   }
+
+
+body {
+  overflow-y: scroll; /* Show scrollbars */
 }
 
-/* Simple placeholder hero image if none provided */
-.dark .hero-fallback-gradient { background-image: linear-gradient(to bottom right, oklch(0.205 0 0), oklch(0.145 0 0)); }
-.hero-fallback-gradient { background-image: linear-gradient(to bottom right, oklch(0.985 0 0), oklch(0.922 0 0)); }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+
+
+}

@@ -11,7 +11,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Conference Registration System",
-  description: "Register for the 302 FPA conference and manage your attendance with our comprehensive registration system.",
+  description: "Register for the FPA conference and manage your attendance with our comprehensive registration system.",
 };
 
 
