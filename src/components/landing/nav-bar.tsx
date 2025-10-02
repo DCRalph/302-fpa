@@ -11,7 +11,7 @@ export function NavBar() {
     <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <div className="grid size-10 place-items-center rounded-4xl bg-primary text-primary-foreground">
+          <div className="grid size-10 place-items-center rounded-4xl bg-gradient-to-br from-[#4C56C1] from-25% via-[#834385] via-50% to-[#B13454] to-75% to text-primary-foreground">
             <GraduationCap size={24} />
           </div>
           <div className="leading-tight">
@@ -21,11 +21,11 @@ export function NavBar() {
         </div>
         <div className="flex items-center gap-6 h-10">
           <div className="hidden gap-6 text-sm font-medium md:flex">
-            <Link href="#home" className="text-muted-foreground hover:text-foreground">Home</Link>
-            <Link href="#benefits" className="text-muted-foreground hover:text-foreground">Benefits</Link>
-            <Link href="#details" className="text-muted-foreground hover:text-foreground">Details</Link>
-            <Link href="#tips" className="text-muted-foreground hover:text-foreground">Tips</Link>
-            <Link href="#features" className="text-muted-foreground hover:text-foreground">Features</Link>
+            <Link href="/#home" className="text-muted-foreground hover:text-foreground transition">Home</Link>
+            <Link href="/#benefits" className="text-muted-foreground hover:text-foreground">Benefits</Link>
+            <Link href="/#details" className="text-muted-foreground hover:text-foreground">Details</Link>
+            <Link href="/#tips" className="text-muted-foreground hover:text-foreground">Tips</Link>
+            <Link href="/#features" className="text-muted-foreground hover:text-foreground">Features</Link>
             <Link href="/auth" className="text-muted-foreground hover:text-foreground">Auth test</Link>
           </div>
           <Separator orientation="vertical" className="hidden md:block"/>

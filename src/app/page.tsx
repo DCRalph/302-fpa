@@ -1,3 +1,7 @@
+"use client";
+
+import { use, useEffect } from "react";
+
 // page-level imports are now composed from section components
 import { NavBar } from "~/components/landing/nav-bar";
 import { HeroSection } from "~/components/landing/hero-section";
@@ -7,17 +11,22 @@ import { HowToRegisterSection } from "~/components/landing/how-to-register-secti
 import { SystemFeaturesSection } from "~/components/landing/system-features-section";
 import { SiteFooter } from "~/components/landing/site-footer";
 
-import type { Metadata } from "next";
+export default function Home() {
+  // Scroll to section if URL has a hash (e.g., #benefits)
+  useEffect(() => {
+    if (window.location.hash) {
+      const id = window.location.hash.substring(1); // Renove the '#' character
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    }
+  }, []);
 
-export const metadata: Metadata = {
-  title: "Conference Registration System",
-  description: "Register for the FPA conference and manage your attendance with our comprehensive registration system.",
-};
-
-
-export default async function Home() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="bg-background text-foreground min-h-screen">
       <NavBar />
       <HeroSection />
       <BenefitsSection />

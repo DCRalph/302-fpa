@@ -3,28 +3,24 @@ import "~/styles/global.css";
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackServerApp } from "../stack";
 import { type Metadata } from "next";
-import { Nunito } from "next/font/google";
+import { nunito } from "~/components/fonts";
 import { ThemeProvider } from 'next-themes'
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { EnsureDbUser } from "~/components/ensureDbUser";
 
 export const metadata: Metadata = {
-  title: "302 FPA - Conference Registration System",
-  description: "Register for the 302 FPA conference and manage your attendance with our comprehensive registration system.",
+  title: "Conference Registration System",
+  description: "Register for the FPA conference and manage your attendance with our comprehensive registration system.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
-
-const nunito = Nunito({
-  subsets: ["latin"],
-});
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
 
   return (
-    <html lang="en" className={`${nunito.className}`} suppressHydrationWarning>
+    <html lang="en" className={`${nunito.className} scroll-smooth`} suppressHydrationWarning>
       <body>
         <StackProvider app={stackServerApp}>
           <StackTheme>
