@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -20,9 +20,22 @@ import { ArrowRight } from "lucide-react";
 import { montserrat } from "~/components/fonts";
 
 export function HeroSection() {
-  useEffect(() => {
-    // no-op placeholder to keep this as a client component if needed later
-  }, []);
+  // const [api, setApi] = useState<CarouselApi>()
+  // const [current, setCurrent] = useState(0)
+  // const [count, setCount] = useState(0)
+
+  // useEffect(() => {
+  //   if (!api) {
+  //     return
+  //   }
+ 
+  //   setCount(api.slideNodes().length)
+  //   setCurrent(api.selectedScrollSnap() + 1)
+ 
+  //   api.on("select", () => {
+  //     setCurrent(api.selectedScrollSnap() + 1)
+  //   })
+  // }, [api])
 
   return (
     <section id="home" className="relative w-full bg-black">
@@ -46,8 +59,8 @@ export function HeroSection() {
           <CarouselPrevious className="top-1/2 left-4 -translate-y-1/2 md:flex hidden" />
           <CarouselNext className="top-1/2 right-4 -translate-y-1/2 md:flex hidden" />
         </Carousel>
-      </div>
-      <div className="relative z-10 container mx-auto flex flex-col items-center px-4 py-20 text-center md:py-28">
+      {/* </div> */}
+      <div className="absolute h-full inset-0 z-10 container mx-auto flex flex-col justify-center items-center text-center">
         <h1
           className={`${montserrat.className} text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl`}
         >
