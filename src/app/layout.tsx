@@ -1,4 +1,4 @@
-import "~/styles/global.css";
+import "~/styles/globals.css";
 
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackServerApp } from "../stack";
