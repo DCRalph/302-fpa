@@ -116,9 +116,40 @@ const authMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
+  const dbUser = await db.user.findUnique({
+    where: {
+      id: user.id,
+    },
+  });
+  if (!dbUser) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
   return next({
-    ctx: { ...ctx, user },
+    ctx: { ...ctx, user, dbUser },
   });
 });
 
 export const protectedProcedure = publicProcedure.use(authMiddleware);
+
+const adminMiddleware = t.middleware(async ({ ctx, next }) => {
+  const user = await stackServerApp.getUser();
+  if (!user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  const dbUser = await db.user.findUnique({
+    where: {
+      id: user.id,
+    },
+  });
+  if (!dbUser) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  if (dbUser.role !== "ADMIN") {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: { ...ctx, user, dbUser },
+  });
+});
+
+export const adminProcedure = publicProcedure.use(adminMiddleware);
