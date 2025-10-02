@@ -11,7 +11,10 @@ import { HowToRegisterSection } from "~/components/landing/how-to-register-secti
 import { SystemFeaturesSection } from "~/components/landing/system-features-section";
 import { SiteFooter } from "~/components/landing/site-footer";
 
+import { useUser } from "@stackframe/stack";
+
 export default function Home() {
+
   // Scroll to section if URL has a hash (e.g., #benefits)
   useEffect(() => {
     if (window.location.hash) {
