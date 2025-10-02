@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 
-import { Separator } from "../ui/separator";
+import { Separator } from "./ui/separator";
 
 import { ThemeToggle } from "~/components/theme-toggle";
 import { AuthButtons } from "~/components/auth-buttons";
@@ -11,7 +11,7 @@ export function NavBar() {
     <nav className="sticky top-0 z-50 border-b bg-background">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <div className="grid size-10 place-items-center rounded-4xl bg-gradient-to-br from-[#4C56C1] from-25% via-[#834385] via-50% to-[#B13454] to-75% to text-primary-foreground">
+          <div className="grid size-10 place-items-center rounded-4xl bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75% to text-primary-foreground">
             <GraduationCap size={24} />
           </div>
           <div className="leading-tight">

@@ -36,11 +36,11 @@ export function BenefitsSection() {
             },
           ].map((card, idx) => (
             <div key={idx} className="rounded-xl border bg-card p-6 shadow-sm">
-              <card.icon className="mx-auto mb-8 mt-4 h-10 w-10 text-[#667EEA]" />
+              <card.icon className="mx-auto mb-8 mt-4 h-10 w-10 text-icon-purple" />
               <h3 className="text-center text-xl font-semibold leading-6">
                 {card.title}
               </h3>
-              <p className="mt-3 text-center text-[16px] text-muted-foreground">
+              <p className="mt-3 text-center text-md text-muted-foreground">
                 {card.body}
               </p>
             </div>

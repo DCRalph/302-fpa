@@ -7,12 +7,12 @@ import { cn } from "~/lib/utils"
 import { cabin } from "~/components/fonts";
 
 const buttonVariants = cva(
-  `${cabin.className} inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-[16px] font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive`,
+  `${cabin.className} inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-md font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive`,
   {
     variants: {
       variant: {
         default:
-          "bg-gradient-to-br from-primary from-50% hover:from-[#0061B7] to-[#32C83C] to-100% hover:to-[#25962C] transition text-primary-foreground shadow-xs",
+          "bg-gradient-to-br from-primary from-50% hover:from-primary-hover to-primary-tint to-100% hover:to-primary-tint-hover transition text-primary-foreground shadow-xs",
         destructive:
           "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:

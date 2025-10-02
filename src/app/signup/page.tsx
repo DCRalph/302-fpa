@@ -1,4 +1,4 @@
-import { NavBar } from "~/components/landing/nav-bar";
+import { NavBar } from "~/components/nav-bar";
 import { SignUp } from "@stackframe/stack";
 
 export default function RegisterPage() {

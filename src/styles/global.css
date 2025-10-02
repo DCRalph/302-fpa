@@ -4,8 +4,15 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --text-md: 1rem; /* 16px */
+
+  --color-primary-tint: #32C83C;
+  --color-primary-hover: #0061B7;
+  --color-primary-tint-hover: #25962C;
+  --color-gradient-blue: #4C56C1;
+  --color-gradient-purple: #834385;
+  --color-gradient-red: #B13454;
+  --color-icon-purple: #667EEA;
 }
 
 @theme inline {

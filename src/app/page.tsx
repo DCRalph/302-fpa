@@ -3,7 +3,7 @@
 import { use, useEffect } from "react";
 
 // page-level imports are now composed from section components
-import { NavBar } from "~/components/landing/nav-bar";
+import { NavBar } from "~/components/nav-bar";
 import { HeroSection } from "~/components/landing/hero-section";
 import { BenefitsSection } from "~/components/landing/benefits-section";
 import { ConferenceDetailsSection } from "~/components/landing/conference-details-section";
@@ -12,8 +12,15 @@ import { SystemFeaturesSection } from "~/components/landing/system-features-sect
 import { SiteFooter } from "~/components/landing/site-footer";
 
 import { useUser } from "@stackframe/stack";
+import { redirect } from "next/navigation";
+
 
 export default function Home() {
+  const user = useUser();
+
+  if (user) {
+    redirect("/member-dashboard");
+  }
 
   // Scroll to section if URL has a hash (e.g., #benefits)
   useEffect(() => {
