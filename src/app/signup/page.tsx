@@ -6,7 +6,7 @@ export default function RegisterPage() {
     <main
       className="bg-background text-foreground min-h-screen fixed w-full"
       style={{
-        backgroundImage: "url('/images/auth_background.webp')",
+        backgroundImage: "url('/images/auth-background.webp')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",

@@ -6,7 +6,7 @@ export default function LoginPage() {
     <main
       className="bg-background text-foreground min-h-screen"
       style={{
-        backgroundImage: "url('/images/auth_background.webp')",
+        backgroundImage: "url('/images/auth-background.webp')",
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
