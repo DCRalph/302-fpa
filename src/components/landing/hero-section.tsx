@@ -2,13 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "~/components/ui/button";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  type CarouselApi
 } from "~/components/ui/carousel";
 
 import { ArrowRight } from "lucide-react";
@@ -16,37 +17,56 @@ import { montserrat } from "~/components/fonts";
 
 
 export function HeroSection() {
-  useEffect(() => {
-    // no-op placeholder to keep this as a client component if needed later
-  }, []);
+  // const [api, setApi] = useState<CarouselApi>()
+  // const [current, setCurrent] = useState(0)
+  // const [count, setCount] = useState(0)
+
+  // useEffect(() => {
+  //   if (!api) {
+  //     return
+  //   }
+ 
+  //   setCount(api.slideNodes().length)
+  //   setCurrent(api.selectedScrollSnap() + 1)
+ 
+  //   api.on("select", () => {
+  //     setCurrent(api.selectedScrollSnap() + 1)
+  //   })
+  // }, [api])
 
   return (
     <section id="home" className="relative w-full bg-black">
-      <div className="absolute inset-0">
+      {/* <div className="w-full h-64"> */}
         <Carousel
-        // opts={{ loop: true }}
-        // className="h-32 w-32"
+        opts={{ loop: true  }}
+        // setApi={setApi}
+        className="w-full"
         >
-          <CarouselContent>
+          <CarouselContent className="w-full -ml-0">
             {[
               "/images/hero-img.webp",
               "/images/hero-img.webp",
               "/images/hero-img.webp",
             ].map((src, i) => (
-              <CarouselItem key={`hero-${i}`}>
+              <CarouselItem key={`hero-${i}`} className="w-full h-[28rem] bg-black">
                 <Image
                   src={src}
                   alt="Conference group"
                   fill
                   priority={i === 0}
-                  className="h-64 w-64 object-cover"
+                  className="h-64 w-full opacity-10 object-cover"
                 />
+                {/* <div className="w-full h-full bg-red-500"> */}
+                  {/* <h1>{src}</h1> */}
+                {/* </div> */}
               </CarouselItem>
             ))}
           </CarouselContent>
+          {/* <CarouselNext  />
+          <CarouselPrevious /> */}
         </Carousel>
-      </div>
-      <div className="relative z-10 container mx-auto flex flex-col items-center px-4 py-20 text-center md:py-28">
+      {/* </div> */}
+      <div className="absolute h-full inset-0 z-10 container mx-auto flex flex-col justify-center items-center text-center">
         <h1
           className={`${montserrat.className} text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl`}
         >
