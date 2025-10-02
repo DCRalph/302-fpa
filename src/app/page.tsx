@@ -17,7 +17,7 @@ export default function Home() {
     if (window.location.hash) {
       const id = window.location.hash.substring(1); // Renove the '#' character
       const element = document.getElementById(id);
-      if (element) {
+      if (element && id != "home") {
         setTimeout(() => {
           element.scrollIntoView({ behavior: "smooth" });
         }, 100);

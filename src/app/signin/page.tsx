@@ -1,5 +1,4 @@
 import { NavBar } from "~/components/landing/nav-bar";
-import { SiteFooter } from "~/components/landing/site-footer";
 import { SignIn } from "@stackframe/stack";
 
 export default function LoginPage() {
@@ -12,14 +11,18 @@ export default function LoginPage() {
         backgroundPosition: "center",
       }}
     >
-      <NavBar />
 
-      <div className="container m-0 mx-auto flex h-screen items-center justify-center px-4 py-20">
-        <div className="bg-background w-full max-w-md rounded-lg p-8 shadow-lg">
+      <div className="absolute inset-0 bg-black/50"></div>
+
+      <div className="relative z-10"></div>
+      <NavBar />
+ 
+      <div className="container m-0 mx-auto flex h-[calc(100vh-81px)] items-center justify-center">
+        <div className="bg-background w-full max-w-md rounded-lg p-8 shadow-lg z-20">
           <SignIn />
         </div>
       </div>
-      
+
     </main>
   );
 }
