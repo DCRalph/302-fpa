@@ -23,27 +23,6 @@ const autoplay = Autoplay({ delay: 8000 })
 const images = ["/images/hero-img.webp", "/images/hero-img2.webp"]
 
 export function HeroSection() {
-
-<<<<<<< HEAD
-  // useEffect(() => {
-  //   if (!api) {
-  //     return
-  //   }
-
-  //   setCount(api.slideNodes().length)
-  //   setCurrent(api.selectedScrollSnap() + 1)
-
-  //   api.on("select", () => {
-  //     setCurrent(api.selectedScrollSnap() + 1)
-  //   })
-  // }, [api])
-
-  return (
-    <section id="home" className="relative w-full bg-black">
-      <Carousel className="relative w-full" plugins={[Autoplay({ delay: 8000 })]}>
-        <CarouselContent>
-          {["/images/hero-img.webp", "/images/hero-img2.webp"].map(
-=======
   const { data: conferenceYear } = api.home.getConferenceYear.useQuery(); 
 
   return (
@@ -51,7 +30,6 @@ export function HeroSection() {
       <Carousel className="relative w-full" plugins={[autoplay]} opts={{ loop: true }}>
         <CarouselContent>
           {images.map(
->>>>>>> 39f76da415a18c975e9b7ad959182bdac9767d58
             (src, i) => (
               <CarouselItem key={i} className="relative h-[526px]">
                 <Image
@@ -68,11 +46,6 @@ export function HeroSection() {
         <CarouselPrevious className="top-1/2 left-4 -translate-y-1/2 md:flex hidden" />
         <CarouselNext className="top-1/2 right-4 -translate-y-1/2 md:flex hidden" />
       </Carousel>
-<<<<<<< HEAD
-      {/* </div> */}
-=======
-
->>>>>>> 39f76da415a18c975e9b7ad959182bdac9767d58
       <div className="absolute h-full inset-0 z-10 container mx-auto flex flex-col justify-center items-center text-center">
         <h1
           className={`${montserrat.className} text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl`}
