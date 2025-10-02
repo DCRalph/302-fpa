@@ -1,5 +1,3 @@
-"use client";
-
 import { NavBar } from "~/components/nav-bar";
 import { SignIn } from "@stackframe/stack";
 
