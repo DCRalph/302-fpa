@@ -18,7 +18,7 @@ export default function LoginPage() {
 
       <div className="relative z-10"></div>
       <NavBar />
- 
+
       <div className="container m-0 mx-auto flex h-[calc(100vh-81px)] items-center justify-center">
         <div className="bg-background w-full max-w-md rounded-lg p-8 shadow-lg z-20">
           <SignIn />

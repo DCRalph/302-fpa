@@ -237,12 +237,6 @@ model Page {
     updatedAt DateTime @updatedAt
 }
 
-model SiteSetting {
-    key       String   @id
-    value     Json
-    updatedAt DateTime @updatedAt
-}
-
 model NewsletterSubscription {
     id          String   @id @default(cuid())
     email       String   @unique
@@ -261,4 +255,13 @@ model ContactMessage {
     status    String   @default("open") // open, closed
     createdAt DateTime @default(now())
     closedAt  DateTime?
+}
+
+model SiteSettings {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    key      String   @unique
+    value     String
+    description String?
 }

@@ -11,10 +11,13 @@ import { HowToRegisterSection } from "~/components/landing/how-to-register-secti
 import { SystemFeaturesSection } from "~/components/landing/system-features-section";
 import { SiteFooter } from "~/components/landing/site-footer";
 
+<<<<<<< HEAD
 import { useUser } from "@stackframe/stack";
 import { redirect } from "next/navigation";
 
 
+=======
+>>>>>>> 39f76da415a18c975e9b7ad959182bdac9767d58
 export default function Home() {
   const user = useUser();
 
