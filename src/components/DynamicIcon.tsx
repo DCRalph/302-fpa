@@ -19,8 +19,6 @@ export function DynamicIcon({ type, name, props = {} }: IconConfig) {
     return <span>Icon not found</span>;
   }
 
-  console.log(IconComponent);
-
   return <IconComponent {...props} />;
 }
 

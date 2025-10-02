@@ -18,12 +18,15 @@ import Autoplay from "embla-carousel-autoplay"
 import { ArrowRight } from "lucide-react";
 import { montserrat } from "~/components/fonts";
 import { api } from "~/trpc/react";
+import EditYear from "~/components/landing/admin/editYear";
 
 const autoplay = Autoplay({ delay: 8000 })
 const images = ["/images/hero-img.webp", "/images/hero-img2.webp"]
 
 export function HeroSection() {
-  const { data: conferenceYear } = api.home.getConferenceYear.useQuery(); 
+  const { data: conferenceYear } = api.home.getConferenceYear.useQuery();
+  const { data: me } = api.auth.me.useQuery();
+  const isAdmin = me?.role === "ADMIN";
 
   return (
     <section id="home" className="relative w-full bg-black">
@@ -55,7 +58,7 @@ export function HeroSection() {
         <p
           className={`${montserrat.className} from-primary mt-3 bg-gradient-to-r from-15% to-primary-tint to-70% bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl`}
         >
-          Conference {conferenceYear}
+          Conference {conferenceYear ?? "20.."}
         </p>
         <p className="mt-10 max-w-3xl text-base leading-7 text-gray-300 md:text-lg">
           Join educational leaders from across the Pacific for three days of
@@ -75,6 +78,7 @@ export function HeroSection() {
               <ArrowRight />
             </Link>
           </Button>
+          {isAdmin && <EditYear />}
         </div>
       </div>
     </section>

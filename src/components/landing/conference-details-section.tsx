@@ -3,9 +3,12 @@ import { montserrat } from "../fonts";
 import Link from "next/link";
 import { api } from "~/trpc/react";
 import { type ConferenceDetails } from "~/server/api/routers/home";
+import EditDetails from "~/components/landing/admin/editDetails";
 
 export function ConferenceDetailsSection() {
   const { data } = api.home.getConferenceDetails.useQuery();
+  const { data: me } = api.auth.me.useQuery();
+  const isAdmin = me?.role === "ADMIN";
   const detailsJson = data?.value ?? "";
   const details = (detailsJson ? JSON.parse(detailsJson) : null) as ConferenceDetails | null;
 
@@ -18,6 +21,11 @@ export function ConferenceDetailsSection() {
           Conference Details
         </h2>
         <div className="bg-card mx-auto mt-12 max-w-5xl rounded-xl border p-8 shadow-sm">
+          {isAdmin && (
+            <div className="mb-4 flex justify-end">
+              <EditDetails />
+            </div>
+          )}
           {details && (
             <>
               <h3 className="text-primary text-center text-2xl font-semibold">

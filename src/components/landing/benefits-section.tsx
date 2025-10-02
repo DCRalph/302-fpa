@@ -2,12 +2,15 @@ import { montserrat } from "~/components/fonts";
 import { api } from "~/trpc/react";
 import { type WhyJoin } from "~/server/api/routers/home";
 import { DynamicIcon } from "~/components/DynamicIcon";
+import EditWhyJoin from "~/components/landing/admin/editWhyJoin";
 
 
 
 export function BenefitsSection() {
 
   const { data: conferenceWhyJoin } = api.home.getConferenceWhyJoin.useQuery();
+  const { data: me } = api.auth.me.useQuery();
+  const isAdmin = me?.role === "ADMIN";
 
   const whyJoin = conferenceWhyJoin?.value
   const whyJoinArray = JSON.parse(whyJoin ?? "[]") as WhyJoin[]
@@ -18,6 +21,11 @@ export function BenefitsSection() {
         <h2 className={`${montserrat.className} text-center text-3xl font-bold tracking-tight md:text-4xl`}>
           Why Join Our Conference?
         </h2>
+        {isAdmin && (
+          <div className="mt-4 flex justify-end">
+            <EditWhyJoin />
+          </div>
+        )}
         {whyJoinArray && (
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             {whyJoinArray.map((card: WhyJoin, idx: number) => (
