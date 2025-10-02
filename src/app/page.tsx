@@ -19,7 +19,7 @@ export default function Home() {
   const user = useUser();
 
   if (user) {
-    redirect("/member-dashboard");
+    // redirect("/member-dashboard");
   }
 
   // Scroll to section if URL has a hash (e.g., #benefits)

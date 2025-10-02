@@ -23,7 +23,6 @@ const autoplay = Autoplay({ delay: 8000 })
 const images = ["/images/hero-img.webp", "/images/hero-img2.webp"]
 
 export function HeroSection() {
-
   const { data: conferenceYear } = api.home.getConferenceYear.useQuery(); 
 
   return (
