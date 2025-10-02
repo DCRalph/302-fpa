@@ -10,7 +10,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 import { EnsureDbUser } from "~/components/ensureDbUser";
 
 export const metadata: Metadata = {
-  title: "Conference Registration System",
+  title: "FPA Conference Registration",
   description: "Register for the FPA conference and manage your attendance with our comprehensive registration system.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };

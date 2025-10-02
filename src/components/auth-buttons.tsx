@@ -19,10 +19,10 @@ export function AuthButtons() {
   return (
     <div className="flex items-center gap-2">
       <Button variant="outline" asChild>
-        <Link href="/login">Login</Link>
+        <Link href="/signin">Login</Link>
       </Button>
       <Button asChild>
-        <Link href="/handler/sign-up">Register</Link>
+        <Link href="/signup">Register</Link>
       </Button>
     </div>
   );
