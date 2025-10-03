@@ -5,7 +5,7 @@ import { BenefitsSection } from "~/components/landing/benefits-section";
 import { ConferenceDetailsSection } from "~/components/landing/conference-details-section";
 import { HowToRegisterSection } from "~/components/landing/how-to-register-section";
 import { SystemFeaturesSection } from "~/components/landing/system-features-section";
-import { SiteFooter } from "~/components/landing/site-footer";
+import { SiteFooter } from "~/components/site-footer";
 
 
 export default function Home() {
