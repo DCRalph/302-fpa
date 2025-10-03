@@ -21,13 +21,19 @@ model User {
     email         String?   @unique
     emailVerified DateTime?
     image         String?
+    phone         String?
     role          UserRole  @default(USER)
+
+    onboardedAt    DateTime?
+
 
 
     blogPosts      BlogPost[]
     registrations  Registration[]
     adminNotes     AdminNote[] @relation("UserAdminNotes")
     statusChanges  RegistrationStatusHistory[] @relation("UserStatusChanges")
+
+    
 }
 
 model VerificationToken {

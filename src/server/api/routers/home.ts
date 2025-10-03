@@ -1,7 +1,13 @@
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
-export type WhyJoin = {
+export type ConferenceTitle = {
+  title: string;
+  subtitle: string;
+};
+
+
+export type ConferenceWhyJoin = {
   title: string;
   description: string;
   icon: {
@@ -19,22 +25,26 @@ export type ConferenceDetails = {
 };
 
 export const homeRouter = createTRPCRouter({
-  getConferenceYear: publicProcedure.query(async ({ ctx }) => {
-    let conferenceYear = await ctx.db.siteSettings.findUnique({
+  getConferenceTitle: publicProcedure.query(async ({ ctx }) => {
+    let conferenceTitle = await ctx.db.siteSettings.findUnique({
       where: {
-        key: "conferenceYear",
+        key: "conferenceTitle",
       },
     });
-    if (!conferenceYear) {
-      conferenceYear = await ctx.db.siteSettings.create({
+    if (!conferenceTitle) {
+      const defualtValue: ConferenceTitle = {
+        title: "Fiji Principals Association Conference 2025",
+        subtitle: "Join educational leaders from across the Pacific for three days of inspiring sessions, networking, and professional development in the heart of Fiji.",
+      };
+      conferenceTitle = await ctx.db.siteSettings.create({
         data: {
-          key: "conferenceYear",
-          value: "2025",
+          key: "conferenceTitle",
+          value: JSON.stringify(defualtValue),
         },
       });
       return null;
     }
-    return conferenceYear.value;
+    return conferenceTitle;
   }),
 
   getConferenceWhyJoin: publicProcedure.query(async ({ ctx }) => {
@@ -44,7 +54,7 @@ export const homeRouter = createTRPCRouter({
       },
     });
     if (!conferenceWhyJoin) {
-      const defualtValue: WhyJoin[] = [
+      const defualtValue: ConferenceWhyJoin[] = [
         {
           title: "Professional Development and Leadership Training",
           description: "Access to expert-led sessions on school leadership, management, and innovation.",

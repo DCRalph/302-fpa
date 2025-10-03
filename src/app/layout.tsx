@@ -7,7 +7,8 @@ import { nunito } from "~/components/fonts";
 import { ThemeProvider } from 'next-themes'
 
 import { TRPCReactProvider } from "~/trpc/react";
-import { EnsureDbUser } from "~/components/ensureDbUser";
+import { EnsureDbUser } from "~/lib/ensureDbUser";
+import { AuthProvider } from "~/lib/auth";
 
 export const metadata: Metadata = {
   title: "FPA Conference Registration",
@@ -32,8 +33,10 @@ export default function RootLayout({
             >
               <TRPCReactProvider>
                 <EnsureDbUser />
-
-                {children}</TRPCReactProvider>
+                <AuthProvider>
+                  {children}
+                </AuthProvider>
+              </TRPCReactProvider>
             </ThemeProvider>
           </StackTheme>
         </StackProvider>

@@ -1,22 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { UserButton, OAuthButtonGroup, SelectedTeamSwitcher, UserAvatar, useUser } from "@stackframe/stack";
+import { UserButton, OAuthButtonGroup, SelectedTeamSwitcher, UserAvatar } from "@stackframe/stack";
 import { api } from "~/trpc/react";
 import { ThemeToggle } from "~/components/theme-toggle";
 import Link from "next/link";
 import { Moon } from "lucide-react";
+import { useAuth } from "~/lib/auth";
 
 export default function TempPage() {
   const [inputText, setInputText] = useState("");
-  const user = useUser();
+  const { stackUser, dbUser, isLoading, error } = useAuth();
 
   const hello = api.default.hello.useQuery(
     { text: inputText || "World" },
     { enabled: true }
   );
 
-  const auth = api.auth.me.useQuery();
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -42,19 +43,19 @@ export default function TempPage() {
 
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">User Authentication</h3>
-            {user ? (
+            {stackUser ? (
               <div className="p-4 border rounded-lg">
                 <p className="text-green-600 dark:text-green-400">
-                  ✅ You are logged in as: {user.displayName ?? user.primaryEmail}
+                  You are logged in as: {stackUser.displayName ?? stackUser.primaryEmail}
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  User ID: {user.id}
+                  User ID: {stackUser.id}
                 </p>
               </div>
             ) : (
               <div className="p-4 border rounded-lg">
                 <p className="text-amber-600 dark:text-amber-400">
-                  ⚠️ You are not logged in
+                  You are not logged in
                 </p>
               </div>
             )}
@@ -73,7 +74,7 @@ export default function TempPage() {
                 <h4 className="font-semibold">User Avatar</h4>
                 <p className="text-sm text-muted-foreground">Avatar rendered from Stack user profile.</p>
                 <div className="flex items-center gap-3">
-                  <UserAvatar user={user ?? undefined} />
+                  <UserAvatar user={stackUser ?? undefined} />
                   {/* <span className="text-sm text-muted-foreground">{user ? (user.displayName ?? user.primaryEmail) : "Not signed in"}</span> */}
                 </div>
               </div>
@@ -82,7 +83,7 @@ export default function TempPage() {
 
           <section className="space-y-4">
             <h3 className="text-xl font-semibold">OAuth Providers</h3>
-            {user ? (
+            {stackUser ? (
               <p className="text-sm text-muted-foreground">You are signed in. Sign-in/sign-up buttons are hidden.</p>
             ) : (
               <div className="grid gap-6 md:grid-cols-2">
@@ -111,13 +112,13 @@ export default function TempPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="p-4 border rounded-lg">
                 <h4 className="font-semibold mb-2">Stack User (useUser)</h4>
-                {user ? (
+                {stackUser ? (
                   <div className="text-sm">
-                    <p><span className="text-muted-foreground">ID:</span> {user.id}</p>
-                    <p><span className="text-muted-foreground">Name:</span> {user.displayName ?? "—"}</p>
-                    <p><span className="text-muted-foreground">Email:</span> {user.primaryEmail ?? "—"}</p>
-                    <p><span className="text-muted-foreground">Client metadata:</span><br /> {JSON.stringify(user.clientMetadata) ?? "—"}</p>
-                    <p><span className="text-muted-foreground">Client readonly metadata :</span><br /> {JSON.stringify(user.clientReadOnlyMetadata) ?? "—"}</p>
+                    <p><span className="text-muted-foreground">ID:</span> {stackUser.id}</p>
+                    <p><span className="text-muted-foreground">Name:</span> {stackUser.displayName ?? "—"}</p>
+                    <p><span className="text-muted-foreground">Email:</span> {stackUser.primaryEmail ?? "—"}</p>
+                    <p><span className="text-muted-foreground">Client metadata:</span><br /> {JSON.stringify(stackUser.clientMetadata) ?? "—"}</p>
+                    <p><span className="text-muted-foreground">Client readonly metadata :</span><br /> {JSON.stringify(stackUser.clientReadOnlyMetadata) ?? "—"}</p>
 
                   </div>
                 ) : (
@@ -127,16 +128,17 @@ export default function TempPage() {
 
               <div className="p-4 border rounded-lg">
                 <h4 className="font-semibold mb-2">DB User (tRPC)</h4>
-                {auth.isLoading ? (
+                {isLoading ? (
                   <p className="text-sm text-muted-foreground">Loading...</p>
-                ) : auth.error ? (
-                  <p className="text-sm text-red-600 dark:text-red-400">{auth.error.message}</p>
-                ) : auth.data ? (
+                ) : error ? (
+                  <p className="text-sm text-red-600 dark:text-red-400">Error: {error.message}</p>
+                ) : dbUser ? (
                   <div className="text-sm">
-                    <p><span className="text-muted-foreground">ID:</span> {auth.data.id}</p>
-                    <p><span className="text-muted-foreground">Name:</span> {auth.data.name ?? "—"}</p>
-                    <p><span className="text-muted-foreground">Email:</span> {auth.data.email ?? "—"}</p>
-                    <p><span className="text-muted-foreground">Role:</span> {auth.data.role ?? "—"}</p>
+                    <p><span className="text-muted-foreground">ID:</span> {dbUser.id}</p>
+                    <p><span className="text-muted-foreground">Name:</span> {dbUser.name ?? "—"}</p>
+                    <p><span className="text-muted-foreground">Email:</span> {dbUser.email ?? "—"}</p>
+                    <p><span className="text-muted-foreground">Role:</span> {dbUser.role ?? "—"}</p>
+                    <p><span className="text-muted-foreground">Onboarded:</span> {dbUser.onboardedAt ? dbUser.onboardedAt.toLocaleDateString() : "—"}</p>
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">No DB user found.</p>

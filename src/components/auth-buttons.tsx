@@ -1,24 +1,25 @@
-"use client";
-
 import Link from "next/link";
-import { UserButton, useUser } from "@stackframe/stack";
+import { UserButton } from "@stackframe/stack";
 
 import { Button } from "~/components/ui/button";
+import { ServerAuth } from "~/lib/auth-server";
 
-import { api } from "~/trpc/react";
+export async function AuthButtons() {
+  const { dbUser } = await ServerAuth();
 
-export function AuthButtons() {
-  const user = useUser();
+  const isAdmin = dbUser?.role === "ADMIN";
 
-  const { data: me } = api.auth.me.useQuery();
-  const isAdmin = me?.role === "ADMIN";
-
-  if (user) {
+  if (dbUser) {
     return (
       <div className="flex items-center gap-2">
         <Button variant="outline" asChild>
-          <Link href={isAdmin ? `/admin-dashboard`: `/member-dashboard`}>Dashboard</Link>
+          <Link href={`/member-dashboard`}>Dashboard</Link>
         </Button>
+        {isAdmin && (
+          <Button variant="outline" asChild>
+            <Link href="/admin-dashboard">Admin Dashboard</Link>
+          </Button>
+        )}
         <UserButton />
       </div>
     );

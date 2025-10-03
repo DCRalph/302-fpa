@@ -1,15 +1,19 @@
 import { z } from "zod";
 
 import { createTRPCRouter, adminProcedure } from "~/server/api/trpc";
+import type { ConferenceTitle, ConferenceWhyJoin, ConferenceDetails } from "~/server/api/routers/home";
 
 export const editHomeRouter = createTRPCRouter({
-  changeConferenceYear: adminProcedure
-    .input(z.object({ year: z.string().min(1) }))
+  changeConferenceTitle: adminProcedure
+    .input(z.object({
+      title: z.string(),
+      subtitle: z.string()
+    }))
     .mutation(async ({ ctx, input }) => {
       const updated = await ctx.db.siteSettings.upsert({
-        where: { key: "conferenceYear" },
-        create: { key: "conferenceYear", value: input.year },
-        update: { value: input.year },
+        where: { key: "conferenceTitle" },
+        create: { key: "conferenceTitle", value: JSON.stringify(input) },
+        update: { value: JSON.stringify(input) },
       });
       return updated.value;
     }),

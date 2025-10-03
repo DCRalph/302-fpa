@@ -1,19 +1,17 @@
 import { montserrat } from "~/components/fonts";
-import { api } from "~/trpc/react";
-import { type WhyJoin } from "~/server/api/routers/home";
+import { api } from "~/trpc/server";
+import { type ConferenceWhyJoin } from "~/server/api/routers/home";
 import { DynamicIcon } from "~/components/DynamicIcon";
 import EditWhyJoin from "~/components/landing/admin/editWhyJoin";
+import { ServerAuth } from "~/lib/auth-server";
 
+export async function BenefitsSection() {
+  const { dbUser } = await ServerAuth();
+  const conferenceWhyJoin = await api.home.getConferenceWhyJoin();
+  const isAdmin = dbUser?.role === "ADMIN";
 
-
-export function BenefitsSection() {
-
-  const { data: conferenceWhyJoin } = api.home.getConferenceWhyJoin.useQuery();
-  const { data: me } = api.auth.me.useQuery();
-  const isAdmin = me?.role === "ADMIN";
-
-  const whyJoin = conferenceWhyJoin?.value
-  const whyJoinArray = JSON.parse(whyJoin ?? "[]") as WhyJoin[]
+  const whyJoin = conferenceWhyJoin?.value;
+  const whyJoinArray = JSON.parse(whyJoin ?? "[]") as ConferenceWhyJoin[];
 
   return (
     <section id="benefits" className="border-t bg-muted dark:bg-muted/30 py-16 md:py-20">
@@ -23,12 +21,12 @@ export function BenefitsSection() {
         </h2>
         {isAdmin && (
           <div className="mt-4 flex justify-end">
-            <EditWhyJoin />
+            <EditWhyJoin whyJoinItems={whyJoinArray} />
           </div>
         )}
         {whyJoinArray && (
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {whyJoinArray.map((card: WhyJoin, idx: number) => (
+            {whyJoinArray.map((card: ConferenceWhyJoin, idx: number) => (
               <div key={idx} className="rounded-xl border bg-card p-6 shadow-sm">
                 <DynamicIcon type={card.icon.type} name={card.icon.name} props={card.icon.props} />
                 <h3 className="text-center text-xl font-semibold leading-6">

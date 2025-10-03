@@ -1,14 +1,16 @@
-import { Check } from "lucide-react";
-import { montserrat } from "../fonts";
-import Link from "next/link";
-import { api } from "~/trpc/react";
+import { api } from "~/trpc/server";
 import { type ConferenceDetails } from "~/server/api/routers/home";
-import EditDetails from "~/components/landing/admin/editDetails";
+import { ServerAuth } from "~/lib/auth-server";
+import { montserrat } from "../fonts";
+import EditDetails from "./admin/editDetails";
+import { Check } from "lucide-react";
+import Link from "next/link";
 
-export function ConferenceDetailsSection() {
-  const { data } = api.home.getConferenceDetails.useQuery();
-  const { data: me } = api.auth.me.useQuery();
-  const isAdmin = me?.role === "ADMIN";
+export async function ConferenceDetailsSection() {
+  const { dbUser } = await ServerAuth();
+  const data = await api.home.getConferenceDetails();
+
+  const isAdmin = dbUser?.role === "ADMIN";
   const detailsJson = data?.value ?? "";
   const details = (detailsJson ? JSON.parse(detailsJson) : null) as ConferenceDetails | null;
 
@@ -23,7 +25,7 @@ export function ConferenceDetailsSection() {
         <div className="bg-card mx-auto mt-12 max-w-5xl rounded-xl border p-8 shadow-sm">
           {isAdmin && (
             <div className="mb-4 flex justify-end">
-              <EditDetails />
+              <EditDetails detailsObject={details} />
             </div>
           )}
           {details && (
