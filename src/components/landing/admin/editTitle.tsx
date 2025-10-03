@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -15,6 +15,7 @@ import {
 } from "~/components/ui/sheet";
 import { api } from "~/trpc/react";
 import { type ConferenceTitle } from "~/server/api/routers/home";
+import { handleTRPCMutation } from "~/lib/toast";
 
 export function EditYear({ titleObject }: { titleObject: ConferenceTitle | null }) {
   const [open, setOpen] = useState(false);
@@ -23,13 +24,17 @@ export function EditYear({ titleObject }: { titleObject: ConferenceTitle | null 
 
 
   const utils = api.useUtils();
-  const { mutate: changeTitle, isPending } =
+  const { mutateAsync: changeTitle, isPending } =
     api.admin.editHome.changeConferenceTitle.useMutation({
       onSuccess: async () => {
         await utils.home.getConferenceTitle.invalidate();
         setOpen(false);
       },
     });
+
+  const handelSave = () => {
+    void handleTRPCMutation(() => changeTitle({ title, subtitle }), "Title saved successfully", "Failed to save title");
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -70,7 +75,7 @@ export function EditYear({ titleObject }: { titleObject: ConferenceTitle | null 
 
         <SheetFooter>
           <Button
-            onClick={() => changeTitle({ title, subtitle })}
+            onClick={handelSave}
             disabled={!title || !subtitle || isPending}
           >
             {isPending ? "Saving..." : "Save"}

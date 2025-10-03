@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 import { createTRPCRouter, adminProcedure } from "~/server/api/trpc";
-import type { ConferenceTitle, ConferenceWhyJoin, ConferenceDetails } from "~/server/api/routers/home";
 
 export const editHomeRouter = createTRPCRouter({
   changeConferenceTitle: adminProcedure

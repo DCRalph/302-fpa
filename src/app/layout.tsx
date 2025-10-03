@@ -5,6 +5,8 @@ import { stackServerApp } from "../stack";
 import { type Metadata } from "next";
 import { nunito } from "~/components/fonts";
 import { ThemeProvider } from 'next-themes'
+import { Toaster } from "~/components/ui/sonner"
+import NextTopLoader from "nextjs-toploader";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { EnsureDbUser } from "~/lib/ensureDbUser";
@@ -34,6 +36,8 @@ export default function RootLayout({
               <TRPCReactProvider>
                 <EnsureDbUser />
                 <AuthProvider>
+                  <NextTopLoader />
+                  <Toaster position="top-right" richColors />
                   {children}
                 </AuthProvider>
               </TRPCReactProvider>

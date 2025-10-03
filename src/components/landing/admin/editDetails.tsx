@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -16,6 +16,7 @@ import {
 } from "~/components/ui/sheet";
 import { api } from "~/trpc/react";
 import { type ConferenceDetails } from "~/server/api/routers/home";
+import { handleTRPCMutation } from "~/lib/toast";
 
 export default function EditDetails({ detailsObject }: { detailsObject: ConferenceDetails | null }) {
   const [open, setOpen] = useState(false);
@@ -23,7 +24,7 @@ export default function EditDetails({ detailsObject }: { detailsObject: Conferen
   const [details, setDetails] = useState<ConferenceDetails>(detailsObject ?? { conferenceTitle: "", rows: [], included: [], contacts: [] });
 
   const utils = api.useUtils();
-  const { mutate, isPending } = api.admin.editHome.changeConferenceDetails.useMutation({
+  const { mutateAsync: changeConferenceDetails, isPending } = api.admin.editHome.changeConferenceDetails.useMutation({
     onSuccess: async () => {
       await utils.home.getConferenceDetails.invalidate();
       setOpen(false);
@@ -95,6 +96,10 @@ export default function EditDetails({ detailsObject }: { detailsObject: Conferen
         i === index ? { ...contact, [field]: value } : contact
       )
     }));
+  };
+
+  const handelSave = () => {
+    void handleTRPCMutation(() => changeConferenceDetails(details), "Details saved successfully", "Failed to save details");
   };
 
   return (
@@ -231,7 +236,7 @@ export default function EditDetails({ detailsObject }: { detailsObject: Conferen
         </div>
 
         <SheetFooter className="px-4 pb-4">
-          <Button onClick={() => mutate(details)} disabled={isPending}>
+          <Button onClick={handelSave} disabled={isPending}>
             {isPending ? "Saving..." : "Save"}
           </Button>
         </SheetFooter>

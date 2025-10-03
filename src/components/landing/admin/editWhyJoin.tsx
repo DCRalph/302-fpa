@@ -16,6 +16,7 @@ import {
 } from "~/components/ui/sheet";
 import { api } from "~/trpc/react";
 import { type ConferenceWhyJoin } from "~/server/api/routers/home";
+import { handleTRPCMutation } from "~/lib/toast";
 
 // Common Lucide icon names for the dropdown
 const ICON_OPTIONS = [
@@ -43,7 +44,7 @@ export default function EditWhyJoin({ whyJoinItems }: { whyJoinItems: Conference
   useEffect(() => setItems(whyJoinItems), [whyJoinItems, open]);
 
   const utils = api.useUtils();
-  const { mutate, isPending } = api.admin.editHome.changeConferenceWhyJoin.useMutation({
+  const { mutateAsync: changeConferenceWhyJoin, isPending } = api.admin.editHome.changeConferenceWhyJoin.useMutation({
     onSuccess: async () => {
       await utils.home.getConferenceWhyJoin.invalidate();
       setOpen(false);
@@ -87,6 +88,11 @@ export default function EditWhyJoin({ whyJoinItems }: { whyJoinItems: Conference
         }
         : item
     ));
+  };
+
+
+  const handelSave = () => {
+    void handleTRPCMutation(() => changeConferenceWhyJoin({ items }), "Why Join saved successfully", "Failed to save why join");
   };
 
   return (
@@ -183,7 +189,7 @@ export default function EditWhyJoin({ whyJoinItems }: { whyJoinItems: Conference
         </div>
 
         <SheetFooter className="px-4 pb-4">
-          <Button onClick={() => mutate({ items })} disabled={isPending}>
+          <Button onClick={handelSave} disabled={isPending}>
             {isPending ? "Saving..." : "Save"}
           </Button>
         </SheetFooter>
