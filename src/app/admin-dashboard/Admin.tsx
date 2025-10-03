@@ -1,9 +1,10 @@
 "use client";
 
 import { useUser } from "@stackframe/stack";
+import { useAuth } from "~/lib/auth";
 
 export default function AdminDashboardPage() {
-  const user = useUser({ or: "redirect" });
+  const { dbUser } = useAuth();
 
   return (
     <main className="bg-background text-foreground flex min-h-screen">
