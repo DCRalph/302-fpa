@@ -26,7 +26,7 @@ export function NavBar() {
             <Link href="/#details" className="text-muted-foreground hover:text-foreground">Details</Link>
             <Link href="/#tips" className="text-muted-foreground hover:text-foreground">Tips</Link>
             <Link href="/#features" className="text-muted-foreground hover:text-foreground">Features</Link>
-            <Link href="/auth" className="text-muted-foreground hover:text-foreground">Auth test</Link>
+            {/* <Link href="/auth" className="text-muted-foreground hover:text-foreground">Auth test</Link> */}
           </div>
           <Separator orientation="vertical" className="hidden md:block"/>
           <div className="flex items-center gap-2">
