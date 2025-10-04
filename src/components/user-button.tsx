@@ -6,6 +6,6 @@ import { useRouter } from "nextjs-toploader/app";
 export function UserButton() {
   const router = useRouter();
   return (
-    <StackUserButton extraItems={[{ text: "Auth Status", icon: <UserIcon className="size-4" />, onClick: () => { router.push("/auth"); } }]} />
+      <StackUserButton extraItems={[{ text: "Auth Status", icon: <UserIcon className="size-4" />, onClick: () => { router.push("/auth"); } }]} />
   );
 }

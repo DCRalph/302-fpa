@@ -56,7 +56,7 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="container mx-auto mt-10 border-t border-white/10 pt-10 text-center text-[16px] text-white">
-          © 2025 Fiji Principals Association. All rights reserved.
+          © {new Date().getFullYear()} Fiji Principals Association. All rights reserved.
         </div>
       </div>
     </footer>
