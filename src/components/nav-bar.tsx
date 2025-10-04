@@ -13,15 +13,15 @@ export async function NavBar() {
   const isAdmin = dbUser?.role === "ADMIN";
 
   return (
-    <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-6">
         {/* Logo Section */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75% to text-primary-foreground shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-            <GraduationCap size={26} className="drop-shadow-sm" />
+          <div className="grid size-11 place-items-center rounded-4xl bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75% to text-primary-foreground shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+            <GraduationCap size={24} className="drop-shadow-sm" />
           </div>
           <div className="leading-tight">
-            <p className="text-lg font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+            <p className="text-lg font-bold">
               FPA Conference
             </p>
             <p className="text-sm text-muted-foreground font-medium">{new Date().getFullYear()}</p>

@@ -94,7 +94,7 @@ export function MobileNavMenu() {
             </DropdownMenuItem>
 
             <DropdownMenuItem asChild>
-              <Link href="/handler/logout" className="flex items-center gap-3 py-2">
+              <Link href="/handler/sign-out" className="flex items-center gap-3 py-2">
                 <LogOut className="size-4 text-muted-foreground" />
                 <span>Logout</span>
               </Link>
