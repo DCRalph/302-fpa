@@ -3,7 +3,7 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "./ui/dropdown-menu";
 
 import { cn } from "~/lib/utils";
-import { ChevronUp, Home, User, Settings, Laptop, LogOut, Sun, Moon, Computer, Check, Menu, Shield } from "lucide-react";
+import { ChevronUp, Home, LogOut, Sun, Moon, Computer, Check, Menu, LayoutDashboard, Settings2, Cog } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "~/lib/auth";
@@ -11,20 +11,17 @@ import { useSidebar, SidebarTrigger } from "./ui/sidebar";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { setThemeAndPersist, type ThemeSelection } from "~/lib/theme";
-import { Button } from "./ui/button";
+
 import { Separator } from "./ui/separator";
 import { cabin } from "./fonts";
 
-export function DashboardHeader() {
-  const { dbUser, stackUser } = useAuth();
+export function MemberHeader() {
+  const { dbUser, stackUser, isLoading: authLoading } = useAuth();
   const { state, isMobile, toggleSidebar } = useSidebar();
-  const [isCollapsed, setIsCollapsed] = useState(state === "collapsed");
+  // const [isCollapsed, setIsCollapsed] = useState(state === "collapsed");
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  useEffect(() => {
-    setIsCollapsed(state === "collapsed");
-  }, [state]);
 
   const setThemeAndPersistLocal = async (value: ThemeSelection) => {
     await setThemeAndPersist(value, { user: stackUser, setTheme });
@@ -50,8 +47,7 @@ export function DashboardHeader() {
             <DropdownMenuTrigger asChild>
               <div
                 className={cn(
-                  `flex items-center gap-3 ${isCollapsed ? "p-0" : "p-2"} cursor-pointer rounded-md transition-colors duration-200 hover:bg-sidebar-accent`,
-                  isCollapsed && "justify-center",
+                  `flex items-center gap-3 p-2 cursor-pointer rounded-md transition-colors duration-200 hover:bg-sidebar-accent justify-center`,
                 )}
               >
                 {dbUser?.image && (
@@ -65,12 +61,20 @@ export function DashboardHeader() {
                 )}
                 {(!isMobile) && (
                   <div className="flex-1 overflow-hidden">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {dbUser?.name}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {dbUser?.email}
-                    </p>
+                    {authLoading ? (
+                      <p className="truncate text-sm font-medium text-foreground">
+                        Loading...
+                      </p>
+                    ) : (
+                      <>
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {dbUser?.name}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {dbUser?.email}
+                        </p>
+                      </>
+                    )}
                   </div>
                 )}
                 {(!isMobile) && (
@@ -79,7 +83,7 @@ export function DashboardHeader() {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              align={isCollapsed ? "start" : "end"}
+              align={"end"}
               className="w-56"
             >
               <DropdownMenuLabel className="flex items-center gap-3 py-3">
@@ -112,38 +116,26 @@ export function DashboardHeader() {
                 </Link>
               </DropdownMenuItem>
 
-              {/* Account */}
               <DropdownMenuItem asChild>
-                <Link
-                  href="/dashboard/account"
-                  className="flex w-full cursor-pointer items-center"
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  Account
+                <Link href="/member-dashboard" className="flex items-center gap-3 py-2">
+                  <LayoutDashboard className="size-4 text-muted-foreground" />
+                  <span>Dashboard</span>
                 </Link>
               </DropdownMenuItem>
 
-              {/* Settings */}
+              {dbUser?.role === "ADMIN" && (
+                <DropdownMenuItem asChild>
+                  <Link href="/admin-dashboard" className="flex items-center gap-3 py-2">
+                    <Settings2 className="size-4 text-muted-foreground" />
+                    <span>Admin Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+
               <DropdownMenuItem asChild>
-                <Link
-                  href="/settings"
-                  className="flex w-full cursor-pointer items-center"
-                >
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </Link>
-              </DropdownMenuItem>
-
-
-
-              {/* Dashboard */}
-              <DropdownMenuItem asChild>
-                <Link
-                  href="/dashboard"
-                  className="flex w-full cursor-pointer items-center"
-                >
-                  <Laptop className="mr-2 h-4 w-4" />
-                  Dashboard
+                <Link href="/handler/account-settings" className="flex items-center gap-3 py-2">
+                  <Cog className="size-4 text-muted-foreground" />
+                  <span>Account Settings</span>
                 </Link>
               </DropdownMenuItem>
 
@@ -159,12 +151,14 @@ export function DashboardHeader() {
                             </DropdownMenuItem> */}
 
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                // onClick={() => signOut({ redirect: true, callbackUrl: "/" })}
-                className="cursor-pointer text-red-500 hover:text-red-600"
+              <DropdownMenuItem asChild
+              // onClick={() => signOut({ redirect: true, callbackUrl: "/" })}
+
               >
-                <LogOut className="mr-2 h-4 w-4 text-red-500" />
-                Sign Out
+                <Link href="/handler/sign-out" className="cursor-pointer text-red-500 hover:text-red-600">
+                  <LogOut className="mr-2 h-4 w-4 text-red-500" />
+                  Sign Out
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="flex items-center gap-3 py-2">
@@ -199,7 +193,7 @@ export function DashboardHeader() {
           </DropdownMenu>
         </div>
 
-      </header>
+      </header >
 
       <div className="w-full h-px bg-sidebar-border"></div>
     </>

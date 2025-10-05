@@ -34,6 +34,38 @@ export default function MemberDashboardPage() {
                         <p><strong>Role:</strong> {dbUser?.role}</p>
                     </div>
                 </div>
+                <div className="mt-8 grid gap-4">
+                    <div className="rounded-lg border p-4">
+                        <h2 className="text-xl font-semibold mb-2">Your Profile</h2>
+                        <p><strong>Name:</strong> {dbUser?.name}</p>
+                        <p><strong>Email:</strong> {dbUser?.email}</p>
+                        <p><strong>Role:</strong> {dbUser?.role}</p>
+                    </div>
+                </div>
+                <div className="mt-8 grid gap-4">
+                    <div className="rounded-lg border p-4">
+                        <h2 className="text-xl font-semibold mb-2">Your Profile</h2>
+                        <p><strong>Name:</strong> {dbUser?.name}</p>
+                        <p><strong>Email:</strong> {dbUser?.email}</p>
+                        <p><strong>Role:</strong> {dbUser?.role}</p>
+                    </div>
+                </div>
+                <div className="mt-8 grid gap-4">
+                    <div className="rounded-lg border p-4">
+                        <h2 className="text-xl font-semibold mb-2">Your Profile</h2>
+                        <p><strong>Name:</strong> {dbUser?.name}</p>
+                        <p><strong>Email:</strong> {dbUser?.email}</p>
+                        <p><strong>Role:</strong> {dbUser?.role}</p>
+                    </div>
+                </div>
+                <div className="mt-8 grid gap-4">
+                    <div className="rounded-lg border p-4">
+                        <h2 className="text-xl font-semibold mb-2">Your Profile</h2>
+                        <p><strong>Name:</strong> {dbUser?.name}</p>
+                        <p><strong>Email:</strong> {dbUser?.email}</p>
+                        <p><strong>Role:</strong> {dbUser?.role}</p>
+                    </div>
+                </div>
                 {/* Add more dashboard components and features here */}
             </div>
         </main>

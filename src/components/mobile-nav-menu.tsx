@@ -34,7 +34,7 @@ export function MobileNavMenu() {
         {dbUser ? (
           <>
             <DropdownMenuLabel className="flex items-center gap-3 py-3">
-              <div className="flex-shrink-0">
+              {/* <div className="flex-shrink-0">
                 {dbUser?.image ? (
                   <Image
                     src={dbUser.image}
@@ -48,10 +48,10 @@ export function MobileNavMenu() {
                     <User className="size-4 text-muted-foreground" />
                   </div>
                 )}
-              </div>
+              </div> */}
 
               <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-sm font-medium text-foreground truncate">
+                <span className="font-medium text-foreground truncate">
                   {dbUser?.name ?? dbUser?.email ?? "Signed in"}
                 </span>
                 {dbUser?.email && (
@@ -94,8 +94,8 @@ export function MobileNavMenu() {
             </DropdownMenuItem>
 
             <DropdownMenuItem asChild>
-              <Link href="/handler/sign-out" className="flex items-center gap-3 py-2">
-                <LogOut className="size-4 text-muted-foreground" />
+              <Link href="/handler/sign-out" className="flex items-center gap-3 py-2 text-red-500">
+                <LogOut className="size-4 text-inherit" />
                 <span>Logout</span>
               </Link>
             </DropdownMenuItem>
