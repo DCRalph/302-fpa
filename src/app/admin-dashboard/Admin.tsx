@@ -1,21 +1,41 @@
 "use client";
 
-import { useUser } from "@stackframe/stack";
 import { useAuth } from "~/lib/auth";
+import { redirect } from "next/navigation";
 
 export default function AdminDashboardPage() {
-  const { dbUser } = useAuth();
+    const { stackUser, dbUser, isLoading } = useAuth();
 
-  return (
-    <main className="bg-background text-foreground flex min-h-screen">
-      <div className="container mx-auto px-4 py-10">
-        <h1 className="mb-6 text-3xl font-bold">Admin Dashboard</h1>
-        <p>
-          Welcome to the Admin Dashboard! Here you can manage conference
-          settings, user roles, and oversee all administrative tasks.
-        </p>
-        {/* Add more dashboard components and features here */}
-      </div>
-    </main>
-  );
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center">
+                <p>Loading...</p>
+            </div>
+        );
+    }
+
+    if (!stackUser || !dbUser) {
+        redirect("/signin");
+    }
+
+    return (
+        <main className="bg-background text-foreground flex">
+
+            <div className="container px-6 pt-6">
+                <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+                <p>Welcome back, {dbUser?.name ?? stackUser?.displayName}!</p>
+                <p className="mt-4">Welcome to the Admin Dashboard! Here you can manage conference settings, user roles, and oversee all administrative tasks.</p>
+
+                <div className="mt-8 grid gap-4">
+                    <div className="rounded-lg border p-4">
+                        <h2 className="text-xl font-semibold mb-2">Your Profile</h2>
+                        <p><strong>Name:</strong> {dbUser?.name}</p>
+                        <p><strong>Email:</strong> {dbUser?.email}</p>
+                        <p><strong>Role:</strong> {dbUser?.role}</p>
+                    </div>
+                </div>
+                {/* Add more dashboard components and features here */}
+            </div>
+        </main>
+    );
 }

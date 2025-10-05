@@ -5,7 +5,7 @@ import { cabin } from "~/components/fonts";
 import { UserButton } from "@stackframe/stack";
 import { DashboardHeader } from "~/components/dashboard-header";
 
-export default function MemberDashboardLayout({
+export default function AdminDashboardLayout({
   children,
 }: {
   children: React.ReactNode;

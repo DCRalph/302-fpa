@@ -43,7 +43,6 @@ export function AppSideBar() {
     const pathname = usePathname();
     const {
         state,
-        // toggleSidebar,
         isMobile,
         openMobile,
         setOpenMobile,
@@ -69,7 +68,7 @@ export function AppSideBar() {
 
             <Sidebar collapsible="icon" className="fixed top-0 left-0">
                 <SidebarHeader>
-                    <div className={`transition-all duration-300 ${isCollapsed ? "" : "p-2 "} text-lg font-bold flex items-center gap-2`}>
+                    <div className={`transition-all duration-300 ${isCollapsed ? "" : "p-1 "} text-lg font-bold flex items-center gap-2`}>
                         <div className={`grid ${isCollapsed ? "size-8" : "size-11"} place-items-center ${isCollapsed ? "rounded-lg" : "rounded-2xl"} bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75% to text-primary-foreground shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
                             <GraduationCap size={isCollapsed ? 16 : 24} className="drop-shadow-sm" />
                         </div>
@@ -86,7 +85,7 @@ export function AppSideBar() {
                         <SidebarMenu>
                             {menuItems.map((item) => (
                                 <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild>
+                                    <SidebarMenuButton asChild isActive = {isActive(item.url)}>
                                         <Link href={item.url}>
                                             <item.icon />
                                             <span>{item.title}</span>

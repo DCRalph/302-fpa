@@ -3,7 +3,7 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "./ui/dropdown-menu";
 
 import { cn } from "~/lib/utils";
-import { ChevronUp, Home, User, Settings, Laptop, LogOut, Sun, Moon, Computer, Check, Menu } from "lucide-react";
+import { ChevronUp, Home, User, Settings, Laptop, LogOut, Sun, Moon, Computer, Check, Menu, Shield } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "~/lib/auth";
@@ -15,7 +15,7 @@ import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { cabin } from "./fonts";
 
-export function MemberHeader() {
+export function DashboardHeader() {
   const { dbUser, stackUser } = useAuth();
   const { state, isMobile, toggleSidebar } = useSidebar();
   const [isCollapsed, setIsCollapsed] = useState(state === "collapsed");
@@ -82,15 +82,22 @@ export function MemberHeader() {
               align={isCollapsed ? "start" : "end"}
               className="w-56"
             >
-              <DropdownMenuLabel>
-                <div className="flex-1 overflow-hidden">
-                  <p className="truncate text-sm font-medium text-foreground">
-                    {dbUser?.name}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {dbUser?.email}
-                  </p>
-                  <p className="text-xs text-blue-500">{dbUser?.role}</p>
+              <DropdownMenuLabel className="flex items-center gap-3 py-3">
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-sm font-medium text-foreground truncate">
+                    {dbUser?.name ?? dbUser?.email ?? "Signed in"}
+                  </span>
+                  {dbUser?.email && (
+                    <span className="text-xs text-muted-foreground truncate">
+                      {dbUser.email}
+                    </span>
+                  )}
+                  {dbUser?.role === "ADMIN" && (
+                    <span className="text-xs text-primary font-medium flex items-center gap-1 mt-1">
+                      <Shield className="size-3" />
+                      Admin
+                    </span>
+                  )}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
