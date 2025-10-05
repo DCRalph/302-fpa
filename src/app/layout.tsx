@@ -5,7 +5,9 @@ import { stackServerApp } from "../stack";
 import { type Metadata } from "next";
 import { nunito } from "~/components/fonts";
 import { ThemeProvider } from 'next-themes'
+
 import { Toaster } from "~/components/ui/sonner"
+
 import NextTopLoader from "nextjs-toploader";
 
 import { TRPCReactProvider } from "~/trpc/react";

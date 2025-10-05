@@ -64,7 +64,7 @@ export async function NavBar() {
               <span>Features</span>
             </Link>
 
-            <Separator orientation="vertical" className="" />
+            <Separator orientation="vertical" className="py-0.5" />
           </div>
 
           {/* Desktop Auth Section */}
