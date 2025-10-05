@@ -17,8 +17,8 @@ export default function RegisterPage() {
 
       <div className="relative z-10"></div>
       <NavBar />
-
-      <div className="container mx-auto flex h-[calc(100vh-81px)] flex-col items-center justify-center ">
+      
+      <div className="container mx-auto flex h-[calc(100vh-81px)] flex-col items-center justify-center px-4 py-20">
         <div className="bg-background w-full max-w-md rounded-lg p-8 shadow-lg z-20">
           <SignUp />
         </div>
