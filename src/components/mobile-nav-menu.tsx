@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, LogIn, UserPlus, User, Cog, Shield, LayoutDashboard, Settings2, LogOut, Home, Star, Info, Lightbulb, Zap, Sun, Moon, Computer, Check } from "lucide-react";
-import Image from "next/image";
+import { Menu, LogIn, UserPlus, Cog, Shield, LayoutDashboard, Settings2, LogOut, Home, Star, Info, Lightbulb, Zap, Sun, Moon, Computer, Check } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 

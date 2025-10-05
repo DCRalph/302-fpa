@@ -1,16 +1,13 @@
 import Link from "next/link";
-import { GraduationCap, Home, Star, Info, Lightbulb, Zap } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 
 import { Separator } from "./ui/separator";
 
-import { ThemeToggle } from "~/components/theme-toggle";
 import { AuthButtons } from "~/components/auth-buttons";
-import { ServerAuth } from "~/lib/auth-server";
 import { MobileNavMenu } from "./mobile-nav-menu";
 
 export async function NavBar() {
-  const { dbUser } = await ServerAuth();
-  const isAdmin = dbUser?.role === "ADMIN";
+
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-sm">

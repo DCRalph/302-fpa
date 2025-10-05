@@ -3,7 +3,7 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "./ui/dropdown-menu";
 
 import { cn } from "~/lib/utils";
-import { ChevronUp, Home, LogOut, Sun, Moon, Computer, Check, Menu, LayoutDashboard, Settings2, Cog } from "lucide-react";
+import { ChevronUp, Home, LogOut, Sun, Moon, Computer, Check, Shield, LayoutDashboard, Settings2, Cog } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "~/lib/auth";
@@ -15,9 +15,9 @@ import { setThemeAndPersist, type ThemeSelection } from "~/lib/theme";
 import { Separator } from "./ui/separator";
 import { cabin } from "./fonts";
 
-export function MemberHeader() {
+export function DashboardHeader() {
   const { dbUser, stackUser, isLoading: authLoading } = useAuth();
-  const { state, isMobile, toggleSidebar } = useSidebar();
+  const { isMobile } = useSidebar();
   // const [isCollapsed, setIsCollapsed] = useState(state === "collapsed");
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);

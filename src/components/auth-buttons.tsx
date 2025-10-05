@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { ServerAuth } from "~/lib/auth-server";
-import { UserButton } from "./user-button";
+// import { UserButton } from "./user-button";
 
 export async function AuthButtons() {
   const { dbUser } = await ServerAuth();

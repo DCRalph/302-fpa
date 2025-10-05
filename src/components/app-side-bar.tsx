@@ -1,6 +1,6 @@
 "use client";
 
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator } from "./ui/sidebar";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar";
 import { LayoutDashboard, Calendar, BookOpen, FileText, User, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "~/lib/auth";
@@ -39,13 +39,13 @@ const menuItems = [
 ]
 
 export function AppSideBar() {
-    const { dbUser, stackUser } = useAuth();
+    const { dbUser } = useAuth();
     const pathname = usePathname();
     const {
         state,
-        isMobile,
-        openMobile,
-        setOpenMobile,
+        // isMobile,
+        // openMobile,
+        // setOpenMobile,
     } = useSidebar();
     const [isCollapsed, setIsCollapsed] = useState(state === "collapsed");
 
@@ -53,9 +53,6 @@ export function AppSideBar() {
         setIsCollapsed(state === "collapsed");
     }, [state]);
 
-    const { theme, setTheme } = useTheme();
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => setMounted(true), []);
 
     if (!dbUser) return null;
 
