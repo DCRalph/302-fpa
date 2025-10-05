@@ -1,6 +1,12 @@
+"use client"
+
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar";
 import { LayoutDashboard, Calendar, BookOpen, FileText, User, GraduationCap } from "lucide-react";
 import Link from "next/link";
+
+import { useSidebar } from "./ui/sidebar";
+import { useEffect, useState } from "react";
+import { set } from "zod";
 
 // Menu items
 
@@ -33,17 +39,24 @@ const menuItems = [
 ]
 
 export function AppSideBar() {
+    const { state } = useSidebar();
+    const [ isCollapsed, setIsCollapsed ] = useState(state === "collapsed");
+
+    useEffect(() => {
+        setIsCollapsed(state === "collapsed");
+    }, [state]);
+
     return (
-        <Sidebar>
+        <Sidebar collapsible="icon">
             <SidebarHeader>
-                <div className="p-2 text-lg font-bold flex items-center gap-2">
-                    <div className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75% to text-primary-foreground shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                        <GraduationCap size={24} className="drop-shadow-sm" />
+                <div className={`transition-all duration-300 ${isCollapsed ? "" : "p-2 "} text-lg font-bold flex items-center gap-2`}>
+                    <div className={`grid ${isCollapsed ? "size-8" : "size-11"} place-items-center ${isCollapsed ? "rounded-lg" : "rounded-2xl"} bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75% to text-primary-foreground shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
+                        <GraduationCap size={isCollapsed ? 16 : 24} className="drop-shadow-sm" />
                     </div>
-                    <div>
+                    {!isCollapsed && <div>
                         <p>FPA Conference</p>
                         <p className="text-sm text-muted-foreground font-medium">{new Date().getFullYear()}</p>
-                    </div>
+                    </div>}
                 </div>
             </SidebarHeader>
             <SidebarGroup>
