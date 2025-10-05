@@ -6,10 +6,8 @@ import Link from "next/link";
 
 import { useSidebar } from "./ui/sidebar";
 import { useEffect, useState } from "react";
-import { set } from "zod";
 
 // Menu items
-
 const menuItems = [
     {
         title: "Dashboard",
@@ -65,7 +63,7 @@ export function AppSideBar() {
                     <SidebarMenu>
                         {menuItems.map((item) => (
                             <SidebarMenuItem key={item.title}>
-                                <SidebarMenuButton asChild>
+                                <SidebarMenuButton asChild isActive={window.location.pathname === item.url}>
                                     <Link href={item.url}>
                                         <item.icon />
                                         <span>{item.title}</span>
