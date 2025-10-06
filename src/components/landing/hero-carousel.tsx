@@ -5,17 +5,32 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
+  type CarouselApi,
 } from "~/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import { useEffect, useState } from "react";
+import { Button } from "../ui/button";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
-const autoplay = Autoplay({ delay: 8000 });
-const images = ["/images/hero-img.webp", "/images/hero-img2.webp"];
+export const autoplay = Autoplay({ delay: 8000 });
 
-export function HeroCarousel() {
+interface HeroCarouselProps {
+  images: string[];
+  onApiReady?: (api: CarouselApi) => void;
+}
+
+export function HeroCarousel({ images, onApiReady }: HeroCarouselProps) {
+  const [api, setApi] = useState<CarouselApi | null>(null);
+
+
+  useEffect(() => {
+    if (api && onApiReady) {
+      onApiReady(api);
+    }
+  }, [api, onApiReady]);
+
   return (
-    <Carousel className="relative w-full" plugins={[autoplay]} opts={{ loop: true }}>
+    <Carousel className="relative w-full" plugins={[autoplay]} opts={{ loop: true }} setApi={setApi}>
       <CarouselContent>
         {images.map((src, i) => (
           <CarouselItem key={i} className="relative h-[526px]">
@@ -29,8 +44,19 @@ export function HeroCarousel() {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="top-1/2 left-4 -translate-y-1/2 md:flex hidden" />
-      <CarouselNext className="top-1/2 right-4 -translate-y-1/2 md:flex hidden" />
+
+      <Button className="absolute size-8 rounded-full top-1/2 left-4 -translate-y-1/2 md:flex hidden" variant="outline" size="icon" onClick={() => {
+        api?.scrollPrev();
+        api?.plugins().autoplay.reset();
+      }}>
+        <ArrowLeft />
+      </Button>
+      <Button className="absolute size-8 rounded-full top-1/2 right-4 -translate-y-1/2 md:flex hidden" variant="outline" size="icon" onClick={() => {
+        api?.scrollNext();
+        api?.plugins().autoplay.reset();
+      }}>
+        <ArrowRight />
+      </Button>
     </Carousel>
   );
 }

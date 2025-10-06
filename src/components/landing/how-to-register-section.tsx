@@ -12,7 +12,7 @@ export function HowToRegisterSection() {
           {[
             {
               step: 1,
-              stepColour: "#2C4360",
+              stepColour: "bg-[#2C4360]",
               icon: UserPlus,
               title: "Sign In or Create an Account",
               body:
@@ -20,7 +20,7 @@ export function HowToRegisterSection() {
             },
             {
               step: 2,
-              stepColour: "#79AAD5",
+              stepColour: "bg-[#496d8c]",
               icon: FileText,
               title: "Access the Conference Registration Form",
               body:
@@ -28,7 +28,7 @@ export function HowToRegisterSection() {
             },
             {
               step: 3,
-              stepColour: "#E2D1AE",
+              stepColour: "bg-[#94815a]",
               icon: CreditCard,
               title: "Confirm and Submit Registration",
               body:
@@ -36,7 +36,7 @@ export function HowToRegisterSection() {
             },
           ].map((card, idx) => (
             <div key={idx} className="mt-12 rounded-xl border bg-card p-6 text-center shadow-sm">
-              <div className={`mx-auto -mt-16 mb-2 grid size-20 place-items-center rounded-full bg-[${card.stepColour}] text-primary-foreground`} style={{ backgroundColor: card.stepColour }}>
+              <div className={`mx-auto -mt-16 mb-2 grid size-20 place-items-center rounded-full ${card.stepColour} text-primary-foreground`}>
                 <span className="text-4xl font-semibold">{card.step}</span>
               </div>
               <card.icon className="mx-auto mb-8 mt-8 h-10 w-10 text-[#323A55] dark:text-gray-300" />
