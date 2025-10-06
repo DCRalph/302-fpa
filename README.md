@@ -295,11 +295,10 @@ PORT=3001 bun run dev
 
 [Add your license here]
 
-## Support
-
-For support, email [your-email@example.com] or open an issue in the repository.
 
 ## Acknowledgments
 
 - Built with [Create T3 App](https://create.t3.gg/)
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
+
+.
