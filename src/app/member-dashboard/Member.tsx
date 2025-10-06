@@ -131,10 +131,10 @@ export default function MemberDashboardPage() {
               <CardContent className="space-y-4">
                 <div className="py-6 text-center">
                   <CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-500" />
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold text-foreground">
                     {`You're all set!`}
                   </h3>
-                  <p className="mb-4 text-gray-600">
+                  <p className="mb-4 text-muted-foreground">
                     {`You're registered for the 133rd Fiji Principals Association
                     Conference`}
                   </p>
