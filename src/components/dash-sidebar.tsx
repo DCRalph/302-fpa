@@ -13,61 +13,37 @@ import {
 import {
   LayoutDashboard,
   Calendar,
-  CalendarCog,
   BookOpen,
   FileText,
   User,
   GraduationCap,
   Users,
+  CalendarCog,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "~/lib/auth";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "./ui/sidebar";
 import { useState, useEffect } from "react";
+import { Skeleton } from "./ui/skeleton";
 
-// Menu items
-const menuItems = [
-  // "USER" items
+// Member-specific menu items
+const memberMenuItems = [
   {
     title: "Dashboard",
     url: "/member-dashboard",
     icon: LayoutDashboard,
-    role: "USER",
   },
   {
     title: "Conference Registration",
     url: "#",
     icon: Calendar,
-    role: "USER",
   },
-
   {
     title: "My Files",
     url: "#",
     icon: FileText,
-    role: "USER",
   },
-  // "ADMIN" items
-  {
-    title: "Admin Dashboard",
-    url: "/admin-dashboard",
-    icon: LayoutDashboard,
-    role: "ADMIN",
-  },
-  {
-    title: "Manage Members",
-    url: "#",
-    icon: Users,
-    role: "ADMIN",
-  },
-  {
-    title: "Manage Conferences",
-    url: "#",
-    icon: CalendarCog,
-    role: "ADMIN",
-  },
-  // Common items
   {
     title: "Community Blog",
     url: "#",
@@ -80,27 +56,59 @@ const menuItems = [
   },
 ];
 
-export function AppSideBar() {
+const adminMenuItems = [
+  {
+    title: "Admin Dashboard",
+    url: "/admin-dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Manage Members",
+    url: "#",
+    icon: Users,
+  },
+  {
+    title: "Manage Conferences",
+    url: "#",
+    icon: CalendarCog,
+  },
+  {
+    title: "Community Blog",
+    url: "#",
+    icon: BookOpen,
+  },
+  {
+    title: "My Profile",
+    url: "#",
+    icon: User,
+  },
+];
+
+export function DashboardSideBar() {
   const { dbUser } = useAuth();
   const pathname = usePathname();
-  const {
-    state,
-    // isMobile,
-    // openMobile,
-    // setOpenMobile,
-  } = useSidebar();
+  const { state } = useSidebar();
   const [isCollapsed, setIsCollapsed] = useState(state === "collapsed");
 
   useEffect(() => {
     setIsCollapsed(state === "collapsed");
   }, [state]);
 
-  if (!dbUser) return null;
-
   const isActive = (path: string) => {
-    if (path === "/admin") return pathname === "/admin";
+    if (path === "/member-dashboard") return pathname === "/member-dashboard";
     return pathname?.startsWith(path) ?? false;
   };
+
+  const [menuItems, setMenuItems] = useState(memberMenuItems);
+
+  useEffect(() => {
+    if (pathname.startsWith("/admin-dashboard")) {
+      setMenuItems(adminMenuItems);
+    } else {
+      setMenuItems(memberMenuItems);
+    }
+  }, [pathname]);
+
   return (
     <div className="relative h-screen">
       <Sidebar collapsible="icon" className="fixed top-0 left-0">
@@ -129,24 +137,37 @@ export function AppSideBar() {
         <SidebarContent className="no-scrollbar overflow-x-hidden overflow-y-scroll!">
           <SidebarGroup>
             <SidebarGroupLabel>Application</SidebarGroupLabel>
-            {/* <SidebarContent> */}
             <SidebarMenu>
-              {menuItems.map(
-                (item) =>
-                  (item.role === dbUser.role || !item.role) && (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive(item.url)}
-                        tooltip={item.title}
-                      >
-                        <Link href={item.url}>
-                          <item.icon />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
+              {!dbUser ? (
+                // Loading state
+                <>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <SidebarMenuItem key={i}>
+                      <div className="flex items-center gap-2 px-2 py-2">
+                        <Skeleton className="size-4 rounded" />
+                        {!isCollapsed && (
+                          <Skeleton className="h-4 w-32 rounded" />
+                        )}
+                      </div>
                     </SidebarMenuItem>
-                  ),
+                  ))}
+                </>
+              ) : (
+                // Loaded state
+                menuItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive(item.url)}
+                      tooltip={item.title}
+                    >
+                      <Link href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))
               )}
             </SidebarMenu>
           </SidebarGroup>
