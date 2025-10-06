@@ -1,4 +1,3 @@
-
 import { NavBar } from "~/components/nav-bar";
 import { SignUp } from "@stackframe/stack";
 
