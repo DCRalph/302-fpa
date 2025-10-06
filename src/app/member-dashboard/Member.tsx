@@ -125,29 +125,31 @@ export default function MemberDashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <span className="text-2xl">Conference Registration Status</span>
+                  <span className="text-2xl">
+                    Conference Registration Status
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="py-6 text-center">
-                  <CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-500" />
-                  <h3 className="text-lg font-semibold text-foreground">
+                  <CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-700" />
+                  <h3 className="text-foreground text-lg font-semibold">
                     {`You're all set!`}
                   </h3>
-                  <p className="mb-4 text-muted-foreground">
+                  <p className="text-muted-foreground mb-4">
                     {`You're registered for the 133rd Fiji Principals Association
                     Conference`}
                   </p>
-                  <div className="space-y-2 text-sm text-foreground">
+                  <div className="text-foreground space-y-2 text-sm">
                     <p>
                       <strong>Date:</strong> 17th - 19th September 2025
                     </p>
                     <p>
                       <strong>Registration ID:</strong> FPA2025-SP-001
                     </p>
-                    <p className="flex justify-center items-center gap-2">
+                    <p className="flex items-center justify-center gap-2">
                       <strong>Payment Status:</strong>{" "}
-                      <Badge className="text-white bg-[#198754] text-sm ml-1">
+                      <Badge className="ml-1 bg-[#198754] text-sm text-white">
                         Paid
                       </Badge>
                     </p>
@@ -175,12 +177,17 @@ export default function MemberDashboardPage() {
                 <div className="space-y-4">
                   {recentActivity.map((activity, index) => (
                     <div key={index} className="flex items-start space-x-3">
-                      <activity.icon className="w-5 flex-shrink-0 text-primary" size={24} />
+                      <activity.icon
+                        className="text-primary w-5 flex-shrink-0"
+                        size={24}
+                      />
                       <div className="min-w-0 flex-1">
                         <p className="text-md text-foreground font-medium">
                           {activity.title}
                         </p>
-                        <p className="text-sm text-muted-foreground">{activity.time}</p>
+                        <p className="text-muted-foreground text-sm">
+                          {activity.time}
+                        </p>
                       </div>
                     </div>
                   ))}

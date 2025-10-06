@@ -1,35 +1,65 @@
-"use client";
-
-import { useAuth } from "~/lib/auth";
-import { redirect } from "next/navigation";
+// import { useAuth } from "~/lib/auth";
+// import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import {
   Users,
-  UserCheck,
-  School2,
   DollarSign,
   CheckCircle,
   CreditCard,
   UserPlus,
 } from "lucide-react";
 import { Separator } from "@radix-ui/react-separator";
-import { Badge } from "~/components/ui/badge";
+import { DataTable } from "./data-table";
 
-export default function AdminDashboardPage() {
-  const { stackUser, dbUser, isLoading } = useAuth();
+import { columns, type RecentConferenceRegistration } from "./columns";
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    );
-  }
 
-  if (!stackUser || !dbUser) {
-    redirect("/signin");
-  }
+async function getData(): Promise<RecentConferenceRegistration[]> {
+  // Temporary data
+  return [
+    {
+      id: "1",
+      name: "John Doe",
+      date: "17/05/2025",
+      status: "Paid",
+      amountPaid: 250,
+      amountDue: 0,
+    },
+    {
+      id: "2",
+      name: "Bob Ross",
+      date: "21/07/2025",
+      status: "Pending",
+      amountPaid: 50,
+      amountDue: 150,
+    },
+    {
+      id: "3",
+      name: "Stephen Prosser",
+      date: "26/08/2025",
+      status: "Pending",
+      amountPaid: 150,
+      amountDue: 50,
+    },
+  ];
+}
+
+export default async function AdminDashboardPage() {
+  // const { stackUser, dbUser, isLoading } = useAuth();
+  const data = await getData();
+
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex items-center justify-center">
+  //       <p>Loading...</p>
+  //     </div>
+  //   );
+  // }
+
+  // if (!stackUser || !dbUser) {
+  //   redirect("/signin");
+  // }
 
   const memberStats = [
     {
@@ -109,19 +139,16 @@ export default function AdminDashboardPage() {
             {/* Upcoming Conference */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2 mx-auto">
-                  <span className="text-2xl">
-                    Upcoming Conference
-                  </span>
+                <CardTitle className="mx-auto flex items-center space-x-2">
+                  <span className="text-2xl">Upcoming Conference</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="py-6 text-center">
                   <h3 className="text-foreground text-2xl">
-                    133rd Fiji Principals Association
-                    Conference
+                    133rd Fiji Principals Association Conference
                   </h3>
-                  <div className="text-foreground space-y-2 pt-6 text-md">
+                  <div className="text-foreground text-md space-y-2 pt-6">
                     <p>
                       <strong>Date:</strong> 17th - 19th September 2025
                     </p>
@@ -184,9 +211,10 @@ export default function AdminDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <span className="text-muted-foreground">
-                    No recent registrations
-                  </span>
+                  <DataTable
+                    columns={columns}
+                    data={data}
+                  />
                 </div>
               </CardContent>
             </Card>
