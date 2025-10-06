@@ -92,8 +92,8 @@ export default function MemberDashboardPage() {
             <h2 className="text-foreground mb-1 text-2xl font-bold">
               Welcome back, Stephen Prosser!
             </h2>
-            <p className="text-muted-foreground text-md">
-              Here's what's happening with your conference registration.
+            <p className="text-muted-foreground">
+              {`Here's what's happening with your conference registration.`}
             </p>
           </div>
 
@@ -130,13 +130,13 @@ export default function MemberDashboardPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="py-6 text-center">
-                  <CheckCircle className="mx-auto mb-4 h-12 w-12 text-[#198754]" />
-                  <h3 className="text-lg font-semibold text-foreground">
-                    You're all set!
+                  <CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-500" />
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {`You're all set!`}
                   </h3>
-                  <p className="mb-4 mt-2 text-muted-foreground">
-                    You're registered for the 133rd Fiji Principals Association
-                    Conference
+                  <p className="mb-4 text-gray-600">
+                    {`You're registered for the 133rd Fiji Principals Association
+                    Conference`}
                   </p>
                   <div className="space-y-2 text-sm text-foreground">
                     <p>
