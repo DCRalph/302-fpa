@@ -30,8 +30,8 @@ function AuthProviderInner({ children }: AuthProviderProps) {
   const stackUser = data?.data?.stackUser ?? null;
   const dbUser = data?.data?.dbUser ?? null;
 
-  const isLoading = !stackUser || data.isLoading;
-  const isAuthenticated = !!stackUser && !!dbUser;
+  const isLoading = data.isLoading;
+  const isAuthenticated = dbUser !== null;
   const error = data.error ?? null;
 
   return (

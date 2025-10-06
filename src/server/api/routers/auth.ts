@@ -4,7 +4,7 @@ import { db } from "~/server/db";
 
 export const authRouter = createTRPCRouter({
   me: publicProcedure.query(async () => {
-    const stackUser = await stackServerApp.getUser()
+    const stackUser = await stackServerApp.getUser();
 
     // console.log("user", user);
 
