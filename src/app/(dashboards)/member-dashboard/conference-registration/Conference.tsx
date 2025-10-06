@@ -10,6 +10,8 @@ import { Button } from "~/components/ui/button";
 import { HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { Separator } from "~/components/ui/separator";
+import { Tooltip } from "~/components/ui/tooltip";
+import { TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
 
 export default function ConferenceRegistration() {
     const [formData, setFormData] = useState({
@@ -188,13 +190,15 @@ export default function ConferenceRegistration() {
                                         value={formData.day2ConferenceDietary}
                                         onValueChange={(value) => handleInputChange("day2ConferenceDietary", value)}
                                     >
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="veg" id="day2-conf-veg" />
-                                            <Label htmlFor="day2-conf-veg" className="text-sm">Veg</Label>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="non-veg" id="day2-conf-non-veg" />
-                                            <Label htmlFor="day2-conf-non-veg" className="text-sm">Non-veg</Label>
+                                        <div className="flex items-center space-x-4">
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="veg" id="day2-conf-veg" />
+                                                <Label htmlFor="day2-conf-veg" className="text-sm">Veg</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="non-veg" id="day2-conf-non-veg" />
+                                                <Label htmlFor="day2-conf-non-veg" className="text-sm">Non-veg</Label>
+                                            </div>
                                         </div>
                                     </RadioGroup>
                                 </div>
@@ -205,14 +209,17 @@ export default function ConferenceRegistration() {
                                         value={formData.day2ClosingDietary}
                                         onValueChange={(value) => handleInputChange("day2ClosingDietary", value)}
                                     >
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="veg" id="day2-closing-veg" />
-                                            <Label htmlFor="day2-closing-veg" className="text-sm">Veg</Label>
+                                        <div className="flex items-center space-x-4">
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="veg" id="day2-closing-veg" />
+                                                <Label htmlFor="day2-closing-veg" className="text-sm">Veg</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="non-veg" id="day2-closing-non-veg" />
+                                                <Label htmlFor="day2-closing-non-veg" className="text-sm">Non-veg</Label>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="non-veg" id="day2-closing-non-veg" />
-                                            <Label htmlFor="day2-closing-non-veg" className="text-sm">Non-veg</Label>
-                                        </div>
+
                                     </RadioGroup>
                                 </div>
                             </CardContent>
@@ -221,9 +228,18 @@ export default function ConferenceRegistration() {
                         {/* Remits (Optional) */}
                         <Card>
                             <CardHeader>
-                                <CardTitle className="flex items-center space-x-2">
+                                <CardTitle className="flex items-center space-x-4 text-2xl font-bold">
                                     <span>Remits (Optional)</span>
-                                    <HelpCircle className="w-4 h-4 text-gray-400" />
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="ghost" className="p-0 !border-0 !outline-0" asChild>
+                                                <HelpCircle className="text-gray-400" size={24} />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>A formal proposal, suggestion, or recommendation submitted by a member for consideration at the conference.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">

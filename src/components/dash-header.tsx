@@ -13,6 +13,7 @@ const pageNamesMap = {
   "/admin-dashboard/payments": "Payments",
 
   "/member-dashboard": "Dashboard",
+  "/member-dashboard/conference-registration": "Conference Registration",
   "/member-dashboard/profile": "Profile",
 }
 

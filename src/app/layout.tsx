@@ -13,6 +13,7 @@ import NextTopLoader from "nextjs-toploader";
 import { TRPCReactProvider } from "~/trpc/react";
 import { EnsureDbUser } from "~/lib/ensureDbUser";
 import { AuthProvider } from "~/lib/auth";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 
 export const metadata: Metadata = {
   title: "FPA Conference Registration",
@@ -38,9 +39,11 @@ export default function RootLayout({
               <TRPCReactProvider>
                 <EnsureDbUser />
                 <AuthProvider>
-                  <NextTopLoader showSpinner={false}  />
+                  <NextTopLoader showSpinner={false} />
                   <Toaster position="top-right" richColors />
-                  {children}
+                  <TooltipProvider>
+                    {children}
+                  </TooltipProvider>
                 </AuthProvider>
               </TRPCReactProvider>
             </ThemeProvider>
