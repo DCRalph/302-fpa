@@ -38,7 +38,7 @@ export default function RootLayout({
               <TRPCReactProvider>
                 <EnsureDbUser />
                 <AuthProvider>
-                  <NextTopLoader />
+                  <NextTopLoader showSpinner={false}  />
                   <Toaster position="top-right" richColors />
                   {children}
                 </AuthProvider>

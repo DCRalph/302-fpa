@@ -1,6 +1,6 @@
 import { LayoutWithSideBarHeader } from "~/components/layout-with-sideBar-header";
-import { AppSideBar } from "~/components/app-side-bar";
-import { DashboardHeader } from "~/components/dashboard-header";
+import { DashboardSideBar } from "~/components/dash-sidebar";
+import { DashboardHeader } from "~/components/dash-header";
 
 export default function MemberDashboardLayout({
   children,
@@ -8,7 +8,7 @@ export default function MemberDashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <LayoutWithSideBarHeader sidebar={<AppSideBar />} header={<DashboardHeader />}  >
+    <LayoutWithSideBarHeader sidebar={<DashboardSideBar />} header={<DashboardHeader />}  >
       {children}
     </LayoutWithSideBarHeader>
   );

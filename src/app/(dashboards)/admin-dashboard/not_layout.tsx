@@ -1,6 +1,6 @@
 import { LayoutWithSideBarHeader } from "~/components/layout-with-sideBar-header";
-import { AppSideBar } from "~/components/app-side-bar";
-import { DashboardHeader } from "~/components/dashboard-header";
+import { AdminSideBar } from "~/components/admin/admin-sidebar";
+import { DashboardHeader } from "~/components/dash-header";
 
 export default function AdminDashboardLayout({
   children,
@@ -8,7 +8,7 @@ export default function AdminDashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <LayoutWithSideBarHeader sidebar={<AppSideBar />} header={<DashboardHeader />} >
+    <LayoutWithSideBarHeader sidebar={<AdminSideBar />} header={<DashboardHeader />} >
       {children}
     </LayoutWithSideBarHeader>
   );
