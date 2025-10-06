@@ -28,17 +28,17 @@ export const columns: ColumnDef<RecentConferenceRegistration>[] = [
     accessorKey: "amountPaid",
     header: "Amount Paid",
     cell: ({ row }) => {
-        const value = row.getValue("amountPaid") as number;
-        return `$${value.toFixed(2)}`;
+      const value = row.getValue("amountPaid");
+      return `$${(value as number)?.toFixed(2)}`;
     }
-    
+
   },
   {
     accessorKey: "amountDue",
     header: "Amount Due",
     cell: ({ row }) => {
-        const value = row.getValue("amountPaid") as number;
-        return `$${value.toFixed(2)}`;
+      const value = row.getValue("amountDue");
+      return `$${(value as number)?.toFixed(2)}`;
     }
   },
 ];
