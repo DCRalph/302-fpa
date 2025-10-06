@@ -1,6 +1,8 @@
 import { NavBar } from "~/components/nav-bar";
 import { SignUp } from "@stackframe/stack";
 
+export const dynamic = 'force-dynamic';
+
 export default function RegisterPage() {
   return (
     <main

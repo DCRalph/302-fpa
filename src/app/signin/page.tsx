@@ -2,6 +2,8 @@
 import { NavBar } from "~/components/nav-bar";
 import { SignIn } from "@stackframe/stack";
 
+export const dynamic = 'force-dynamic';
+
 export default function LoginPage() {
   return (
     <main

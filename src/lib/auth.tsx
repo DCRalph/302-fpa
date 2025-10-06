@@ -2,17 +2,17 @@
 
 import { createContext, useContext, type ReactNode, Suspense } from "react";
 import dynamic from "next/dynamic";
-import { useUser } from "@stackframe/stack";
+import { type useUser } from "@stackframe/stack";
 import { api } from "~/trpc/react";
 import type { RouterOutputs } from "~/trpc/react";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import type { AppRouter } from "~/server/api/root";
 
-
+type AuthMeOutput = NonNullable<RouterOutputs["auth"]["me"]>;
 
 interface AuthContextValue {
   stackUser: ReturnType<typeof useUser>;
-  dbUser: RouterOutputs["auth"]["me"];
+  dbUser: AuthMeOutput["dbUser"] | null;
   error: TRPCClientErrorLike<AppRouter> | null;
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -25,24 +25,20 @@ interface AuthProviderProps {
 }
 
 function AuthProviderInner({ children }: AuthProviderProps) {
-  const stackUser = useUser();
-  const dbUser = api.auth.me.useQuery(
-    undefined,
-    {
-      enabled: !!stackUser,
-      staleTime: 1000 * 60 * 5,
-    }
-  );
+  const data = api.auth.me.useQuery();
 
-  const isLoading = !stackUser || dbUser.isLoading;
-  const isAuthenticated = !!stackUser && !!dbUser.data;
-  const error = dbUser.error ?? null;
+  const stackUser = data?.data?.stackUser ?? null;
+  const dbUser = data?.data?.dbUser ?? null;
+
+  const isLoading = !stackUser || data.isLoading;
+  const isAuthenticated = !!stackUser && !!dbUser;
+  const error = data.error ?? null;
 
   return (
     <AuthContext.Provider
       value={{
         stackUser,
-        dbUser: dbUser.data ?? null,
+        dbUser: dbUser ?? null,
         error,
         isLoading,
         isAuthenticated,

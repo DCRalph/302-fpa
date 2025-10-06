@@ -1,0 +1,212 @@
+"use client";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+} from "./ui/dropdown-menu";
+import { cn } from "~/lib/utils";
+import {
+  ChevronUp,
+  ChevronDown,
+  Home,
+  LogOut,
+  Sun,
+  Moon,
+  Computer,
+  Check,
+  Shield,
+  LayoutDashboard,
+  Settings2,
+  Cog,
+} from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { useAuth } from "~/lib/auth";
+import { useSidebar } from "./ui/sidebar";
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
+import { setThemeAndPersist, type ThemeSelection } from "~/lib/theme";
+
+export function UserDropdown() {
+  const { dbUser, stackUser, isLoading: authLoading } = useAuth();
+  const { isMobile } = useSidebar();
+  const [open, setOpen] = useState(false);
+
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const setThemeAndPersistLocal = async (value: ThemeSelection) => {
+    await setThemeAndPersist(value, { user: stackUser, setTheme });
+  };
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <div
+          className={cn(
+            `flex items-center gap-3 p-2 cursor-pointer rounded-md transition-colors duration-200 hover:bg-sidebar-accent justify-center`,
+          )}
+        >
+          {dbUser?.image && (
+            <Image
+              src={dbUser.image}
+              alt=""
+              className="h-8 w-8 rounded-full"
+              width={32}
+              height={32}
+            />
+          )}
+          {!isMobile && (
+            <div className="flex-1 overflow-hidden">
+              {authLoading ? (
+                <p className="truncate text-sm font-medium text-foreground">
+                  Loading...
+                </p>
+              ) : (
+                <>
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {dbUser?.name}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {dbUser?.email}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+          {!isMobile && (
+            <>
+              {
+                open ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+            </>
+          )}
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align={"end"} className="w-56">
+        <DropdownMenuLabel className="flex items-center gap-3 py-2">
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-sm font-medium text-foreground truncate">
+              {dbUser?.name ?? dbUser?.email ?? "Signed in"}
+            </span>
+            {dbUser?.email && (
+              <span className="text-xs text-muted-foreground truncate">
+                {dbUser.email}
+              </span>
+            )}
+            {dbUser?.role === "ADMIN" && (
+              <span className="text-xs text-primary font-medium flex items-center gap-1 mt-1">
+                <Shield className="size-3" />
+                Admin
+              </span>
+            )}
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem asChild>
+          <Link href="/" className="flex w-full cursor-pointer items-center">
+            <Home className="mr-2 h-4 w-4" />
+            Home
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild>
+          <Link
+            href="/member-dashboard"
+            className="flex items-center gap-3 py-2"
+          >
+            <LayoutDashboard className="size-4 text-muted-foreground" />
+            <span>Dashboard</span>
+          </Link>
+        </DropdownMenuItem>
+
+        {dbUser?.role === "ADMIN" && (
+          <DropdownMenuItem asChild>
+            <Link
+              href="/admin-dashboard"
+              className="flex items-center gap-3 py-2"
+            >
+              <Settings2 className="size-4 text-muted-foreground" />
+              <span>Admin Dashboard</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
+
+        <DropdownMenuItem asChild>
+          <Link
+            href="/handler/account-settings"
+            className="flex items-center gap-3 py-2"
+          >
+            <Cog className="size-4 text-muted-foreground" />
+            <span>Account Settings</span>
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link
+            href="/handler/sign-out"
+            className="cursor-pointer text-red-500 hover:text-red-600"
+          >
+            <LogOut className="mr-2 h-4 w-4 text-red-500" />
+            Sign Out
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="flex items-center gap-3 py-2">
+            {mounted && (
+              <>
+                {theme === "light" && (
+                  <Sun className="size-4 text-muted-foreground" />
+                )}
+                {theme === "dark" && (
+                  <Moon className="size-4 text-muted-foreground" />
+                )}
+                {theme === "system" && (
+                  <Computer className="size-4 text-muted-foreground" />
+                )}
+              </>
+            )}
+            <span>Theme</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuItem
+              onClick={() => void setThemeAndPersistLocal("light")}
+            >
+              <Sun className="size-4 mr-2" />
+              Light
+              {theme === "light" && <Check className="ml-auto size-4" />}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => void setThemeAndPersistLocal("dark")}
+            >
+              <Moon className="size-4 mr-2" />
+              Dark
+              {theme === "dark" && <Check className="ml-auto size-4" />}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => void setThemeAndPersistLocal("system")}
+            >
+              <Computer className="size-4 mr-2" />
+              System
+              {theme === "system" && <Check className="ml-auto size-4" />}
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+

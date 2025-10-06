@@ -33,21 +33,6 @@ export function MobileNavMenu() {
         {dbUser ? (
           <>
             <DropdownMenuLabel className="flex items-center gap-3 py-3">
-              {/* <div className="flex-shrink-0">
-                {dbUser?.image ? (
-                  <Image
-                    src={dbUser.image}
-                    alt="User"
-                    width={40}
-                    height={40}
-                    className="rounded-full border-2 border-border"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                    <User className="size-4 text-muted-foreground" />
-                  </div>
-                )}
-              </div> */}
 
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="font-medium text-foreground truncate">
@@ -67,39 +52,6 @@ export function MobileNavMenu() {
               </div>
             </DropdownMenuLabel>
 
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem asChild>
-              <Link href="/member-dashboard" className="flex items-center gap-3 py-2">
-                <LayoutDashboard className="size-4 text-muted-foreground" />
-                <span>Dashboard</span>
-              </Link>
-            </DropdownMenuItem>
-
-            {dbUser?.role === "ADMIN" && (
-              <DropdownMenuItem asChild>
-                <Link href="/admin-dashboard" className="flex items-center gap-3 py-2">
-                  <Settings2 className="size-4 text-muted-foreground" />
-                  <span>Admin Dashboard</span>
-                </Link>
-              </DropdownMenuItem>
-            )}
-
-            <DropdownMenuItem asChild>
-              <Link href="/handler/account-settings" className="flex items-center gap-3 py-2">
-                <Cog className="size-4 text-muted-foreground" />
-                <span>Account Settings</span>
-              </Link>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem asChild>
-              <Link href="/handler/sign-out" className="flex items-center gap-3 py-2 text-red-500">
-                <LogOut className="size-4 text-inherit" />
-                <span>Logout</span>
-              </Link>
-            </DropdownMenuItem>
-
-            <DropdownMenuSeparator />
           </>
         ) : (
           <>
@@ -117,21 +69,40 @@ export function MobileNavMenu() {
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator />
           </>
         )}
+
+
+
+        <DropdownMenuSeparator />
 
         <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-2">
           Navigation
         </DropdownMenuLabel>
 
         <DropdownMenuItem asChild>
-          <Link href="/#home" className="flex items-center gap-3 py-2">
+          <Link href="/" className="flex items-center gap-3 py-2">
             <Home className="size-4 text-muted-foreground" />
             <span>Home</span>
           </Link>
         </DropdownMenuItem>
 
+        <DropdownMenuItem asChild>
+          <Link href="/member-dashboard" className="flex items-center gap-3 py-2">
+            <LayoutDashboard className="size-4 text-muted-foreground" />
+            <span>Dashboard</span>
+          </Link>
+        </DropdownMenuItem>
+
+        {dbUser?.role === "ADMIN" && (
+          <DropdownMenuItem asChild>
+            <Link href="/admin-dashboard" className="flex items-center gap-3 py-2">
+              <Settings2 className="size-4 text-muted-foreground" />
+              <span>Admin Dashboard</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {/* 
         <DropdownMenuItem asChild>
           <Link href="/#benefits" className="flex items-center gap-3 py-2">
             <Star className="size-4 text-muted-foreground" />
@@ -158,9 +129,30 @@ export function MobileNavMenu() {
             <Zap className="size-4 text-muted-foreground" />
             <span>Features</span>
           </Link>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
 
         <DropdownMenuSeparator />
+
+        {dbUser ? (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/handler/account-settings" className="flex items-center gap-3 py-2">
+                <Cog className="size-4 text-muted-foreground" />
+                <span>Account Settings</span>
+              </Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem asChild>
+              <Link href="/handler/sign-out" className="flex items-center gap-3 py-2 text-red-500">
+                <LogOut className="size-4 text-inherit" />
+                <span>Logout</span>
+              </Link>
+            </DropdownMenuItem>
+
+          </>
+        ) : (
+          <></>
+        )}
 
         {/* Theme Submenu */}
         <DropdownMenuSub>
@@ -192,6 +184,8 @@ export function MobileNavMenu() {
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
+
+
       </DropdownMenuContent>
     </DropdownMenu>
   );

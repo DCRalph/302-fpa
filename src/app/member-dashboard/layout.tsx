@@ -1,4 +1,4 @@
-import { SidebarProvider } from "~/components/ui/sidebar";
+import { LayoutWithSideBarHeadder } from "~/components/layout-with-sideBar-headder";
 import { AppSideBar } from "~/components/app-side-bar";
 import { DashboardHeader } from "~/components/dashboard-header";
 
@@ -8,14 +8,8 @@ export default function MemberDashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
-      <div className="bg-page-background flex min-h-screen w-full">
-        <AppSideBar />
-        <div className="flex flex-1 flex-col overflow-x-hidden">
-          <DashboardHeader />
-          <main className="">{children}</main>
-        </div>
-      </div>
-    </SidebarProvider>
+    <LayoutWithSideBarHeadder sidebar={<AppSideBar />} headder={<DashboardHeader />}  >
+      {children}
+    </LayoutWithSideBarHeadder>
   );
 }

@@ -1,27 +1,26 @@
-import { stackServerApp } from "~/stack";
 import { api } from "~/trpc/server";
 import type { RouterOutputs } from "~/trpc/react";
 
+type AuthMeOutput = NonNullable<RouterOutputs["auth"]["me"]>;
+
 export interface ServerAuthData {
-  stackUser: Awaited<ReturnType<typeof stackServerApp.getUser>>;
-  dbUser: RouterOutputs["auth"]["me"];
+  stackUser: AuthMeOutput["stackUser"] | null;
+  dbUser: AuthMeOutput["dbUser"] | null;
   isAuthenticated: boolean;
 }
 
 export async function ServerAuth(): Promise<ServerAuthData> {
   try {
-    const stackUser = await stackServerApp.getUser();
+    const data = await api.auth.me();
 
-    if (!stackUser) {
-      return {
-        stackUser: null,
-        dbUser: null,
-        isAuthenticated: false,
-      };
-    }
+    // return {
+    //   stackUser: null,
+    //   dbUser: null,
+    //   isAuthenticated: false,
+    // };
 
-
-    const dbUser = await api.auth.me();
+    const stackUser = data?.stackUser ?? null;
+    const dbUser = data?.dbUser ?? null;
 
     return {
       stackUser,
