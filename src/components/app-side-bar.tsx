@@ -37,7 +37,7 @@ const menuItems = [
   },
   {
     title: "Conference Registration",
-    url: "#",
+    url: "/member-dashboard/conference-registration",
     icon: Calendar,
     role: "USER",
   },
@@ -98,9 +98,9 @@ export function AppSideBar() {
   if (!dbUser) return null;
 
   const isActive = (path: string) => {
-    if (path === "/admin") return pathname === "/admin";
-    return pathname?.startsWith(path) ?? false;
+    return pathname === path || pathname?.startsWith(`/${path}/`);
   };
+
   return (
     <div className="relative h-screen">
       <Sidebar collapsible="icon" className="fixed top-0 left-0">
