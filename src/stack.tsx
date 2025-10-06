@@ -1,6 +1,6 @@
 import "server-only";
 
-import { StackServerApp } from "@stackframe/stack";
+import { StackClientApp, StackServerApp } from "@stackframe/stack";
 
 export const stackServerApp = new StackServerApp({
   tokenStore: "nextjs-cookie",
@@ -12,5 +12,3 @@ export const stackServerApp = new StackServerApp({
     home: "/?singedOut=true",
   },
 });
-
-
