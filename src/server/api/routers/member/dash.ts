@@ -1,34 +1,34 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
-type RegistrationStatus = {
-  state: "not_registered" | "pending" | "cancelled" | "confirmed_unpaid" | "confirmed_paid" | "confirmed_partial" | "refunded";
-  title: string;
-  description: string;
-  icon: {
-    type: string;
-    name: string;
-    props: Record<string, string | number>;
-  };
-  iconColor: string;
-  badgeVariant: "default" | "secondary" | "destructive" | "outline";
-  badgeText: string;
-  badgeBgColor?: string;
-  registrationId?: string;
-  registeredDate?: string;
-  cancelledDate?: string;
-  refundedDate?: string;
-  confirmedDate?: string;
-  conferenceDate?: string;
-  registrationType?: string;
-  amount?: string | null;
-  paymentStatus?: string;
-  paymentDate?: string;
-  showActions: boolean;
-  actions?: {
-    primary?: { text: string; href: string };
-    secondary?: { text: string; href: string };
-  };
-};
+// type RegistrationStatus = {
+//   state: "not_registered" | "pending" | "cancelled" | "confirmed_unpaid" | "confirmed_paid" | "confirmed_partial" | "refunded";
+//   title: string;
+//   description: string;
+//   icon: {
+//     type: string;
+//     name: string;
+//     props: Record<string, string | number>;
+//   };
+//   iconColor: string;
+//   badgeVariant: "default" | "secondary" | "destructive" | "outline";
+//   badgeText: string;
+//   badgeBgColor?: string;
+//   registrationId?: string;
+//   registeredDate?: string;
+//   cancelledDate?: string;
+//   refundedDate?: string;
+//   confirmedDate?: string;
+//   conferenceDate?: string;
+//   registrationType?: string;
+//   amount?: string | null;
+//   paymentStatus?: string;
+//   paymentDate?: string;
+//   showActions: boolean;
+//   actions?: {
+//     primary?: { text: string; href: string };
+//     secondary?: { text: string; href: string };
+//   };
+// };
 
 
 export const memberDashboardRouter = createTRPCRouter({
