@@ -106,7 +106,7 @@ export function AppSideBar() {
       <Sidebar collapsible="icon" className="fixed top-0 left-0">
         <SidebarHeader>
           <div
-            className={`transition-all duration-300 ${isCollapsed ? "" : "p-1"} flex items-center gap-2 text-lg font-bold`}
+            className={`transition-all duration-300 ${isCollapsed ? "pt-1" : "p-1"} flex items-center gap-2 text-lg font-bold`}
           >
             <div
               className={`grid ${isCollapsed ? "size-8" : "size-11"} place-items-center ${isCollapsed ? "rounded-lg" : "rounded-2xl"} from-gradient-blue via-gradient-purple to-gradient-red to text-primary-foreground bg-gradient-to-br from-25% via-50% to-75% shadow-lg transition-shadow duration-300 group-hover:shadow-xl`}

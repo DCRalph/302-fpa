@@ -19,7 +19,7 @@ export default function AdminDashboardPage() {
     }
 
     return (
-        <main className="bg-background text-foreground flex">
+        <main className="text-foreground flex">
 
             <div className="container px-6 pt-6">
                 <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>

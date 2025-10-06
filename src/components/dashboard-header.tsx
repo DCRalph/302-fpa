@@ -29,7 +29,7 @@ export function DashboardHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-sm w-full h-16">
+      <header className="sticky top-0 z-50 bg-sidebar/90 backdrop-blur-sm w-full h-16">
         <div className=" mx-auto flex h-16 items-center justify-between px-4 lg:px-6">
 
           <div className="flex items-center gap-3">

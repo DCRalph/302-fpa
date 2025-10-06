@@ -35,7 +35,7 @@ export async function HeroSection() {
           {titleObject?.subtitle}
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-4">
-          <Button size="lg" className="flex" asChild>
+          <Button size="lg" variant={"primary"} className="flex" asChild>
             <Link href="/signup">Register Now</Link>
           </Button>
           <Button size="lg" variant="ghost" asChild>

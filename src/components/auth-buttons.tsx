@@ -27,7 +27,7 @@ export async function AuthButtons() {
         <Button variant="outline" asChild>
           <Link href="/signin">Login</Link>
         </Button>
-        <Button asChild>
+        <Button variant="primary" asChild>
           <Link href="/signup">Register</Link>
         </Button>
       </div>
