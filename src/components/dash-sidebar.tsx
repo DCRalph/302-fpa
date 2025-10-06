@@ -36,17 +36,17 @@ const memberMenuItems = [
   },
   {
     title: "Conference Registration",
-    url: "#",
+    url: "/member-dashboard/conference-registration",
     icon: Calendar,
   },
   {
     title: "My Files",
-    url: "#",
+    url: "/member-dashboard/my-files",
     icon: FileText,
   },
   {
     title: "Community Blog",
-    url: "#",
+    url: "/member-dashboard/community-blog",
     icon: BookOpen,
   },
   {
