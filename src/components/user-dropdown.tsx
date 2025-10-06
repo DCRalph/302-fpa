@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useAuth } from "~/lib/auth";
+import { useAuth } from "~/lib/useAuth";
 import { useSidebar } from "./ui/sidebar";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";

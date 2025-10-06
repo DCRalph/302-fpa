@@ -1,10 +1,11 @@
 import { api } from "~/trpc/server";
 import type { RouterOutputs } from "~/trpc/react";
 
-type AuthMeOutput = NonNullable<RouterOutputs["auth"]["me"]>;
+type AuthMeOutput = RouterOutputs["auth"]["me"];
+type SessionUser = NonNullable<AuthMeOutput["session"]>["user"];
 
 export interface ServerAuthData {
-  stackUser: AuthMeOutput["stackUser"] | null;
+  stackUser: SessionUser | null;
   dbUser: AuthMeOutput["dbUser"] | null;
   isAuthenticated: boolean;
 }
@@ -13,19 +14,14 @@ export async function ServerAuth(): Promise<ServerAuthData> {
   try {
     const data = await api.auth.me();
 
-    // return {
-    //   stackUser: null,
-    //   dbUser: null,
-    //   isAuthenticated: false,
-    // };
-
-    const stackUser = data?.stackUser ?? null;
+    const session = data?.session ?? null;
+    const stackUser = session?.user ?? null;
     const dbUser = data?.dbUser ?? null;
 
     return {
       stackUser,
       dbUser,
-      isAuthenticated: !!stackUser && !!dbUser,
+      isAuthenticated: !!session && !!dbUser,
     };
   } catch (error) {
     console.error("Server auth error:", error);

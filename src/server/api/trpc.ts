@@ -11,7 +11,8 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
-import { stackServerApp } from "~/stack";
+import { auth } from "~/lib/useAuth";
+// import { headers } from "next/headers";
 
 /**
  * 1. CONTEXT
@@ -109,46 +110,51 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
 
 /**
  * Protected (authenticated) procedure
- * Ensures a logged-in user via Stack Auth and injects it into the context.
+ * Ensures a logged-in user via Better Auth and injects it into the context.
  */
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
-  const user = await stackServerApp.getUser();
-  if (!user) {
+  const session = await auth.api.getSession({
+    headers: ctx.headers
+  })
+
+  if (!session) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
-  const dbUser = await db.user.findUnique({
-    where: {
-      id: user.id,
-    },
+
+  const dbUser = await db.user.findFirst({
+    where: { id: session.user.id }
   });
-  if (!dbUser) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  }
+
   return next({
-    ctx: { ...ctx, user, dbUser },
+    ctx: { ...ctx, session, dbUser },
   });
 });
 
 export const protectedProcedure = publicProcedure.use(authMiddleware);
 
 const adminMiddleware = t.middleware(async ({ ctx, next }) => {
-  const user = await stackServerApp.getUser();
-  if (!user) {
+
+  const session = await auth.api.getSession({
+    headers: ctx.headers
+  })
+
+  if (!session) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
-  const dbUser = await db.user.findUnique({
-    where: {
-      id: user.id,
-    },
+
+  const dbUser = await db.user.findFirst({
+    where: { id: session.user.id }
   });
+
   if (!dbUser) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
+
   if (dbUser.role !== "ADMIN") {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({
-    ctx: { ...ctx, user, dbUser },
+    ctx: { ...ctx, session, dbUser },
   });
 });
 

@@ -5,7 +5,7 @@ import { UserButton, OAuthButtonGroup, SelectedTeamSwitcher, UserAvatar } from "
 import { api } from "~/trpc/react";
 import { ThemeToggle } from "~/components/theme-toggle";
 import { Moon } from "lucide-react";
-import { useAuth } from "~/lib/auth";
+import { useAuth } from "~/lib/useAuth";
 
 export default function Auth() {
   const [inputText, setInputText] = useState("");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "~/lib/auth";
+import { useAuth } from "~/lib/useAuth";
 import { redirect } from "next/navigation";
 import ConferenceRegistration from "./Conference";
 

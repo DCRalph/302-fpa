@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "./ui/dropdown-menu";
 import { setThemeAndPersist, type ThemeSelection } from "~/lib/theme";
-import { useAuth } from "~/lib/auth";
+import { useAuth } from "~/lib/useAuth";
 
 
 export function MobileNavMenu() {

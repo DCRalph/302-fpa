@@ -19,7 +19,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "~/lib/auth";
+import { useAuth } from "~/lib/useAuth";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../ui/sidebar";
 import { useState, useEffect } from "react";
