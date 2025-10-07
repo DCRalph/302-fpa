@@ -42,7 +42,7 @@ export const homeRouter = createTRPCRouter({
           value: JSON.stringify(defualtValue),
         },
       });
-      return null;
+      return conferenceTitle;
     }
     return conferenceTitle;
   }),

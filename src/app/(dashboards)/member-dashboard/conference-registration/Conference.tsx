@@ -16,6 +16,8 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import Link from "next/link";
+import { api } from "~/trpc/react";
+import { toast } from "sonner";
 
 export default function ConferenceRegistration() {
   const [formData, setFormData] = useState({
@@ -37,10 +39,34 @@ export default function ConferenceRegistration() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const utils = api.useUtils();
+  const submitRegistration = api.member.registration.submit.useMutation({
+    onSuccess: async () => {
+      toast.success("Registration submitted successfully");
+      await utils.member.dashboard.getMemberDashboard.invalidate();
+      await utils.member.registration.getMyLatest.invalidate();
+    },
+    onError: (err) => {
+      toast.error(err.message ?? "Failed to submit registration");
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Registration submitted:", formData);
-    // Handle form submission
+    submitRegistration.mutate({
+      participantName: formData.participantName,
+      school: formData.school,
+      email: formData.email,
+      mobile: formData.mobile,
+      paymentMethod: formData.paymentMethod as "levy" | "deposit",
+      dietary: {
+        day1: formData.day1Dietary as "veg" | "non-veg",
+        day2Conference: formData.day2ConferenceDietary as "veg" | "non-veg",
+        day2Closing: formData.day2ClosingDietary as "veg" | "non-veg",
+      },
+      remits: [formData.remit1, formData.remit2].filter(Boolean),
+      finalConfirmation: formData.finalConfirmation,
+    });
   };
 
   return (

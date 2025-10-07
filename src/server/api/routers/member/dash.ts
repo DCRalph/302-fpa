@@ -35,19 +35,20 @@ export const memberDashboardRouter = createTRPCRouter({
   getMemberDashboard: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.dbUser.id;
 
-    // Fetch user's registration from database
+    // Fetch user's latest registration with related data
     const registration = await ctx.db.registration.findFirst({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       include: {
         ticketType: true,
+        payments: true,
       },
     });
 
     // Determine registration status details
     let registrationStatus = null;
 
-    if (!registration && false) {
+    if (!registration) {
       // Not registered
       registrationStatus = {
         state: "not_registered" as const,
@@ -67,16 +68,6 @@ export const memberDashboardRouter = createTRPCRouter({
         },
       };
     } else {
-
-      const registration = {
-        id: "1",
-        status: "cancelled",
-        paymentStatus: "paid",
-        priceCents: 10000,
-        currency: "FJD",
-        registrationType: "early-bird",
-        createdAt: new Date(),
-      }
 
       const { status, paymentStatus, priceCents, currency, registrationType, createdAt } = registration;
 
@@ -265,75 +256,64 @@ export const memberDashboardRouter = createTRPCRouter({
           },
         },
         communityBlog: {
-          value: "3",
+          value: String(await ctx.db.blogPost.count({ where: { authorId: userId } })),
           subtitle: "Blog Posts",
           icon: {
             type: "lucide",
             name: "BookOpen",
-            props: {
-              className: "h-8 w-8",
-            },
+            props: { className: "h-8 w-8" },
           },
         },
         documents: {
-          value: "2",
+          value: String(await ctx.db.attachment.count({ where: { registration: { userId } } })),
           subtitle: "Files Uploaded",
           icon: {
             type: "lucide",
             name: "FileText",
-            props: {
-              className: "h-8 w-8",
-            },
+            props: { className: "h-8 w-8" },
           },
         },
       },
       registrationStatus,
-      recentActivity: [
-        {
-          icon: {
-            type: "lucide",
-            name: "CheckCircle",
-            props: {
-              className: "size-6 text-blue-500",
-            },
+      recentActivity: await (async () => {
+        const activities: { icon: { type: string; name: string; props: Record<string, string | number> }; title: string; time: string }[] = [];
+        const latestReg = registration;
+        const toAgo = (d: Date) => {
+          const diffMs = Date.now() - d.getTime();
+          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+          if (diffDays <= 0) return "Today";
+          if (diffDays === 1) return "1 day ago";
+          if (diffDays < 7) return `${diffDays} days ago`;
+          const weeks = Math.floor(diffDays / 7);
+          return weeks === 1 ? "1 week ago" : `${weeks} weeks ago`;
+        };
+
+        if (latestReg) {
+          activities.push({
+            icon: { type: "lucide", name: "CheckCircle", props: { className: "size-6 text-blue-500" } },
+            title: `Registered for conference (${latestReg.registrationType})`,
+            time: toAgo(latestReg.createdAt),
+          });
+
+          // Include latest payment if exists
+          const latestPayment = latestReg.payments.sort((a, b) => (b.createdAt.getTime() - a.createdAt.getTime()))[0];
+          if (latestPayment) {
+            activities.push({
+              icon: { type: "lucide", name: "CreditCard", props: { className: "size-6 text-blue-500" } },
+              title: `Payment ${latestPayment.status}: $${(latestPayment.amountCents / 100).toFixed(2)}`,
+              time: toAgo(latestPayment.createdAt),
+            });
+          }
+        }
+
+        return activities.length > 0 ? activities : [
+          {
+            icon: { type: "lucide", name: "Info", props: { className: "size-6 text-blue-500" } },
+            title: "No recent activity",
+            time: "",
           },
-          title: "Successfully registered for APC 2025",
-          time: "2 days ago",
-        },
-        {
-          icon: {
-            type: "lucide",
-            name: "CreditCard",
-            props: {
-              className: "size-6 text-blue-500",
-            },
-          },
-          title: "Payment of $250 processed",
-          time: "2 days ago",
-        },
-        {
-          icon: {
-            type: "lucide",
-            name: "Calendar",
-            props: {
-              className: "size-6 text-blue-500",
-            },
-          },
-          title: "Booked session: Leadership in Education",
-          time: "1 week ago",
-        },
-        {
-          icon: {
-            type: "lucide",
-            name: "FileText",
-            props: {
-              className: "size-6 text-blue-500",
-            },
-          },
-          title: "Uploaded conference presentation",
-          time: "1 week ago",
-        },
-      ]
+        ];
+      })()
     }
 
 
