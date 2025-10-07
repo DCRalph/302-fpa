@@ -64,12 +64,12 @@ const adminMenuItems = [
   },
   {
     title: "Manage Members",
-    url: "#",
+    url: "/admin-dashboard/manage-members",
     icon: Users,
   },
   {
     title: "Manage Conferences",
-    url: "#",
+    url: "/admin-dashboard/manage-conferences",
     icon: CalendarCog,
   }
 ];
@@ -86,6 +86,7 @@ export function DashboardSideBar() {
 
   const isActive = (path: string) => {
     if (path === "/member-dashboard") return pathname === "/member-dashboard";
+    if (path === "/admin-dashboard") return pathname === "/admin-dashboard";
     return pathname?.startsWith(path) ?? false;
   };
 

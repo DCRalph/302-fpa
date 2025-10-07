@@ -11,6 +11,9 @@ import { redirect } from "next/navigation";
 export default function MyFilesPage() {
   const { session, dbUser, isPending } = useAuth();
 
+  const [url, setUrl] = useState("");
+  const [filename, setFilename] = useState("");
+
   if (isPending) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -35,8 +38,6 @@ export default function MyFilesPage() {
     onSuccess: () => refetch(),
   });
 
-  const [url, setUrl] = useState("");
-  const [filename, setFilename] = useState("");
 
   return (
     <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6">

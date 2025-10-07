@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { type Prisma } from "@prisma/client";
 
 export const memberBlogRouter = createTRPCRouter({
   list: protectedProcedure
@@ -16,16 +17,16 @@ export const memberBlogRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { query, categorySlug, take = 10, cursor } = input ?? {};
 
-      const where = {
+      const where: Prisma.BlogPostWhereInput = {
         AND: [
           query
             ? {
-                OR: [
-                  { title: { contains: query, mode: "insensitive" } },
-                  { content: { contains: query, mode: "insensitive" } },
-                  { author: { name: { contains: query, mode: "insensitive" } } },
-                ],
-              }
+              OR: [
+                { title: { contains: query, mode: "insensitive" } },
+                { content: { contains: query, mode: "insensitive" } },
+                { author: { name: { contains: query, mode: "insensitive" } } },
+              ],
+            }
             : {},
           categorySlug
             ? { categories: { some: { category: { slug: categorySlug } } } }

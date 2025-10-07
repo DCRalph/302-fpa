@@ -150,6 +150,7 @@ export default function MemberDashboardPage() {
 
 type RegistrationStatus = {
   state:
+  | "no_conference"
   | "not_registered"
   | "pending"
   | "cancelled"

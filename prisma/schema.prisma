@@ -76,7 +76,7 @@ model User {
   registrations Registration[]
   adminNotes    AdminNote[]                 @relation("UserAdminNotes")
   statusChanges RegistrationStatusHistory[] @relation("UserStatusChanges")
-
+  activities  UserActivity[]
   
 
 }
@@ -87,6 +87,47 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+
+
+model Conference {
+  id String @id @default(cuid())
+  name String
+  description String
+  isActive Boolean @default(true)
+
+  startDate DateTime
+  endDate DateTime
+  location String
+
+  contacts ConferenceContact[]
+  priceCents Int
+  currency String @default("FJD")
+  bankTransferAccountName String
+  bankTransferBranch String
+  bankTransferAccountNumber String
+
+  maxRegistrations Int @default(0) // 0 means unlimited
+  registrations Registration[]
+  registrationStartDate DateTime
+  registrationEndDate DateTime
+  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ConferenceContact {
+  id String @id @default(cuid())
+  name String
+  feilds Json
+
+  conferenceId String
+  conference Conference @relation(fields: [conferenceId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Registration {
@@ -123,6 +164,9 @@ model Registration {
   statusHistory RegistrationStatusHistory[]
   payments      Payment[]
   attachments   Attachment[]
+
+  conferenceId String?
+  conference   Conference? @relation(fields: [conferenceId], references: [id])
 
   @@index([email])
   @@index([registrationType])
@@ -232,6 +276,22 @@ model Attachment {
   @@index([registrationId])
 }
 
+model UserActivity {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  icon      String
+  activity  String
+
+  metadata  Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
 model BlogCategory {
   id        String             @id @default(cuid())
   name      String
@@ -282,16 +342,6 @@ model BlogComment {
 }
 
 // CMS-like primitives
-
-model Page {
-  id        String   @id @default(cuid())
-  title     String
-  slug      String   @unique
-  content   String
-  published Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
 
 model NewsletterSubscription {
   id          String    @id @default(cuid())

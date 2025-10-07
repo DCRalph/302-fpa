@@ -9,13 +9,16 @@ import { api } from "~/trpc/react";
 import { DynamicIcon } from "~/components/DynamicIcon";
 import { Spinner } from "~/components/ui/spinner";
 import { DashboardStatsCard } from "~/components/dash-stat-card";
-import { getClientSession } from "~/lib/getClientSession";
+import { useAuth } from "~/hooks/useAuth";
+import Link from "next/link";
+import { Badge } from "~/components/ui/badge";
 
 
 
 export default function AdminDashboardPage() {
-  // const { isLoading } = useAuth();
-  const { isPending } = getClientSession();
+  const { isPending } = useAuth();
+
+  const { data: adminDashboard } = api.admin.dashboard.getAdminDashboard.useQuery();
 
   if (isPending) {
     return (
@@ -26,7 +29,6 @@ export default function AdminDashboardPage() {
   }
 
 
-  const { data: adminDashboard } = api.admin.dashboard.getAdminDashboard.useQuery();
 
   return (
     <main className="text-foreground flex">
@@ -41,43 +43,76 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Stats Cards */}
-          <div className="mb-6 sm:mb-8 grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mb-6 sm:mb-8 grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
             <DashboardStatsCard stat={adminDashboard?.stats.users} title="Users" />
             <DashboardStatsCard stat={adminDashboard?.stats.conference} title="Conference" />
             <DashboardStatsCard stat={adminDashboard?.stats.totalPayments} title="Total Payments" />
+            {adminDashboard?.stats.conferences && (
+              <DashboardStatsCard stat={adminDashboard.stats.conferences} title="Conferences" />
+            )}
           </div>
 
           <div className="mb-6 sm:mb-8 grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 lg:grid-cols-2">
             {/* Upcoming Conference */}
             <Card>
               <CardHeader>
-                <CardTitle className="mx-auto flex items-center space-x-2">
-                  <span className="text-2xl">Upcoming Conference</span>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="text-2xl">Active Conference</span>
+                  {adminDashboard?.latestConferenceId && (
+                    <Badge variant="default">Active</Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="py-6 text-center">
-                  <h3 className="text-foreground text-lg sm:text-2xl">
-                    {adminDashboard?.upcomingConference.title ?? "Loading..."}
-                  </h3>
-                  <div className="text-foreground text-sm sm:text-md space-y-2 pt-6">
-                    <p>
-                      <strong>Date:</strong> {adminDashboard?.upcomingConference.date ?? "Loading..."}
+                {adminDashboard?.upcomingConference.title ? (
+                  <>
+                    <div className="py-6 text-center">
+                      <h3 className="text-foreground text-lg sm:text-2xl font-semibold">
+                        {adminDashboard.upcomingConference.title}
+                      </h3>
+                      <div className="text-foreground text-sm sm:text-md space-y-2 pt-6">
+                        <p>
+                          <strong>Date:</strong> {adminDashboard.upcomingConference.date}
+                        </p>
+                        <p>
+                          <strong>Capacity:</strong> {adminDashboard.upcomingConference.capacity}
+                        </p>
+                      </div>
+                    </div>
+                    <Separator />
+                    <div className="flex gap-2">
+                      {adminDashboard.latestConferenceId && (
+                        <>
+                          <Link
+                            href={`/admin-dashboard/manage-conferences/${adminDashboard.latestConferenceId}`}
+                            className="flex-1"
+                          >
+                            <Button variant="outline" size="sm" className="w-full">
+                              View Details
+                            </Button>
+                          </Link>
+                          <Link
+                            href={`/admin-dashboard/manage-conferences/${adminDashboard.latestConferenceId}/edit`}
+                            className="flex-1"
+                          >
+                            <Button size="sm" className="w-full">
+                              Edit Conference
+                            </Button>
+                          </Link>
+                        </>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-8 text-center">
+                    <p className="text-muted-foreground mb-4">
+                      No active conference found
                     </p>
-                    <p>
-                      <strong>Capacity:</strong> {adminDashboard?.upcomingConference.capacity ?? "Loading..."}
-                    </p>
+                    <Link href="/admin-dashboard/manage-conferences/create">
+                      <Button size="sm">Create Conference</Button>
+                    </Link>
                   </div>
-                </div>
-                <Separator />
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    View Details
-                  </Button>
-                  <Button size="sm" className="flex-1">
-                    Manage Sessions
-                  </Button>
-                </div>
+                )}
               </CardContent>
             </Card>
 
@@ -120,19 +155,34 @@ export default function AdminDashboardPage() {
           <div className="mb-6 sm:mb-8 grid grid-cols-1 gap-3 sm:gap-4 md:gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <span className="text-2xl">
-                    Recent Conference Registrations
-                  </span>
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-2xl">
+                    {adminDashboard?.latestConferenceId
+                      ? "Recent Conference Registrations"
+                      : "All Recent Registrations"}
+                  </CardTitle>
+                  {adminDashboard?.totalConferences && adminDashboard.totalConferences > 0 && (
+                    <Link href="/admin-dashboard/manage-conferences">
+                      <Button variant="outline" size="sm">
+                        View All Conferences
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {adminDashboard?.recentRegistrations ? (
-                    <DataTable
-                      columns={columns}
-                      data={adminDashboard.recentRegistrations as RecentConferenceRegistration[]}
-                    />
+                    adminDashboard.recentRegistrations.length > 0 ? (
+                      <DataTable
+                        columns={columns}
+                        data={adminDashboard.recentRegistrations as RecentConferenceRegistration[]}
+                      />
+                    ) : (
+                      <div className="py-8 text-center text-muted-foreground">
+                        <p>No registrations yet</p>
+                      </div>
+                    )
                   ) : (
                     <div className="flex items-center justify-center py-8">
                       <Spinner className="size-10" />

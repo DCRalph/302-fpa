@@ -25,7 +25,6 @@ export default function CommunityBlog() {
         selectedFilter !== "all-posts" ? selectedFilter : undefined,
       take: 10,
     },
-    { keepPreviousData: true },
   );
 
   const guidelines = [

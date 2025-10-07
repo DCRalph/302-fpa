@@ -35,9 +35,15 @@ export const memberDashboardRouter = createTRPCRouter({
   getMemberDashboard: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.dbUser.id;
 
+    const latestConference = await ctx.db.conference.findFirst({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' },
+      include: { contacts: true },
+    });
+
     // Fetch user's latest registration with related data
     const registration = await ctx.db.registration.findFirst({
-      where: { userId },
+      where: { userId, conferenceId: latestConference?.id },
       orderBy: { createdAt: 'desc' },
       include: {
         ticketType: true,
@@ -48,7 +54,23 @@ export const memberDashboardRouter = createTRPCRouter({
     // Determine registration status details
     let registrationStatus = null;
 
-    if (!registration) {
+    if (!latestConference) {
+      // No active conference
+      registrationStatus = {
+        state: "no_conference" as const,
+        title: "No Active Conference",
+        description: "There is no active conference with open registration at the moment.",
+        icon: {
+          type: "lucide",
+          name: "Calendar",
+          props: { className: "size-16" },
+        },
+        iconColor: "text-muted-foreground",
+        badgeVariant: "secondary" as const,
+        badgeText: "No Active Conference",
+        showActions: false,
+      };
+    } else if (!registration) {
       // Not registered
       registrationStatus = {
         state: "not_registered" as const,
@@ -64,7 +86,7 @@ export const memberDashboardRouter = createTRPCRouter({
         badgeText: "Not Registered",
         showActions: true,
         actions: {
-          primary: { text: "Register Now", href: "/register" },
+          primary: { text: "Register Now", href: "  /member-dashboard/conference-registration" },
         },
       };
     } else {
@@ -91,8 +113,8 @@ export const memberDashboardRouter = createTRPCRouter({
           cancelledDate: createdAt.toLocaleDateString(),
           showActions: true,
           actions: {
-            primary: { text: "Contact Support", href: "/contact" },
-            secondary: { text: "Register Again", href: "/register" },
+            primary: { text: "Contact Support", href: "/member-dashboard/contact-support" },
+            secondary: { text: "Register Again", href: "/member-dashboard/conference-registration" },
           },
         };
       } else if (status === "pending") {
@@ -137,8 +159,8 @@ export const memberDashboardRouter = createTRPCRouter({
             paymentDate: createdAt.toLocaleDateString(),
             showActions: true,
             actions: {
-              primary: { text: "Make Payment", href: "/payment" },
-              secondary: { text: "View Details", href: "/registration/details" },
+              primary: { text: "Make Payment", href: "/member-dashboard/registration-payment" },
+              secondary: { text: "View Details", href: "/member-dashboard/conference-registration" },
             },
           };
         } else if (paymentStatus === "paid") {
@@ -164,8 +186,8 @@ export const memberDashboardRouter = createTRPCRouter({
             paymentDate: createdAt.toLocaleDateString(),
             showActions: true,
             actions: {
-              primary: { text: "Download Ticket", href: "/ticket/download" },
-              secondary: { text: "View Details", href: "/registration/details" },
+              primary: { text: "Download Ticket", href: "/member-dashboard/ticket-download" },
+              secondary: { text: "View Details", href: "/member-dashboard/conference-registration" },
             },
           };
         } else if (paymentStatus === "partial") {
@@ -189,8 +211,8 @@ export const memberDashboardRouter = createTRPCRouter({
             paymentDate: createdAt.toLocaleDateString(),
             showActions: true,
             actions: {
-              primary: { text: "Complete Payment", href: "/payment" },
-              secondary: { text: "View Details", href: "/registration/details" },
+              primary: { text: "Complete Payment", href: "/member-dashboard/registration-payment" },
+              secondary: { text: "View Details", href: "/member-dashboard/conference-registration" },
             },
           };
         } else if (paymentStatus === "refunded") {
@@ -215,7 +237,7 @@ export const memberDashboardRouter = createTRPCRouter({
             refundedDate: createdAt.toLocaleDateString(),
             showActions: true,
             actions: {
-              primary: { text: "Contact Support", href: "/contact" },
+              primary: { text: "Contact Support", href: "/member-dashboard/contact-support" },
             },
           };
         }
@@ -231,7 +253,38 @@ export const memberDashboardRouter = createTRPCRouter({
       ? registration.paymentStatus.charAt(0).toUpperCase() + registration.paymentStatus.slice(1)
       : "Not Paid";
 
+    const toAgo = (d: Date) => {
+      const diffMs = Date.now() - d.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays <= 0) return "Today";
+      if (diffDays === 1) return "1 day ago";
+      if (diffDays < 7) return `${diffDays} days ago`;
+      const weeks = Math.floor(diffDays / 7);
+      return weeks === 1 ? "1 week ago" : `${weeks} weeks ago`;
+    };
+
+    const userActivities = await ctx.db.userActivity.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 5, // Get last 5 activities
+    });
+
+    const activities = userActivities.map(activity => ({
+      icon: { type: "lucide", name: activity.icon, props: { className: "size-6 text-blue-500" } },
+      title: activity.title,
+      time: toAgo(activity.createdAt),
+    }));
+
+    const recentActivity = activities.length > 0 ? activities : [
+      {
+        icon: { type: "lucide", name: "Info", props: { className: "size-6 text-blue-500" } },
+        title: "No recent activity",
+        time: "",
+      },
+    ];
+
     return {
+      conference: latestConference,
       stats: {
         registrationStatus: {
           value: statsRegistrationValue,
@@ -275,45 +328,7 @@ export const memberDashboardRouter = createTRPCRouter({
         },
       },
       registrationStatus,
-      recentActivity: await (async () => {
-        const activities: { icon: { type: string; name: string; props: Record<string, string | number> }; title: string; time: string }[] = [];
-        const latestReg = registration;
-        const toAgo = (d: Date) => {
-          const diffMs = Date.now() - d.getTime();
-          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-          if (diffDays <= 0) return "Today";
-          if (diffDays === 1) return "1 day ago";
-          if (diffDays < 7) return `${diffDays} days ago`;
-          const weeks = Math.floor(diffDays / 7);
-          return weeks === 1 ? "1 week ago" : `${weeks} weeks ago`;
-        };
-
-        if (latestReg) {
-          activities.push({
-            icon: { type: "lucide", name: "CheckCircle", props: { className: "size-6 text-blue-500" } },
-            title: `Registered for conference (${latestReg.registrationType})`,
-            time: toAgo(latestReg.createdAt),
-          });
-
-          // Include latest payment if exists
-          const latestPayment = latestReg.payments.sort((a, b) => (b.createdAt.getTime() - a.createdAt.getTime()))[0];
-          if (latestPayment) {
-            activities.push({
-              icon: { type: "lucide", name: "CreditCard", props: { className: "size-6 text-blue-500" } },
-              title: `Payment ${latestPayment.status}: $${(latestPayment.amountCents / 100).toFixed(2)}`,
-              time: toAgo(latestPayment.createdAt),
-            });
-          }
-        }
-
-        return activities.length > 0 ? activities : [
-          {
-            icon: { type: "lucide", name: "Info", props: { className: "size-6 text-blue-500" } },
-            title: "No recent activity",
-            time: "",
-          },
-        ];
-      })()
+      recentActivity,
     }
 
 
