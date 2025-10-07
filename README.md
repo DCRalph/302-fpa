@@ -1,5 +1,6 @@
 # 302 FPA
 
+
 A modern conference registration and management platform built with Next.js, featuring authentication, payment processing, and comprehensive admin tools for managing registrations, tickets, and attendees.
 
 ## Tech Stack
