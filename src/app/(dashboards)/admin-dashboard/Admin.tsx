@@ -1,7 +1,5 @@
 "use client";
 
-import { useAuth } from "~/lib/useAuth";
-import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
@@ -11,13 +9,15 @@ import { api } from "~/trpc/react";
 import { DynamicIcon } from "~/components/DynamicIcon";
 import { Spinner } from "~/components/ui/spinner";
 import { DashboardStatsCard } from "~/components/dash-stat-card";
+import { getClientSession } from "~/lib/getClientSession";
 
 
 
 export default function AdminDashboardPage() {
-  const { stackUser, dbUser, isLoading } = useAuth();
+  // const { isLoading } = useAuth();
+  const { isPending } = getClientSession();
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <div className="flex items-center justify-center">
         <Spinner className="size-10" />
@@ -25,9 +25,6 @@ export default function AdminDashboardPage() {
     );
   }
 
-  if (!stackUser || !dbUser) {
-    redirect("/signin");
-  }
 
   const { data: adminDashboard } = api.admin.dashboard.getAdminDashboard.useQuery();
 

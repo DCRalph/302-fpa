@@ -11,10 +11,10 @@ import { authClient } from "~/lib/auth-client";
 type AuthMeOutput = NonNullable<RouterOutputs["auth"]["me"]>;
 
 interface AuthContextValue {
-  stackUser: NonNullable<AuthMeOutput["session"]>["user"] | null;
+  session: NonNullable<AuthMeOutput["session"]> | null;
   dbUser: AuthMeOutput["dbUser"] | null;
   error: TRPCClientErrorLike<AppRouter> | null;
-  isLoading: boolean;
+  isPending: boolean;
   isAuthenticated: boolean;
 }
 
@@ -26,22 +26,22 @@ interface AuthProviderProps {
 
 function AuthProviderInner({ children }: AuthProviderProps) {
   const me = api.auth.me.useQuery();
-  const { data: sessionData, isPending } = authClient.useSession();
+  const { data: sessionData, isPending: isPendingClient } = authClient.useSession();
 
-  const stackUser = sessionData?.user ?? null;
+  const session = sessionData ?? null;
   const dbUser = me?.data?.dbUser ?? null;
 
-  const isLoading = me.isLoading || isPending;
+  const isPending = me.isPending || isPendingClient;
   const isAuthenticated = !!sessionData && dbUser !== null;
   const error = me.error ?? null;
 
   return (
     <AuthContext.Provider
       value={{
-        stackUser,
+        session,
         dbUser: dbUser ?? null,
         error,
-        isLoading,
+        isPending,
         isAuthenticated,
       }}
     >

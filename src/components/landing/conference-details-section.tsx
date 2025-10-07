@@ -1,13 +1,13 @@
 import { api } from "~/trpc/server";
 import { type ConferenceDetails } from "~/server/api/routers/home";
-import { ServerAuth } from "~/lib/auth-server";
+
 import { montserrat } from "../fonts";
 import EditDetails from "./admin/editDetails";
 import { Check } from "lucide-react";
 import Link from "next/link";
 
 export async function ConferenceDetailsSection() {
-  const { dbUser } = await ServerAuth();
+  const { dbUser } = await api.auth.me();
   const data = await api.home.getConferenceDetails();
 
   const isAdmin = dbUser?.role === "ADMIN";

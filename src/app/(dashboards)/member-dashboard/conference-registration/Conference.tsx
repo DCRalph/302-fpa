@@ -58,7 +58,7 @@ export default function ConferenceRegistration() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="participantName">
-                                            Participant's Name <span className="text-red-500">*</span>
+                                            {`Participant's Name `}<span className="text-red-500">*</span>
                                         </Label>
                                         <Input
                                             id="participantName"
@@ -292,7 +292,7 @@ export default function ConferenceRegistration() {
                                 <Separator orientation="horizontal" className="bg-[#A2A2A2]" />
                                 <div>
                                     <span className="font-medium">Account Name:</span>
-                                    <span className="ml-2">FIJI PRINCIPALS' ASSOCIATION</span>
+                                    <span className="ml-2">{`FIJI PRINCIPALS' ASSOCIATION`}</span>
                                 </div>
                                 <div>
                                     <span className="font-medium">Bank & Branch:</span>

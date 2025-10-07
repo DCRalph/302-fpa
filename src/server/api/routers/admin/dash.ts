@@ -32,7 +32,7 @@ export const adminDashboardRouter = createTRPCRouter({
     // TODO: Replace with actual database queries
     // For now, returning the same structure as the hardcoded data in Admin.tsx
 
-    const adminName: string = ctx.dbUser.name ?? "Admin";
+    const adminName: string = ctx.dbUser?.name ?? "Admin";
 
     const stats: {
       users: DashboardStat;

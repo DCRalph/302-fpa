@@ -4,7 +4,7 @@ import { GraduationCap } from "lucide-react";
 import { Separator } from "./ui/separator";
 
 import { AuthButtons } from "~/components/auth-buttons";
-import { MobileNavMenu } from "./mobile-nav-menu";
+import { UserDropdown } from "./user-dropdown";
 
 export async function NavBar() {
 
@@ -70,7 +70,7 @@ export async function NavBar() {
             <AuthButtons />
           </div>
 
-          <MobileNavMenu />
+          <UserDropdown />
         </div>
       </div>
     </nav>

@@ -1,15 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { UserButton, OAuthButtonGroup, SelectedTeamSwitcher, UserAvatar } from "@stackframe/stack";
 import { api } from "~/trpc/react";
 import { ThemeToggle } from "~/components/theme-toggle";
-import { Moon } from "lucide-react";
-import { useAuth } from "~/lib/useAuth";
+import { useAuth } from "~/hooks/useAuth";
 
 export default function Auth() {
   const [inputText, setInputText] = useState("");
-  const { stackUser, dbUser, isLoading, error } = useAuth();
+  const { session, dbUser, isPending, error } = useAuth();
 
   const hello = api.default.hello.useQuery(
     { text: inputText || "World" },
@@ -28,13 +26,13 @@ export default function Auth() {
 
         <section className="space-y-4">
           <h3 className="text-xl font-semibold">User Authentication</h3>
-          {stackUser ? (
+          {session ? (
             <div className="p-4 border rounded-lg">
               <p className="text-green-600 dark:text-green-400">
-                You are logged in as: {stackUser.displayName ?? stackUser.primaryEmail}
+                You are logged in as: {session.user.name ?? session.user.email}
               </p>
               <p className="text-sm text-muted-foreground mt-2">
-                User ID: {stackUser.id}
+                User ID: {session.user.id}
               </p>
             </div>
           ) : (
@@ -46,39 +44,21 @@ export default function Auth() {
           )}
         </section>
 
-        <section className="space-y-4">
-          <h3 className="text-xl font-semibold">Stack Auth Widgets</h3>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="p-4 border rounded-lg space-y-3">
-              <h4 className="font-semibold">User Button</h4>
-              <p className="text-sm text-muted-foreground">Account menu with sign-in/out and settings.</p>
-              {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
-              <UserButton showUserInfo extraItems={[{ text: "Extra Item example", icon: <Moon className="size-4" />, onClick: () => { let x; } }]} />
-            </div>
-            <div className="p-4 border rounded-lg space-y-3">
-              <h4 className="font-semibold">User Avatar</h4>
-              <p className="text-sm text-muted-foreground">Avatar rendered from Stack user profile.</p>
-              <div className="flex items-center gap-3">
-                <UserAvatar user={stackUser ?? undefined} />
-                {/* <span className="text-sm text-muted-foreground">{user ? (user.displayName ?? user.primaryEmail) : "Not signed in"}</span> */}
-              </div>
-            </div>
-          </div>
-        </section>
+
 
         <section className="space-y-4">
           <h3 className="text-xl font-semibold">OAuth Providers</h3>
-          {stackUser ? (
+          {session ? (
             <p className="text-sm text-muted-foreground">You are signed in. Sign-in/sign-up buttons are hidden.</p>
           ) : (
             <div className="grid gap-6 md:grid-cols-2">
               <div className="p-4 border rounded-lg space-y-3">
                 <h4 className="font-semibold">Sign in</h4>
-                <OAuthButtonGroup type="sign-in" />
+                {/* <OAuthButtonGroup type="sign-in" /> */}
               </div>
               <div className="p-4 border rounded-lg space-y-3">
                 <h4 className="font-semibold">Sign up</h4>
-                <OAuthButtonGroup type="sign-up" />
+                {/* <OAuthButtonGroup type="sign-up" /> */}
               </div>
             </div>
           )}
@@ -88,7 +68,7 @@ export default function Auth() {
           <h3 className="text-xl font-semibold">Teams</h3>
           <div className="p-4 border rounded-lg space-y-3">
             <p className="text-sm text-muted-foreground">Switch the currently selected team (if enabled for your project).</p>
-            <SelectedTeamSwitcher allowNull nullLabel="No team" />
+            {/* <SelectedTeamSwitcher allowNull nullLabel="No team" /> */}
           </div>
         </section>
 
@@ -96,15 +76,12 @@ export default function Auth() {
           <h3 className="text-xl font-semibold">User Details</h3>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="p-4 border rounded-lg">
-              <h4 className="font-semibold mb-2">Stack User (useUser)</h4>
-              {stackUser ? (
+              <h4 className="font-semibold mb-2">Better Auth User (useUser)</h4>
+              {session ? (
                 <div className="text-sm">
-                  <p><span className="text-muted-foreground">ID:</span> {stackUser.id}</p>
-                  <p><span className="text-muted-foreground">Name:</span> {stackUser.displayName ?? "—"}</p>
-                  <p><span className="text-muted-foreground">Email:</span> {stackUser.primaryEmail ?? "—"}</p>
-                  <p><span className="text-muted-foreground">Client metadata:</span><br /> {JSON.stringify(stackUser.clientMetadata) ?? "—"}</p>
-                  <p><span className="text-muted-foreground">Client readonly metadata :</span><br /> {JSON.stringify(stackUser.clientReadOnlyMetadata) ?? "—"}</p>
-
+                  <p><span className="text-muted-foreground">ID:</span> {session.user.id}</p>
+                  <p><span className="text-muted-foreground">Name:</span> {session.user.name ?? "—"}</p>
+                  <p><span className="text-muted-foreground">Email:</span> {session.user.email ?? "—"}</p>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">No Stack user (not signed in).</p>
@@ -113,7 +90,7 @@ export default function Auth() {
 
             <div className="p-4 border rounded-lg">
               <h4 className="font-semibold mb-2">DB User (tRPC)</h4>
-              {isLoading ? (
+              {isPending ? (
                 <p className="text-sm text-muted-foreground">Loading...</p>
               ) : error ? (
                 <p className="text-sm text-red-600 dark:text-red-400">Error: {error.message}</p>

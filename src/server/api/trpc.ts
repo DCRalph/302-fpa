@@ -11,8 +11,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
-import { auth } from "~/lib/useAuth";
-// import { headers } from "next/headers";
+import { auth } from "~/lib/auth";
 
 /**
  * 1. CONTEXT
@@ -27,8 +26,21 @@ import { auth } from "~/lib/useAuth";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+  const session = await auth.api.getSession({
+    headers: opts.headers
+  })
+
+  let dbUser = null;
+  if (session) {
+    dbUser = await db.user.findFirst({
+      where: { id: session.user.id }
+    });
+  }
+
   return {
     db,
+    session,
+    dbUser,
     ...opts,
   };
 };
@@ -113,20 +125,14 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
  * Ensures a logged-in user via Better Auth and injects it into the context.
  */
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
-  const session = await auth.api.getSession({
-    headers: ctx.headers
-  })
 
-  if (!session) {
+
+  if (!ctx.session || !ctx.dbUser) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  const dbUser = await db.user.findFirst({
-    where: { id: session.user.id }
-  });
-
   return next({
-    ctx: { ...ctx, session, dbUser },
+    ctx: { ...ctx, session: ctx.session, dbUser: ctx.dbUser },
   });
 });
 
@@ -134,27 +140,15 @@ export const protectedProcedure = publicProcedure.use(authMiddleware);
 
 const adminMiddleware = t.middleware(async ({ ctx, next }) => {
 
-  const session = await auth.api.getSession({
-    headers: ctx.headers
-  })
-
-  if (!session) {
+  if (!ctx.session || !ctx.dbUser) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  const dbUser = await db.user.findFirst({
-    where: { id: session.user.id }
-  });
-
-  if (!dbUser) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  }
-
-  if (dbUser.role !== "ADMIN") {
+  if (ctx.dbUser.role !== "ADMIN") {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({
-    ctx: { ...ctx, session, dbUser },
+    ctx: { ...ctx, session: ctx.session, dbUser: ctx.dbUser },
   });
 });
 

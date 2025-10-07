@@ -4,7 +4,7 @@ import { SidebarTrigger } from "./ui/sidebar";
 import { Separator } from "./ui/separator";
 import { cabin } from "./fonts";
 import { UserDropdown } from "./user-dropdown";
-import {usePathname} from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const pageNamesMap = {
   "/admin-dashboard": "Admin Dashboard",
@@ -19,7 +19,7 @@ const pageNamesMap = {
 export function DashboardHeader() {
   const pathname = usePathname();
   const pageName = pageNamesMap[pathname as keyof typeof pageNamesMap] || "Dashboard";
-  
+
 
   return (
     <nav className="sticky top-0 z-50 bg-sidebar/90 backdrop-blur-sm w-full h-16 border-b">
@@ -30,7 +30,7 @@ export function DashboardHeader() {
           <h1 className={`${cabin.className} text-2xl`}>{pageName}</h1>
         </div>
 
-        <UserDropdown />
+        <UserDropdown detailed />
       </div>
     </nav>
   );

@@ -1,13 +1,13 @@
 "use client"
 
-import { authClient } from "~/lib/auth-client" // import the auth client
+
 import { redirect } from "next/navigation";
+import { useAuth } from "~/hooks/useAuth";
+// import { getClientSession } from "~/lib/getClientSession";
 
 export function AdminAuth() {
-  const {
-    data: session,
-    isPending, //loading state
-  } = authClient.useSession()
+  const { session, dbUser, isPending } = useAuth();
+  // const { session, isPending } = getClientSession();
 
   if (isPending) {
     return (
@@ -20,4 +20,14 @@ export function AdminAuth() {
   if (!session) {
     redirect("/signin");
   }
+
+  if (dbUser?.role !== "ADMIN") {
+    redirect("/");
+  }
+
+  if (!dbUser?.onboardedAt) {
+    redirect("/onboarding");
+  }
+
+  return null;
 }

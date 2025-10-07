@@ -15,7 +15,6 @@ enum UserRole {
   USER
 }
 
-
 model Session {
   id        String   @id
   expiresAt DateTime
@@ -28,7 +27,6 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
-  @@map("session")
 }
 
 model Account {
@@ -46,8 +44,6 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
-
-  @@map("account")
 }
 
 model Verification {
@@ -58,16 +54,19 @@ model Verification {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now()) @updatedAt
 
-  @@map("verification")
 }
-
 
 model User {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
-  emailVerified DateTime?
+  emailVerified Boolean
   image         String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  sessions  Session[]
+  accounts  Account[]
+
   phone         String?
   role          UserRole  @default(USER)
 
@@ -78,12 +77,8 @@ model User {
   adminNotes    AdminNote[]                 @relation("UserAdminNotes")
   statusChanges RegistrationStatusHistory[] @relation("UserStatusChanges")
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
-  sessions  Session[]
-  accounts  Account[]
-
   
+
 }
 
 model VerificationToken {
