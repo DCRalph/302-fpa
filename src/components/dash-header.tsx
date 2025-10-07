@@ -14,6 +14,8 @@ const pageNamesMap = {
 
   "/member-dashboard": "Dashboard",
   "/member-dashboard/conference-registration": "Conference Registration",
+  "/member-dashboard/my-files": "My Files",
+  "/member-dashboard/community-blog": "Community Blog",
   "/member-dashboard/profile": "Profile",
 };
 
