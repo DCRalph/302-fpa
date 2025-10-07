@@ -116,9 +116,12 @@ export function UserDropdown() {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem asChild>
-          <Link href="/" className="flex w-full cursor-pointer items-center">
-            <Home className="mr-2 h-4 w-4" />
-            Home
+          <Link
+            href="/"
+            className="flex items-center gap-3 py-2"
+          >
+            <Home className="size-4 text-muted-foreground" />
+            <span>Home</span>
           </Link>
         </DropdownMenuItem>
 
