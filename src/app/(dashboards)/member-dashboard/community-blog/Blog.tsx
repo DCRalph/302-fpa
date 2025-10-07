@@ -12,7 +12,6 @@ import { Badge } from "~/components/ui/badge";
 import { Search, Heart, Check, X, MessageSquareText } from "lucide-react";
 import { useState } from "react";
 import { Label } from "@radix-ui/react-dropdown-menu";
-import { Separator } from "~/components/ui/separator";
 
 export default function CommunityBlog() {
   const [searchQuery, setSearchQuery] = useState("");

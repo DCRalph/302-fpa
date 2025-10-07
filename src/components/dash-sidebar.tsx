@@ -71,17 +71,7 @@ const adminMenuItems = [
     title: "Manage Conferences",
     url: "#",
     icon: CalendarCog,
-  },
-  {
-    title: "Community Blog",
-    url: "#",
-    icon: BookOpen,
-  },
-  {
-    title: "My Profile",
-    url: "#",
-    icon: User,
-  },
+  }
 ];
 
 export function DashboardSideBar() {
