@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
-import { ServerAuth } from "~/lib/auth-server";
-// import { UserButton } from "./user-button";
+import { getServerSession } from "~/lib/getServerSession";
+
 
 export async function AuthButtons() {
-  const { dbUser } = await ServerAuth();
 
-  if (dbUser) {
+  const session = await getServerSession()
+
+
+  if (session) {
     return (
       <>
         {/* Desktop view */}
@@ -14,7 +16,6 @@ export async function AuthButtons() {
           <Button variant="outline" asChild>
             <Link href={`/member-dashboard`}>Dashboard</Link>
           </Button>
-          {/* <UserButton /> */}
         </div>
       </>
     );

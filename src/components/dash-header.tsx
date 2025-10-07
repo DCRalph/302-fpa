@@ -21,8 +21,8 @@ const pageNamesMap = {
 
 export function DashboardHeader() {
   const pathname = usePathname();
-  const pageName =
-    pageNamesMap[pathname as keyof typeof pageNamesMap] || "Dashboard";
+  const pageName = pageNamesMap[pathname as keyof typeof pageNamesMap] || "Dashboard";
+
 
   return (
     <nav className="bg-sidebar/90 sticky top-0 z-50 h-16 w-full border-b backdrop-blur-sm">
@@ -33,7 +33,7 @@ export function DashboardHeader() {
           <h1 className={`${cabin.className} text-2xl`}>{pageName}</h1>
         </div>
 
-        <UserDropdown />
+        <UserDropdown detailed />
       </div>
     </nav>
   );

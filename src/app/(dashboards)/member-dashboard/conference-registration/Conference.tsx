@@ -12,7 +12,6 @@ import { useState } from "react";
 import { Separator } from "~/components/ui/separator";
 import {
   Tooltip,
-  TooltipProvider,
   TooltipContent,
   TooltipTrigger,
 } from "~/components/ui/tooltip";

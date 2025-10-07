@@ -1,12 +1,15 @@
 "use client"
 
-import { useAuth } from "~/lib/auth";
+
 import { redirect } from "next/navigation";
+import { useAuth } from "~/hooks/useAuth";
+// import { getClientSession } from "~/lib/getClientSession";
 
 export function AdminAuth() {
-  const { stackUser, dbUser, isLoading } = useAuth();
+  const { session, dbUser, isPending } = useAuth();
+  // const { session, isPending } = getClientSession();
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <div className="flex items-center justify-center">
         <p>Loading...</p>
@@ -14,7 +17,17 @@ export function AdminAuth() {
     )
   }
 
-  if (!stackUser || !dbUser) {
+  if (!session) {
     redirect("/signin");
   }
+
+  if (dbUser?.role !== "ADMIN") {
+    redirect("/");
+  }
+
+  if (!dbUser?.onboardedAt) {
+    redirect("/onboarding");
+  }
+
+  return null;
 }

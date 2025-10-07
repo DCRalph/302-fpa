@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "~/lib/auth";
+import { useAuth } from "~/hooks/useAuth";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
@@ -12,9 +12,9 @@ import { Spinner } from "~/components/ui/spinner"
 import { DashboardStatsCard } from "~/components/dash-stat-card";
 
 export default function MemberDashboardPage() {
-  const { stackUser, dbUser, isLoading } = useAuth();
+  const { session, dbUser, isPending } = useAuth();
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <div className="flex items-center justify-center">
         <p>Loading...</p>
@@ -22,12 +22,15 @@ export default function MemberDashboardPage() {
     );
   }
 
-  if (!stackUser || !dbUser) {
+  if (!session) {
     redirect("/signin");
   }
 
-  const { data: memberDashboard } = api.member.dashboard.getMemberDashboard.useQuery();
+  if (!dbUser?.onboardedAt) {
+    redirect("/onboarding");
+  }
 
+  const { data: memberDashboard } = api.member.dashboard.getMemberDashboard.useQuery();
 
 
   return (

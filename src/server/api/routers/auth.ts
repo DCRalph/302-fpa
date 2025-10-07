@@ -1,33 +1,26 @@
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { stackServerApp } from "~/stack";
 import { db } from "~/server/db";
+import { auth } from "~/lib/auth";
 
 export const authRouter = createTRPCRouter({
-  me: publicProcedure.query(async () => {
-    const stackUser = await stackServerApp.getUser();
+  me: publicProcedure.query(async ({ ctx }) => {
+    const session = await auth.api.getSession({ headers: ctx.headers });
 
-    // console.log("user", user);
-
-    if (!stackUser) {
-      return null;
+    if (!session) {
+      return {
+        session: null,
+        dbUser: null,
+      } as const;
     }
 
-    let dbUser = await db.user.findUnique({
-      where: {
-        id: stackUser.id,
-      },
+    const dbUser = await db.user.findFirst({
+      where: { id: session.user.id },
     });
 
-    dbUser ??= await db.user.create({
-      data: {
-        id: stackUser.id,
-        name: stackUser.displayName,
-        email: stackUser.primaryEmail,
-        image: stackUser.profileImageUrl,
-      },
-    });
-
-    return { dbUser, stackUser };
+    return {
+      session,
+      dbUser,
+    } as const;
   }),
 });
 

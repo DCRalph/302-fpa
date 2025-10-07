@@ -1,7 +1,5 @@
 import "~/styles/globals.css";
 
-import { StackProvider, StackTheme } from "@stackframe/stack";
-import { stackServerApp } from "../stack";
 import { type Metadata } from "next";
 import { nunito } from "~/components/fonts";
 import { ThemeProvider } from 'next-themes'
@@ -11,9 +9,7 @@ import { Toaster } from "~/components/ui/sonner"
 import NextTopLoader from "nextjs-toploader";
 
 import { TRPCReactProvider } from "~/trpc/react";
-import { EnsureDbUser } from "~/lib/ensureDbUser";
-import { AuthProvider } from "~/lib/auth";
-import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { AuthProvider } from "~/hooks/useAuth";
 
 export const metadata: Metadata = {
   title: "FPA Conference Registration",
@@ -28,27 +24,20 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${nunito.className} scroll-smooth`} suppressHydrationWarning>
       <body>
-        <StackProvider app={stackServerApp}>
-          <StackTheme>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              themes={["light", "dark"]}
-            >
-              <TRPCReactProvider>
-                <EnsureDbUser />
-                <AuthProvider>
-                  <NextTopLoader showSpinner={false} />
-                  <Toaster position="top-right" richColors />
-                  <TooltipProvider>
-                    {children}
-                  </TooltipProvider>
-                </AuthProvider>
-              </TRPCReactProvider>
-            </ThemeProvider>
-          </StackTheme>
-        </StackProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          themes={["light", "dark"]}
+        >
+          <TRPCReactProvider>
+            <AuthProvider>
+              <NextTopLoader showSpinner={false} />
+              <Toaster position="top-right" richColors />
+              {children}
+            </AuthProvider>
+          </TRPCReactProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

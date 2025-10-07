@@ -3,10 +3,9 @@ import { api } from "~/trpc/server";
 import { type ConferenceWhyJoin } from "~/server/api/routers/home";
 import { DynamicIcon } from "~/components/DynamicIcon";
 import EditWhyJoin from "~/components/landing/admin/editWhyJoin";
-import { ServerAuth } from "~/lib/auth-server";
 
 export async function BenefitsSection() {
-  const { dbUser } = await ServerAuth();
+  const { dbUser } = await api.auth.me();
   const conferenceWhyJoin = await api.home.getConferenceWhyJoin();
   const isAdmin = dbUser?.role === "ADMIN";
 

@@ -1,13 +1,13 @@
 "use client";
 
-import { useAuth } from "~/lib/auth";
+import { useAuth } from "~/hooks/useAuth";
 import { redirect } from "next/navigation";
 import OnboardingComponent from "./Onboarding";
 
 export default function OnboardingPage() {
-  const { stackUser, dbUser, isLoading } = useAuth();
+  const { session, dbUser, isPending } = useAuth();
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p>Loading...</p>
@@ -15,7 +15,7 @@ export default function OnboardingPage() {
     );
   }
 
-  if (!stackUser || !dbUser) {
+  if (!session) {
     redirect("/signin");
   }
 

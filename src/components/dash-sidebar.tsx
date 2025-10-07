@@ -21,11 +21,11 @@ import {
   CalendarCog,
 } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "~/lib/auth";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "./ui/sidebar";
 import { useState, useEffect } from "react";
 import { Skeleton } from "./ui/skeleton";
+import { getClientSession } from "~/lib/getClientSession";
 
 // Member-specific menu items
 const memberMenuItems = [
@@ -71,21 +71,11 @@ const adminMenuItems = [
     title: "Manage Conferences",
     url: "#",
     icon: CalendarCog,
-  },
-  {
-    title: "Community Blog",
-    url: "#",
-    icon: BookOpen,
-  },
-  {
-    title: "My Profile",
-    url: "#",
-    icon: User,
-  },
+  }
 ];
 
 export function DashboardSideBar() {
-  const { dbUser } = useAuth();
+  const { session } = getClientSession();
   const pathname = usePathname();
   const { state } = useSidebar();
   const [isCollapsed, setIsCollapsed] = useState(state === "collapsed");
@@ -138,7 +128,7 @@ export function DashboardSideBar() {
           <SidebarGroup>
             <SidebarGroupLabel>Application</SidebarGroupLabel>
             <SidebarMenu>
-              {!dbUser ? (
+              {!session ? (
                 // Loading state
                 <>
                   {Array.from({ length: 5 }).map((_, i) => (
