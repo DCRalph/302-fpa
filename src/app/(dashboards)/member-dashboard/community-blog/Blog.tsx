@@ -10,46 +10,17 @@ import {
 } from "~/components/ui/select";
 import { Badge } from "~/components/ui/badge";
 import { Search, Heart, Check, X, MessageSquareText } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Label } from "@radix-ui/react-dropdown-menu";
+import { api } from "~/trpc/react";
 
 export default function CommunityBlog() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all-posts");
 
-  const blogPosts = [
-    {
-      id: 1,
-      author: {
-        name: "Vishnu Sharma",
-        role: "President",
-        initials: "VS",
-      },
-      title: "Reflecting on the 132nd FPA Conference Highlights",
-      content:
-        "A look back at the highlights of last year's Fiji Principals Association conference, including keynote sessions, school showcases, and networking opportunities that left a lasting impact on our members.",
-      image: "#",
-      likes: 52,
-      comments: 12,
-      timeAgo: "2 days ago",
-      category: "Conference Updates",
-    },
-    {
-      id: 2,
-      author: {
-        name: "Pranesh Kumar",
-        role: "Treasurer",
-        initials: "PK",
-      },
-      title: "Accessing Last Year's Presidential Address",
-      content:
-        "To anyone needing access to last year's presidential address, here it is:",
-      likes: 24,
-      comments: 4,
-      timeAgo: "1 week ago",
-      category: "Resources",
-    },
-  ];
+  const filterSlug = useMemo(() => (selectedFilter === "all-posts" ? undefined : selectedFilter), [selectedFilter]);
+  const postsQuery = api.member.blog.listPosts.useQuery({ q: searchQuery || undefined, filter: filterSlug, page: 1, pageSize: 10 });
+  const categoriesQuery = api.member.blog.listCategories.useQuery();
 
   const guidelines = [
     {
@@ -100,24 +71,23 @@ export default function CommunityBlog() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-posts">All Posts</SelectItem>
-                  <SelectItem value="conference-updates">
-                    Conference Updates
-                  </SelectItem>
-                  <SelectItem value="resources">Resources</SelectItem>
-                  <SelectItem value="discussions">Discussions</SelectItem>
-                  <SelectItem value="announcements">Announcements</SelectItem>
+                  {categoriesQuery.data?.map((c) => (
+                    <SelectItem key={c.slug} value={c.slug}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
         </div>
-        <Button>Search</Button>
+        <Button onClick={() => postsQuery.refetch()}>Search</Button>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Main Content - Blog Posts */}
         <div className="space-y-6 lg:col-span-3">
-          {blogPosts.map((post) => (
+          {(postsQuery.data?.items ?? []).map((post) => (
             <Card key={post.id} className="overflow-hidden">
               <CardContent className="">
                 {/* Author Info */}
@@ -143,7 +113,7 @@ export default function CommunityBlog() {
                 {/* Post Content */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-foreground">{post.title}</h3>
-                  <p className="text-foreground/70">{post.content}</p>
+                  <p className="text-foreground/70">{post.excerpt ?? post.content}</p>
 
 
                   {/* Post Footer */}
@@ -155,7 +125,7 @@ export default function CommunityBlog() {
                       </Button>
                       <Button variant={"ghost"} className="flex items-center space-x-1 text-muted-foreground transition-colors hover:text-foreground">
                         <MessageSquareText className="h-4 w-4" />
-                        <span className="text-sm">{post.comments}</span>
+                        <span className="text-sm">{post.commentsCount ?? 0}</span>
                       </Button>
                     </div>
                     <p className="text-sm text-muted-foreground">{post.timeAgo}</p>
@@ -164,6 +134,13 @@ export default function CommunityBlog() {
               </CardContent>
             </Card>
           ))}
+          {!postsQuery.data?.items?.length && (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">No posts found</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}

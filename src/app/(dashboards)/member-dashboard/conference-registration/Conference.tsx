@@ -9,6 +9,8 @@ import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
 import { HelpCircle } from "lucide-react";
 import { useState } from "react";
+import { api } from "~/trpc/react";
+import { handleTRPCMutation } from "~/lib/toast";
 import { Separator } from "~/components/ui/separator";
 import {
   Tooltip,
@@ -37,10 +39,28 @@ export default function ConferenceRegistration() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const utils = api.useUtils();
+  const registerMutation = api.member.registerForConference.useMutation();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Registration submitted:", formData);
-    // Handle form submission
+    await handleTRPCMutation(
+      async () => {
+        const result = await registerMutation.mutateAsync({
+          name: formData.participantName,
+          email: formData.email,
+          phone: formData.mobile,
+          school: formData.school,
+          registrationType: "standard",
+          dietary: `${formData.day1Dietary}/${formData.day2ConferenceDietary}/${formData.day2ClosingDietary}`,
+          message: [formData.remit1, formData.remit2].filter(Boolean).join("\n\n"),
+        });
+        await utils.member.dashboard.getMemberDashboard.invalidate();
+        return result;
+      },
+      "Registration submitted successfully",
+      "Failed to submit registration"
+    );
   };
 
   return (

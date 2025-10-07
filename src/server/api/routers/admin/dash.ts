@@ -29,10 +29,17 @@ type RecentActivity = {
 
 export const adminDashboardRouter = createTRPCRouter({
   getAdminDashboard: protectedProcedure.query(async ({ ctx }) => {
-    // TODO: Replace with actual database queries
-    // For now, returning the same structure as the hardcoded data in Admin.tsx
-
     const adminName: string = ctx.dbUser?.name ?? "Admin";
+
+    // Aggregate stats
+    const [totalUsers, totalConfirmedRegistrations, totalSucceededPaymentsCents] = await Promise.all([
+      ctx.db.user.count(),
+      ctx.db.registration.count({ where: { status: "confirmed" } }),
+      (async () => {
+        const payments = await ctx.db.payment.findMany({ where: { status: "succeeded" }, select: { amountCents: true } });
+        return payments.reduce((sum, p) => sum + (p.amountCents ?? 0), 0);
+      })(),
+    ]);
 
     const stats: {
       users: DashboardStat;
@@ -40,7 +47,7 @@ export const adminDashboardRouter = createTRPCRouter({
       totalPayments: DashboardStat;
     } = {
       users: {
-        value: "69",
+        value: String(totalUsers),
         subtitle: "Total Members",
         icon: {
           type: "lucide",
@@ -51,7 +58,7 @@ export const adminDashboardRouter = createTRPCRouter({
         },
       },
       conference: {
-        value: "124",
+        value: String(totalConfirmedRegistrations),
         subtitle: "Registered Members",
         icon: {
           type: "lucide",
@@ -62,7 +69,7 @@ export const adminDashboardRouter = createTRPCRouter({
         },
       },
       totalPayments: {
-        value: "$31,000",
+        value: `$${(totalSucceededPaymentsCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
         subtitle: "Collected",
         icon: {
           type: "lucide",
@@ -74,77 +81,74 @@ export const adminDashboardRouter = createTRPCRouter({
       },
     };
 
-    const upcomingConference = {
-      title: "133rd Fiji Principals Association Conference",
-      date: "17th - 19th September 2025",
-      capacity: "135/200 Spaces Remaining",
+    // Upcoming conference from settings
+    const conf = await ctx.db.siteSettings.findUnique({ where: { key: "conferenceDetails" } });
+    let upcomingConference = {
+      title: "Upcoming Conference",
+      date: "TBA",
+      capacity: "",
     };
+    if (conf) {
+      try {
+        const parsed = JSON.parse(conf.value) as { conferenceTitle?: string; rows?: { label: string; value: string }[] };
+        upcomingConference.title = parsed.conferenceTitle ?? upcomingConference.title;
+        const dateRow = parsed.rows?.find((r) => r.label.toLowerCase() === "date");
+        if (dateRow) upcomingConference.date = dateRow.value;
+        // capacity not tracked; leave as empty or derive if later added
+      } catch {
+        // ignore parse errors
+      }
+    }
+
+    // Recent activity built from latest registrations and payments
+    const [latestRegs, latestPayments] = await Promise.all([
+      ctx.db.registration.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        select: { id: true, name: true, createdAt: true },
+      }),
+      ctx.db.payment.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        select: { amountCents: true, status: true, createdAt: true },
+      }),
+    ]);
 
     const recentActivity: RecentActivity[] = [
-      {
-        icon: {
-          type: "lucide",
-          name: "CheckCircle",
-          props: {
-            className: "text-primary w-5 flex-shrink-0",
-            size: 24,
-          },
-        },
-        title: "John Doe registered for the APC 2025",
-        time: "2 days ago",
-      },
-      {
-        icon: {
-          type: "lucide",
-          name: "CreditCard",
-          props: {
-            className: "text-primary w-5 flex-shrink-0",
-            size: 24,
-          },
-        },
-        title: "New payment recieved: $250 from Bob Ross",
-        time: "4 days ago",
-      },
-      {
-        icon: {
-          type: "lucide",
-          name: "UserPlus",
-          props: {
-            className: "text-primary w-5 flex-shrink-0",
-            size: 24,
-          },
-        },
-        title: "New member added: Jane Smith",
-        time: "1 week ago",
-      },
-    ];
+      ...latestRegs.map((r) => ({
+        icon: { type: "lucide", name: "CheckCircle", props: { className: "text-primary w-5 flex-shrink-0", size: 24 } },
+        title: `${r.name} registered for the conference`,
+        time: r.createdAt.toLocaleDateString("en-GB"),
+      })),
+      ...latestPayments.map((p) => ({
+        icon: { type: "lucide", name: "CreditCard", props: { className: "text-primary w-5 flex-shrink-0", size: 24 } },
+        title: p.status === "succeeded" ? `New payment received: $${(p.amountCents / 100).toFixed(2)}` : `Payment ${p.status}`,
+        time: p.createdAt.toLocaleDateString("en-GB"),
+      })),
+    ]
+      .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+      .slice(0, 5);
 
-    const recentRegistrations: RecentConferenceRegistration[] = [
-      {
-        id: "1",
-        name: "John Doe",
-        date: "17/05/2025",
-        status: "Paid",
-        amountPaid: 250,
-        amountDue: 0,
-      },
-      {
-        id: "2",
-        name: "Bob Ross",
-        date: "21/07/2025",
-        status: "Pending",
-        amountPaid: 50,
-        amountDue: 150,
-      },
-      {
-        id: "3",
-        name: "Stephen Prosser",
-        date: "26/08/2025",
-        status: "Pending",
-        amountPaid: 150,
-        amountDue: 50,
-      },
-    ];
+    // Recent conference registrations table
+    const recentRegs = await ctx.db.registration.findMany({
+      take: 10,
+      orderBy: { createdAt: "desc" },
+      select: { id: true, name: true, createdAt: true, status: true, payments: true, priceCents: true },
+    });
+    const recentRegistrations: RecentConferenceRegistration[] = recentRegs.map((r) => {
+      const paidCents = (r.payments ?? [])
+        .filter((p) => p.status === "succeeded")
+        .reduce((sum, p) => sum + p.amountCents, 0);
+      const amountDueCents = Math.max((r.priceCents ?? 0) - paidCents, 0);
+      return {
+        id: r.id,
+        name: r.name,
+        date: r.createdAt.toLocaleDateString("en-GB"),
+        status: paidCents >= (r.priceCents ?? 0) && (r.priceCents ?? 0) > 0 ? "Paid" : paidCents > 0 ? "Pending" : "Overdue",
+        amountPaid: paidCents / 100,
+        amountDue: amountDueCents / 100,
+      };
+    });
 
     return {
       adminName,

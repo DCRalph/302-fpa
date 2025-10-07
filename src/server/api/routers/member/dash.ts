@@ -1,4 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { z } from "zod";
 
 // type RegistrationStatus = {
 //   state: "not_registered" | "pending" | "cancelled" | "confirmed_unpaid" | "confirmed_paid" | "confirmed_partial" | "refunded";
@@ -35,19 +36,88 @@ export const memberDashboardRouter = createTRPCRouter({
   getMemberDashboard: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.dbUser.id;
 
-    // Fetch user's registration from database
+    // Fetch user's latest registration with related info
     const registration = await ctx.db.registration.findFirst({
       where: { userId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       include: {
         ticketType: true,
+        payments: true,
+        statusHistory: true,
       },
     });
 
-    // Determine registration status details
-    let registrationStatus = null;
+    // Fetch counts for dashboard stats
+    const [totalPublishedBlogPosts, totalUserAttachments] = await Promise.all([
+      ctx.db.blogPost.count({ where: { published: true } }),
+      ctx.db.attachment.count({
+        where: {
+          registration: { userId },
+        },
+      }),
+    ]);
 
-    if (!registration && false) {
+    // Get conference date from settings if available
+    const conferenceDetailsSetting = await ctx.db.siteSettings.findUnique({
+      where: { key: "conferenceDetails" },
+    });
+    let conferenceDate: string | undefined = undefined;
+    if (conferenceDetailsSetting) {
+      try {
+        const parsed = JSON.parse(conferenceDetailsSetting.value) as {
+          rows?: { label: string; value: string }[];
+        };
+        const dateRow = parsed?.rows?.find((r) => r.label.toLowerCase() === "date");
+        conferenceDate = dateRow?.value;
+      } catch {
+        // ignore parse errors, leave undefined
+      }
+    }
+
+    // Determine registration status details
+    let registrationStatus: null | {
+      state:
+        | "not_registered"
+        | "pending"
+        | "cancelled"
+        | "confirmed_unpaid"
+        | "confirmed_paid"
+        | "confirmed_partial"
+        | "refunded";
+      title: string;
+      description: string;
+      icon: { type: string; name: string; props: Record<string, string | number> };
+      iconColor: string;
+      badgeVariant: "default" | "secondary" | "destructive" | "outline";
+      badgeText: string;
+      badgeBgColor?: string;
+      registrationId?: string;
+      registeredDate?: string;
+      cancelledDate?: string;
+      refundedDate?: string;
+      confirmedDate?: string;
+      conferenceDate?: string;
+      registrationType?: string;
+      amount?: string | null;
+      paymentStatus?: string;
+      paymentDate?: string;
+      showActions: boolean;
+      actions?: {
+        primary?: { text: string; href: string };
+        secondary?: { text: string; href: string };
+      };
+    } = null;
+
+    const formatCurrency = (cents?: number | null, currency?: string) => {
+      if (!cents || cents <= 0) return null;
+      const amount = (cents / 100).toFixed(2);
+      return `${currency ?? "FJD"} $${amount}`;
+    };
+
+    const toDisplayDate = (d?: Date | null) =>
+      d ? d.toLocaleDateString("en-GB") : undefined;
+
+    if (!registration) {
       // Not registered
       registrationStatus = {
         state: "not_registered" as const,
@@ -63,23 +133,20 @@ export const memberDashboardRouter = createTRPCRouter({
         badgeText: "Not Registered",
         showActions: true,
         actions: {
-          primary: { text: "Register Now", href: "/register" },
+          primary: { text: "Register Now", href: "/member-dashboard/conference-registration" },
         },
       };
     } else {
-
-      const registration = {
-        id: "1",
-        status: "cancelled",
-        paymentStatus: "paid",
-        priceCents: 10000,
-        currency: "FJD",
-        registrationType: "early-bird",
-        createdAt: new Date(),
-      }
-
-      const { status, paymentStatus, priceCents, currency, registrationType, createdAt } = registration;
-
+      const {
+        status,
+        paymentStatus,
+        priceCents,
+        currency,
+        registrationType,
+        createdAt,
+        updatedAt,
+        id,
+      } = registration;
 
       // Calculate different states based on status and payment
       if (status === "cancelled") {
@@ -95,13 +162,13 @@ export const memberDashboardRouter = createTRPCRouter({
           iconColor: "text-red-500",
           badgeVariant: "destructive" as const,
           badgeText: "Cancelled",
-          registrationId: registration.id,
-          registeredDate: createdAt.toLocaleDateString(),
-          cancelledDate: createdAt.toLocaleDateString(),
+          registrationId: id,
+          registeredDate: toDisplayDate(createdAt),
+          cancelledDate: toDisplayDate(updatedAt ?? createdAt),
           showActions: true,
           actions: {
             primary: { text: "Contact Support", href: "/contact" },
-            secondary: { text: "Register Again", href: "/register" },
+            secondary: { text: "Register Again", href: "/member-dashboard/conference-registration" },
           },
         };
       } else if (status === "pending") {
@@ -117,10 +184,10 @@ export const memberDashboardRouter = createTRPCRouter({
           iconColor: "text-yellow-500",
           badgeVariant: "default" as const,
           badgeText: "Pending Approval",
-          registrationId: registration.id,
-          registeredDate: createdAt.toLocaleDateString(),
+          registrationId: id,
+          registeredDate: toDisplayDate(createdAt),
           registrationType,
-          confirmedDate: createdAt.toLocaleDateString(),
+          confirmedDate: toDisplayDate(updatedAt ?? createdAt),
           showActions: false,
         };
       } else if (status === "confirmed") {
@@ -138,12 +205,13 @@ export const memberDashboardRouter = createTRPCRouter({
             iconColor: "text-blue-500",
             badgeVariant: "default" as const,
             badgeText: paymentStatus === "pending" ? "Payment Pending" : "Payment Required",
-            registrationId: registration.id,
-            registeredDate: createdAt.toLocaleDateString(),
+            registrationId: id,
+            registeredDate: toDisplayDate(createdAt),
             registrationType,
-            amount: priceCents ? `${currency} $${(priceCents / 100).toFixed(2)}` : null,
+            amount: formatCurrency(priceCents, currency),
             paymentStatus,
-            paymentDate: createdAt.toLocaleDateString(),
+            paymentDate: toDisplayDate(updatedAt ?? createdAt),
+            conferenceDate: conferenceDate,
             showActions: true,
             actions: {
               primary: { text: "Make Payment", href: "/payment" },
@@ -164,13 +232,13 @@ export const memberDashboardRouter = createTRPCRouter({
             badgeVariant: "default" as const,
             badgeText: "Paid",
             badgeBgColor: "bg-[#198754]",
-            registrationId: registration.id,
-            registeredDate: createdAt.toLocaleDateString(),
-            conferenceDate: "17th - 19th September 2025",
+            registrationId: id,
+            registeredDate: toDisplayDate(createdAt),
+            conferenceDate: conferenceDate,
             registrationType,
-            amount: priceCents ? `${currency} $${(priceCents / 100).toFixed(2)}` : null,
+            amount: formatCurrency(priceCents, currency),
             paymentStatus: "Paid",
-            paymentDate: createdAt.toLocaleDateString(),
+            paymentDate: toDisplayDate(updatedAt ?? createdAt),
             showActions: true,
             actions: {
               primary: { text: "Download Ticket", href: "/ticket/download" },
@@ -190,12 +258,12 @@ export const memberDashboardRouter = createTRPCRouter({
             iconColor: "text-orange-500",
             badgeVariant: "default" as const,
             badgeText: "Partial Payment",
-            registrationId: registration.id,
-            registeredDate: createdAt.toLocaleDateString(),
+            registrationId: id,
+            registeredDate: toDisplayDate(createdAt),
             registrationType,
-            amount: priceCents ? `${currency} $${(priceCents / 100).toFixed(2)}` : null,
+            amount: formatCurrency(priceCents, currency),
             paymentStatus: "Partial",
-            paymentDate: createdAt.toLocaleDateString(),
+            paymentDate: toDisplayDate(updatedAt ?? createdAt),
             showActions: true,
             actions: {
               primary: { text: "Complete Payment", href: "/payment" },
@@ -215,13 +283,13 @@ export const memberDashboardRouter = createTRPCRouter({
             iconColor: "text-purple-500",
             badgeVariant: "secondary" as const,
             badgeText: "Refunded",
-            registrationId: registration.id,
-            registeredDate: createdAt.toLocaleDateString(),
+            registrationId: id,
+            registeredDate: toDisplayDate(createdAt),
             registrationType,
-            amount: priceCents ? `${currency} $${(priceCents / 100).toFixed(2)}` : null,
+            amount: formatCurrency(priceCents, currency),
             paymentStatus: "Refunded",
-            paymentDate: createdAt.toLocaleDateString(),
-            refundedDate: createdAt.toLocaleDateString(),
+            paymentDate: toDisplayDate(updatedAt ?? createdAt),
+            refundedDate: toDisplayDate(updatedAt ?? createdAt),
             showActions: true,
             actions: {
               primary: { text: "Contact Support", href: "/contact" },
@@ -233,11 +301,16 @@ export const memberDashboardRouter = createTRPCRouter({
 
     // Calculate stats based on registration
     const statsRegistrationValue = registration
-      ? (registration.status === "confirmed" ? "Registered" : registration.status === "pending" ? "Pending" : "Cancelled")
+      ? registration.status === "confirmed"
+        ? "Registered"
+        : registration.status === "pending"
+          ? "Pending"
+          : "Cancelled"
       : "Not Registered";
 
     const statsPaymentValue = registration?.paymentStatus
-      ? registration.paymentStatus.charAt(0).toUpperCase() + registration.paymentStatus.slice(1)
+      ? registration.paymentStatus.charAt(0).toUpperCase() +
+        registration.paymentStatus.slice(1)
       : "Not Paid";
 
     return {
@@ -247,7 +320,12 @@ export const memberDashboardRouter = createTRPCRouter({
           subtitle: "2025 Conference",
           icon: {
             type: "lucide",
-            name: registration?.status === "confirmed" ? "CheckCircle" : registration?.status === "pending" ? "Clock" : "AlertCircle",
+            name:
+              registration?.status === "confirmed"
+                ? "CheckCircle"
+                : registration?.status === "pending"
+                  ? "Clock"
+                  : "AlertCircle",
             props: {
               className: "h-8 w-8",
             },
@@ -255,7 +333,9 @@ export const memberDashboardRouter = createTRPCRouter({
         },
         paymentStatus: {
           value: statsPaymentValue,
-          subtitle: registration?.priceCents ? `$${(registration.priceCents / 100).toFixed(2)} Conference Fee` : "No Fee",
+          subtitle: registration?.priceCents
+            ? `$${(registration.priceCents / 100).toFixed(2)} Conference Fee`
+            : "No Fee",
           icon: {
             type: "lucide",
             name: "DollarSign",
@@ -265,7 +345,7 @@ export const memberDashboardRouter = createTRPCRouter({
           },
         },
         communityBlog: {
-          value: "3",
+          value: String(totalPublishedBlogPosts),
           subtitle: "Blog Posts",
           icon: {
             type: "lucide",
@@ -276,7 +356,7 @@ export const memberDashboardRouter = createTRPCRouter({
           },
         },
         documents: {
-          value: "2",
+          value: String(totalUserAttachments),
           subtitle: "Files Uploaded",
           icon: {
             type: "lucide",
@@ -288,52 +368,61 @@ export const memberDashboardRouter = createTRPCRouter({
         },
       },
       registrationStatus,
-      recentActivity: [
-        {
-          icon: {
-            type: "lucide",
-            name: "CheckCircle",
-            props: {
-              className: "size-6 text-blue-500",
+      recentActivity: (() => {
+        const items: {
+          icon: { type: string; name: string; props: Record<string, string | number> };
+          title: string;
+          time: string;
+          createdAt: Date;
+        }[] = [];
+        if (registration) {
+          // Registration event
+          items.push({
+            icon: {
+              type: "lucide",
+              name: "CheckCircle",
+              props: { className: "size-6 text-blue-500" },
             },
-          },
-          title: "Successfully registered for APC 2025",
-          time: "2 days ago",
-        },
-        {
-          icon: {
-            type: "lucide",
-            name: "CreditCard",
-            props: {
-              className: "size-6 text-blue-500",
-            },
-          },
-          title: "Payment of $250 processed",
-          time: "2 days ago",
-        },
-        {
-          icon: {
-            type: "lucide",
-            name: "Calendar",
-            props: {
-              className: "size-6 text-blue-500",
-            },
-          },
-          title: "Booked session: Leadership in Education",
-          time: "1 week ago",
-        },
-        {
-          icon: {
-            type: "lucide",
-            name: "FileText",
-            props: {
-              className: "size-6 text-blue-500",
-            },
-          },
-          title: "Uploaded conference presentation",
-          time: "1 week ago",
-        },
-      ]
+            title: "Registration created",
+            time: toDisplayDate(registration.createdAt) ?? "",
+            createdAt: registration.createdAt,
+          });
+          // Payment events
+          for (const p of registration.payments ?? []) {
+            items.push({
+              icon: {
+                type: "lucide",
+                name: "CreditCard",
+                props: { className: "size-6 text-blue-500" },
+              },
+              title:
+                p.status === "succeeded"
+                  ? `Payment of $${(p.amountCents / 100).toFixed(2)} succeeded`
+                  : `Payment ${p.status}`,
+              time: toDisplayDate(p.createdAt) ?? "",
+              createdAt: p.createdAt,
+            });
+          }
+          // Status changes
+          for (const sh of registration.statusHistory ?? []) {
+            items.push({
+              icon: {
+                type: "lucide",
+                name: "Calendar",
+                props: { className: "size-6 text-blue-500" },
+              },
+              title: `Status changed to ${sh.newStatus}`,
+              time: toDisplayDate(sh.createdAt) ?? "",
+              createdAt: sh.createdAt,
+            });
+          }
+        }
+        // Sort desc and take latest 4
+        return items
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+          .slice(0, 4)
+          .map(({ createdAt: _c, ...rest }) => rest);
+      })(),
     }
 
 
