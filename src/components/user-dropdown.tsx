@@ -34,22 +34,28 @@ import { useAuth } from "~/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { authClient } from "~/lib/auth-client";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { api } from "~/trpc/react";
 
 export function UserDropdown({ detailed = false }) {
   const { dbUser, isPending: authLoading } = useAuth();
   const [open, setOpen] = useState(false);
-
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+
+  const router = useRouter();
+  const utils = api.useUtils();
+
   useEffect(() => setMounted(true), []);
 
   const handleSignOut = async () => {
     try {
       await authClient.signOut();
       toast.success("Signed out successfully");
-      redirect("/");
+      // redirect("/");
+      await utils.auth.me.invalidate();
+      router.push("/");
     } catch (error) {
       console.error("Sign out error:", error);
       toast.error("Failed to sign out");

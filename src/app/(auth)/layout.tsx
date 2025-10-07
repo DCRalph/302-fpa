@@ -1,7 +1,11 @@
+import React from "react";
 import { NavBar } from "~/components/nav-bar";
-import SignUpForm from "./Form";
 
-export default function RegisterPage() {
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <main
       className="bg-background text-foreground min-h-screen md:fixed w-full"
@@ -14,12 +18,11 @@ export default function RegisterPage() {
     >
       <div className="fixed inset-0 bg-black/50"></div>
 
-      <div className="relative z-10"></div>
-      <NavBar />
-
-      <div className="container mx-auto flex md:h-[calc(100vh-81px)] flex-col items-center justify-center px-4 py-20">
-        <SignUpForm />
+      <div className="relative z-10">
+        <NavBar />
+        {children}
       </div>
     </main>
   );
 }
+
