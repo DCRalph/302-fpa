@@ -283,7 +283,7 @@ export default function ConferenceRegistration() {
 
                             <Button
                                 type="submit"
-                                className="w-full bg-slate-800 hover:bg-slate-900 text-white py-3"
+                                className="w-full py-3"
                                 disabled={!formData.finalConfirmation}
                             >
                                 Submit Registration
