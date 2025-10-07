@@ -13,8 +13,11 @@ const pageNamesMap = {
   "/admin-dashboard/payments": "Payments",
 
   "/member-dashboard": "Dashboard",
+  "/member-dashboard/conference-registration": "Conference Registration",
+  "/member-dashboard/my-files": "My Files",
+  "/member-dashboard/community-blog": "Community Blog",
   "/member-dashboard/profile": "Profile",
-}
+};
 
 export function DashboardHeader() {
   const pathname = usePathname();
@@ -22,8 +25,8 @@ export function DashboardHeader() {
 
 
   return (
-    <nav className="sticky top-0 z-50 bg-sidebar/90 backdrop-blur-sm w-full h-16 border-b">
-      <div className=" mx-auto flex h-16 items-center justify-between px-4 lg:px-6">
+    <nav className="bg-sidebar/90 sticky top-0 z-50 h-16 w-full border-b backdrop-blur-sm">
+      <div className="mx-auto flex h-16 items-center justify-between px-4 lg:px-6">
         <div className="flex items-center gap-3">
           <SidebarTrigger size={"icon"} className="" />
           <Separator orientation="vertical" className="!h-8" />
