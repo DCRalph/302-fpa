@@ -11,45 +11,22 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Search, Heart, Check, X, MessageSquareText } from "lucide-react";
 import { useState } from "react";
+import { api } from "~/trpc/react";
 import { Label } from "@radix-ui/react-dropdown-menu";
 
 export default function CommunityBlog() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all-posts");
 
-  const blogPosts = [
+  const { data } = api.member.blog.list.useQuery(
     {
-      id: 1,
-      author: {
-        name: "Vishnu Sharma",
-        role: "President",
-        initials: "VS",
-      },
-      title: "Reflecting on the 132nd FPA Conference Highlights",
-      content:
-        "A look back at the highlights of last year's Fiji Principals Association conference, including keynote sessions, school showcases, and networking opportunities that left a lasting impact on our members.",
-      image: "#",
-      likes: 52,
-      comments: 12,
-      timeAgo: "2 days ago",
-      category: "Conference Updates",
+      query: searchQuery || undefined,
+      categorySlug:
+        selectedFilter !== "all-posts" ? selectedFilter : undefined,
+      take: 10,
     },
-    {
-      id: 2,
-      author: {
-        name: "Pranesh Kumar",
-        role: "Treasurer",
-        initials: "PK",
-      },
-      title: "Accessing Last Year's Presidential Address",
-      content:
-        "To anyone needing access to last year's presidential address, here it is:",
-      likes: 24,
-      comments: 4,
-      timeAgo: "1 week ago",
-      category: "Resources",
-    },
-  ];
+    { keepPreviousData: true },
+  );
 
   const guidelines = [
     {
@@ -117,25 +94,25 @@ export default function CommunityBlog() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Main Content - Blog Posts */}
         <div className="space-y-6 lg:col-span-3">
-          {blogPosts.map((post) => (
+          {data?.posts.map((post) => (
             <Card key={post.id} className="overflow-hidden">
               <CardContent className="">
                 {/* Author Info */}
                 <div className="mb-4 flex items-center space-x-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
                     <span className="text-sm font-medium text-black">
-                      {post.author.initials}
+                      {(post.author?.name ?? "?").split(" ").map((n) => n[0]).join("")}
                     </span>
                   </div>
                   <div>
                     <p className="font-medium text-foreground">
-                      {post.author.name}
+                      {post.author?.name ?? "Member"}
                     </p>
-                    <p className="text-sm text-muted-foreground">{post.author.role}</p>
+                    <p className="text-sm text-muted-foreground">&nbsp;</p>
                   </div>
                   <div className="ml-auto">
                     <Badge variant="secondary" className="text-xs">
-                      {post.category}
+                      {post.categories?.[0]?.category?.name ?? "General"}
                     </Badge>
                   </div>
                 </div>
@@ -143,7 +120,7 @@ export default function CommunityBlog() {
                 {/* Post Content */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-foreground">{post.title}</h3>
-                  <p className="text-foreground/70">{post.content}</p>
+                  <p className="text-foreground/70 whitespace-pre-line">{post.content}</p>
 
 
                   {/* Post Footer */}
@@ -151,14 +128,14 @@ export default function CommunityBlog() {
                     <div className="flex items-center space-x-4">
                       <Button variant={"ghost"} className="flex items-center space-x-1 text-muted-foreground transition-colors hover:text-foreground">
                         <Heart className="h-4 w-4" />
-                        <span className="text-sm">{post.likes}</span>
+                        <span className="text-sm">&nbsp;</span>
                       </Button>
                       <Button variant={"ghost"} className="flex items-center space-x-1 text-muted-foreground transition-colors hover:text-foreground">
                         <MessageSquareText className="h-4 w-4" />
-                        <span className="text-sm">{post.comments}</span>
+                        <span className="text-sm">{post._count?.comments ?? 0}</span>
                       </Button>
                     </div>
-                    <p className="text-sm text-muted-foreground">{post.timeAgo}</p>
+                    <p className="text-sm text-muted-foreground">{new Date(post.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
               </CardContent>
