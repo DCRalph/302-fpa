@@ -1,6 +1,6 @@
 "use client";
 
-import { HeroCarousel, autoplay } from "./hero-carousel";
+import { HeroCarousel } from "./hero-carousel";
 import { type ConferenceTitle } from "~/server/api/routers/home";
 import { montserrat } from "~/components/fonts";
 import { Button } from "~/components/ui/button";
