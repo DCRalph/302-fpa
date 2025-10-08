@@ -10,6 +10,7 @@ import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
+import { Textarea } from "~/components/ui/textarea";
 
 export default function Profile() {
   const { dbUser } = useAuth();
@@ -18,7 +19,7 @@ export default function Profile() {
   const [formData, setFormData] = useState({
     fullName: dbUser?.name,
     phone: dbUser?.phone,
-    school: "Yoobee College of Creative Innovation",
+    school: dbUser?.school,
     email: dbUser?.email,
   });
 
@@ -54,9 +55,7 @@ export default function Profile() {
             </div>
             <div className="space-y-1 pl-4">
               <h1 className="text-3xl font-bold">{dbUser?.name}</h1>
-              <h2 className="text-2xl">
-                Yoobee College of Creative Innovation
-              </h2>
+              <h2 className="text-2xl">{dbUser?.school}</h2>
               <div className="space-y-1">
                 <div className="flex items-center space-x-4 pt-2 text-lg">
                   <Mail size={24} />
@@ -92,7 +91,9 @@ export default function Profile() {
             <div className="lg:col-span-3">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-2xl font-bold">Basic Information</CardTitle>
+                  <CardTitle className="text-2xl font-bold">
+                    Basic Information
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -124,7 +125,7 @@ export default function Profile() {
                     <Label htmlFor="school">School</Label>
                     <Input
                       id="school"
-                      value={formData.school}
+                      value={`${formData.school}`}
                       onChange={(e) =>
                         handleInputChange("school", e.target.value)
                       }
@@ -145,56 +146,43 @@ export default function Profile() {
                       className="bg-gray-100"
                       disabled
                     />
-                    <p className="text-sm text-gray-500">
+                    <p className="text-muted-foreground text-sm">
                       Email cannot be changed. Contact admin if needed.
                     </p>
                   </div>
 
-                  <Button
-                    onClick={handleUpdateDetails}
-                    className="bg-slate-800 text-white hover:bg-slate-900"
-                  >
-                    Update Details
-                  </Button>
+                  <Button onClick={handleUpdateDetails}>Update Details</Button>
                 </CardContent>
               </Card>
             </div>
 
             {/* Sidebar - Membership Info */}
             <div className="space-y-6">
-              <Card className="border-blue-200 bg-blue-50">
+              <Card className="border-primary bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
                 <CardHeader>
-                  <CardTitle className="text-blue-900">
+                  <CardTitle className="text-foreground text-base font-bold">
                     Membership Status
+                    <div>
+                      <Badge className="mt-2">Active</Badge>
+                    </div>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <Badge className="border-green-200 bg-green-100 text-green-800">
-                      Active
-                    </Badge>
-                  </div>
-
                   <div className="space-y-2">
-                    <div className="font-medium text-blue-900">Joined</div>
-                    <div className="text-sm text-blue-800">26/06/2025</div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="font-medium text-blue-900">Member ID</div>
-                    <div className="text-sm text-blue-800">FPA-SP-2025-001</div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="font-medium text-blue-900">Role</div>
-                    <div className="text-sm text-blue-800">Principal</div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="font-medium text-blue-900">Region</div>
-                    <div className="text-sm text-blue-800">
-                      Central Division
+                    <div className="font-semibold">Joined</div>
+                    <div className="text-sm">
+                      {dbUser?.createdAt.toLocaleDateString("en-US")}
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="font-semibold">User ID</div>
+                    <div className="text-sm">{dbUser?.id}</div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="font-semibold">Role</div>
+                    <div className="text-sm">{dbUser?.role}</div>
                   </div>
                 </CardContent>
               </Card>
@@ -206,7 +194,9 @@ export default function Profile() {
         <TabsContent value="professional" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Professional Profile</CardTitle>
+              <CardTitle className="text-2xl font-bold">
+                Professional Profile
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -242,16 +232,14 @@ export default function Profile() {
 
               <div className="space-y-2">
                 <Label htmlFor="bio">Professional Bio</Label>
-                <textarea
+                <Textarea
                   id="bio"
-                  className="min-h-[120px] w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="min-h-[120px] w-full rounded-md border px-3 py-2 text-base focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   placeholder="Tell us about your professional background and experience..."
                 />
               </div>
 
-              <Button className="bg-slate-800 text-white hover:bg-slate-900">
-                Update Professional Profile
-              </Button>
+              <Button>Update Professional Profile</Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -260,31 +248,41 @@ export default function Profile() {
         <TabsContent value="profile-image" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Profile Image</CardTitle>
+              <CardTitle className="text-2xl font-bold">
+                Profile Image
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex flex-col items-center space-y-6">
                 {/* Current Profile Image */}
-                <div className="flex h-32 w-32 items-center justify-center rounded-full bg-blue-600">
-                  <span className="text-4xl font-bold text-white">SP</span>
-                </div>
+                {dbUser?.image ? (
+                  <Image
+                    src={dbUser.image}
+                    alt=""
+                    className="mx-12 mb-8 h-[137px] w-[137px] rounded-full"
+                    width={137}
+                    height={137}
+                  />
+                ) : (
+                  <div className="bg-muted flex h-8 w-8 items-center justify-center rounded-full">
+                    <User className="text-muted-foreground h-4 w-4" />
+                  </div>
+                )}
 
-                <div className="space-y-4 text-center">
-                  <p className="text-gray-600">
+                <div className="space-y-5 text-center">
+                  <p className="text-foreground">
                     Upload a professional photo to personalize your profile
                   </p>
 
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <Button variant="outline">Choose File</Button>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-muted-foreground pt-1 text-sm">
                       Recommended: Square image, at least 200x200px
                     </p>
                   </div>
                 </div>
 
-                <Button className="bg-slate-800 text-white hover:bg-slate-900">
-                  Update Profile Image
-                </Button>
+                <Button>Update Profile Image</Button>
               </div>
             </CardContent>
           </Card>
@@ -325,21 +323,17 @@ export default function Profile() {
                   />
                 </div>
 
-                <div className="rounded-lg bg-blue-50 p-4">
-                  <h4 className="mb-2 font-medium text-blue-900">
-                    Password Requirements:
-                  </h4>
-                  <ul className="space-y-1 text-sm text-blue-800">
-                    <li>• At least 8 characters long</li>
-                    <li>• Contains at least one uppercase letter</li>
-                    <li>• Contains at least one lowercase letter</li>
-                    <li>• Contains at least one number</li>
+                <div className="border-primary rounded-lg border bg-gradient-to-br from-blue-50 to-purple-50 p-4 dark:from-blue-950/20 dark:to-purple-950/20">
+                  <h4 className="mb-2 font-medium">Password Requirements:</h4>
+                  <ul className="text-foreground list-disc space-y-1 pl-4 text-sm">
+                    <li>At least 8 characters long</li>
+                    <li>Contains at least one uppercase letter</li>
+                    <li>Contains at least one lowercase letter</li>
+                    <li>Contains at least one number</li>
                   </ul>
                 </div>
 
-                <Button className="bg-slate-800 text-white hover:bg-slate-900">
-                  Update Password
-                </Button>
+                <Button>Update Password</Button>
               </div>
             </CardContent>
           </Card>
