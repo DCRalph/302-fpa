@@ -118,7 +118,7 @@ export const adminConferenceRouter = createTRPCRouter({
           contacts: {
             create: contacts.map((contact) => ({
               name: contact.name,
-              feilds: {
+              fields: {
                 email: contact.email,
                 phone: contact.phone,
                 school: contact.school,
@@ -209,7 +209,7 @@ export const adminConferenceRouter = createTRPCRouter({
             contacts: {
               create: contacts.map((contact) => ({
                 name: contact.name,
-                feilds: {
+                fields: {
                   email: contact.email,
                   phone: contact.phone,
                   school: contact.school,
