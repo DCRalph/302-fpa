@@ -104,7 +104,7 @@ export const adminDashboardRouter = createTRPCRouter({
           ? `${conferenceRegistrations}`
           : String(totalConfirmedRegistrations),
         subtitle: latestConference
-          ? `${latestConference.name} Registrations`
+          ? `Registrations`
           : "Total Registrations",
         icon: {
           type: "lucide",

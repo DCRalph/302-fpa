@@ -37,44 +37,44 @@ export default function ManageMembersPage() {
       {/* Statistics Cards */}
       {stats && (
         <div className="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Members</CardTitle>
-              <User2 className="text-muted-foreground h-4 w-4" />
+              <CardTitle className="text-base font-medium text-white">Total Members</CardTitle>
+              <User2 className="text-white" size={24} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalMembers}</div>
-              <p className="text-muted-foreground text-xs">Regular users</p>
+              <div className="text-2xl font-bold text-white">{stats.totalMembers}</div>
+              <p className="text-white/80 text-sm">Regular users</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Administrators</CardTitle>
-              <User2 className="text-muted-foreground h-4 w-4" />
+              <CardTitle className="text-base font-medium text-white">Administrators</CardTitle>
+              <User2 className="text-white" size={24} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalAdmins}</div>
-              <p className="text-muted-foreground text-xs">Admin users</p>
+              <div className="text-2xl font-bold text-white">{stats.totalAdmins}</div>
+              <p className="text-white/80 text-sm">Admin users</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Verified</CardTitle>
-              <Mail className="text-muted-foreground h-4 w-4" />
+              <CardTitle className="text-base font-medium text-white">Verified</CardTitle>
+              <Mail className="text-white" size={24} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.verifiedMembers}</div>
-              <p className="text-muted-foreground text-xs">Email verified</p>
+              <div className="text-2xl font-bold text-white">{stats.verifiedMembers}</div>
+              <p className="text-white/80 text-sm">Email verified</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">New Members</CardTitle>
-              <Calendar className="text-muted-foreground h-4 w-4" />
+              <CardTitle className="text-base font-medium text-white">New Members</CardTitle>
+              <Calendar className="text-white" size={24} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.recentMembers}</div>
-              <p className="text-muted-foreground text-xs">Last 30 days</p>
+              <div className="text-2xl font-bold text-white">{stats.recentMembers}</div>
+              <p className="text-white/80 text-sm">Last 30 days</p>
             </CardContent>
           </Card>
         </div>

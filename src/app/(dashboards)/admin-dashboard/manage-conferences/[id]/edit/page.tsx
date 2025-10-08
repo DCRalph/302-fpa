@@ -76,7 +76,7 @@ export default function EditConferencePage() {
       if (conference.contacts.length > 0) {
         setContacts(
           conference.contacts.map((contact) => {
-            const fields = contact.feilds as { email?: string; phone?: string; school?: string } | null;
+            const fields = contact.fields as { email?: string; phone?: string; school?: string } | null;
             return {
               id: contact.id,
               name: contact.name,

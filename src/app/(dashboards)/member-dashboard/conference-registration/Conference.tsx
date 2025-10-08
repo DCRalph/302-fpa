@@ -797,13 +797,13 @@ export default function ConferenceRegistration() {
         <div className="h-full">
           <div className="sticky top-20 space-y-6">
             {/* Bank Transfer Details */}
-            <Card id="bank-details-section" className="border-primary bg-blue-50 dark:bg-gradient-to-r dark:from-[#93E3F2] dark:from-25% dark:to-[#00AEE8] dark:to-100%">
+            <Card id="bank-details-section" className="border-primary bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-black">
+                <CardTitle className="text-2xl font-bold text-foreground">
                   Bank Transfer Details
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-black">
+              <CardContent className="text-foreground">
                 <div>
                   <span className="font-bold">Registration Fee:</span>
                   <span className="ml-2">
@@ -830,9 +830,9 @@ export default function ConferenceRegistration() {
             </Card>
 
             {/* Contact Information */}
-            <Card id="contact-section" className="border-primary bg-blue-50 dark:bg-gradient-to-r dark:from-[#93E3F2] dark:from-25% dark:to-[#00AEE8] dark:to-100%">
+            <Card id="contact-section" className="border-primary bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-black">
+                <CardTitle className="text-2xl font-bold text-foreground">
                   Contact Information
                 </CardTitle>
               </CardHeader>
@@ -880,7 +880,7 @@ function RegistrationContactRow({ contact, index }: { contact: ConferenceContact
 
 
 
-  const { data: feilds, success } = feildsSchema.safeParse(contact.feilds)
+  const { data: fields, success } = feildsSchema.safeParse(contact.fields)
 
   if (!success) {
     return null
@@ -896,31 +896,31 @@ function RegistrationContactRow({ contact, index }: { contact: ConferenceContact
           <strong>{contact.name}</strong>
         </div>
 
-        {feilds.phone && (
+        {fields.phone && (
           <div className="text-sm">
-            <strong>Phone:</strong> {feilds.phone}
+            <strong>Phone:</strong> {fields.phone}
           </div>
         )}
-        {feilds.school && (
+        {fields.school && (
           <div className="text-sm">
-            <strong>School:</strong> {feilds.school}
+            <strong>School:</strong> {fields.school}
           </div>
         )}
-        {feilds.email && (
+        {fields.email && (
           <div className="text-sm">
             <strong>Email:</strong>{' '}
             <Link
               target="_blank"
-              href={`mailto:${feilds.email}`}
+              href={`mailto:${fields.email}`}
               className="text-blue-800 hover:underline"
             >
-              {feilds.email}
+              {fields.email}
             </Link>
           </div>
         )}
-        {feilds.phone && (
+        {fields.phone && (
           <div className="text-sm">
-            <strong>Phone:</strong> {feilds.phone}
+            <strong>Phone:</strong> {fields.phone}
           </div>
         )}
 

@@ -292,7 +292,7 @@ export default function ViewConferencePage() {
               ) : (
                 <div className="space-y-4">
                   {conference.contacts.map((contact, index) => {
-                    const fields = contact.feilds as { email?: string; phone?: string; school?: string } | null;
+                    const fields = contact.fields as { email?: string; phone?: string; school?: string } | null;
                     return (
                       <div key={contact.id}>
                         {index > 0 && <Separator className="mb-4" />}
