@@ -8,6 +8,7 @@ export const onboardingRouter = createTRPCRouter({
       z.object({
         name: z.string().min(1, "Name is required"),
         phone: z.string().min(1, "Phone number is required"),
+        school: z.string().min(1, "School is required"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -19,6 +20,7 @@ export const onboardingRouter = createTRPCRouter({
         data: {
           name: input.name,
           phone: input.phone,
+          school: input.school,
           onboardedAt: new Date(),
         },
       });
@@ -38,6 +40,7 @@ export const onboardingRouter = createTRPCRouter({
           name: true,
           email: true,
           phone: true,
+          school: true,
         },
       });
 

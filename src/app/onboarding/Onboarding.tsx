@@ -1,18 +1,28 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { api } from "~/trpc/react";
 import { montserrat } from "~/components/fonts";
 import { handleTRPCMutation } from "~/lib/toast";
+import { useAuth } from "~/hooks/useAuth";
 
 export default function OnboardingComponent() {
   const router = useRouter();
+  const { dbUser } = useAuth();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [school, setSchool] = useState("");
   const [error, setError] = useState("");
+
+  // Prefill name if user already has one
+  useEffect(() => {
+    if (dbUser?.name) {
+      setName(dbUser.name);
+    }
+  }, [dbUser]);
 
   const { mutateAsync: completeOnboarding, isPending } = api.onboarding.completeOnboarding.useMutation({
     onSuccess: () => {
@@ -38,8 +48,12 @@ export default function OnboardingComponent() {
       return;
     }
 
-    void handleTRPCMutation(() => completeOnboarding({ name, phone }), "Onboarding completed successfully", "Failed to complete onboarding");
-    // completeOnboarding({ name, phone });
+    if (!school.trim()) {
+      setError("Please enter your school");
+      return;
+    }
+
+    void handleTRPCMutation(() => completeOnboarding({ name, phone, school }), "Onboarding completed successfully", "Failed to complete onboarding");
   };
 
   return (
@@ -87,6 +101,21 @@ export default function OnboardingComponent() {
               <p className="text-xs text-muted-foreground">
                 {`We'll use this to contact you about the conference`}
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="school" className="text-sm font-medium">
+                School <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id="school"
+                type="text"
+                placeholder="Your school name"
+                value={school}
+                onChange={(e) => setSchool(e.target.value)}
+                required
+                disabled={isPending}
+              />
             </div>
 
             {error && (
