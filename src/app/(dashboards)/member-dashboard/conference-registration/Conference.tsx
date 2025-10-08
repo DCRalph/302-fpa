@@ -868,7 +868,7 @@ export default function ConferenceRegistration() {
 }
 
 
-const feildsSchema = z.object({
+const fieldsSchema = z.object({
   email: z.string().optional(),
   phone: z.string().optional(),
   school: z.string().optional(),
@@ -876,11 +876,7 @@ const feildsSchema = z.object({
 
 
 function RegistrationContactRow({ contact, index }: { contact: ConferenceContact, index: number }) {
-
-
-
-
-  const { data: fields, success } = feildsSchema.safeParse(contact.fields)
+  const { data: fields, success } = fieldsSchema.safeParse(contact.fields)
 
   if (!success) {
     return null
