@@ -51,7 +51,7 @@ const memberMenuItems = [
   },
   {
     title: "My Profile",
-    url: "#",
+    url: "/member-dashboard/profile",
     icon: User,
   },
 ];
