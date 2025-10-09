@@ -195,7 +195,7 @@ export default function ConferenceRegistration() {
         <div className="relative grid h-full grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Left Column - Registration Status */}
           <div className="space-y-6 lg:col-span-2">
-            <Card className="border-primary">
+            <Card className="">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -451,14 +451,14 @@ export default function ConferenceRegistration() {
               {/* Bank Transfer Details */}
               <Card
                 id="bank-details-section"
-                className="border-primary bg-blue-50 dark:bg-gradient-to-r dark:from-[#93E3F2] dark:from-25% dark:to-[#00AEE8] dark:to-100%"
+                className="border-primary bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"
               >
                 <CardHeader>
-                  <CardTitle className="text-2xl font-bold text-black">
+                  <CardTitle className="text-2xl font-bold text-foreground">
                     Bank Transfer Details
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-black">
+                <CardContent className="text-foreground">
                   <div>
                     <span className="font-bold">Registration Fee:</span>
                     <span className="ml-2">
@@ -495,14 +495,14 @@ export default function ConferenceRegistration() {
               {/* Contact Information */}
               <Card
                 id="contact-section"
-                className="border-primary bg-blue-50 dark:bg-gradient-to-r dark:from-[#93E3F2] dark:from-25% dark:to-[#00AEE8] dark:to-100%"
+                className="border-primary bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"
               >
                 <CardHeader>
-                  <CardTitle className="text-2xl font-bold text-black">
+                  <CardTitle className="text-2xl font-bold text-foreground">
                     Contact Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 text-black">
+                <CardContent className="space-y-4 text-foreground">
                   {conference?.contacts && conference.contacts.length > 0 ? (
                     <>
                       {conference.contacts.map((contact, index: number) => (

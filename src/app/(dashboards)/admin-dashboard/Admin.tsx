@@ -28,8 +28,6 @@ export default function AdminDashboardPage() {
     );
   }
 
-
-
   return (
     <main className="text-foreground flex">
       {/* Main Content */}
