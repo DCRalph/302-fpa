@@ -107,7 +107,7 @@ export default function CommunityBlog() {
                     <p className="font-medium text-foreground">
                       {post.author?.name ?? "Member"}
                     </p>
-                    <p className="text-sm text-muted-foreground">&nbsp;</p>
+                    <p className="text-sm text-muted-foreground">{post.author?.professionalPosition ?? "Member"}</p>
                   </div>
                   <div className="ml-auto">
                     <Badge variant="secondary" className="text-xs">
@@ -127,7 +127,7 @@ export default function CommunityBlog() {
                     <div className="flex items-center space-x-4">
                       <Button variant={"ghost"} className="flex items-center space-x-1 text-muted-foreground transition-colors hover:text-foreground">
                         <Heart className="h-4 w-4" />
-                        <span className="text-sm">&nbsp;</span>
+                        <span className="text-sm">{post.likes}</span>
                       </Button>
                       <Button variant={"ghost"} className="flex items-center space-x-1 text-muted-foreground transition-colors hover:text-foreground">
                         <MessageSquareText className="h-4 w-4" />

@@ -41,7 +41,7 @@ export const memberBlogRouter = createTRPCRouter({
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: { createdAt: "desc" },
         include: {
-          author: { select: { id: true, name: true } },
+          author: { select: { id: true, name: true, professionalPosition: true } },
           categories: { include: { category: true } },
           _count: { select: { comments: true } },
         },

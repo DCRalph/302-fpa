@@ -1,4 +1,4 @@
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { z } from "zod";
 
 type RecentConferenceRegistration = {
@@ -29,7 +29,7 @@ type RecentActivity = {
 };
 
 export const adminDashboardRouter = createTRPCRouter({
-  getAdminDashboard: protectedProcedure.query(async ({ ctx }) => {
+  getAdminDashboard: adminProcedure.query(async ({ ctx }) => {
     const adminName: string = ctx.dbUser?.name ?? "Admin";
 
     // Get the latest active conference
@@ -304,7 +304,7 @@ export const adminDashboardRouter = createTRPCRouter({
   }),
 
   // New endpoint for conference-specific analytics
-  getConferenceAnalytics: protectedProcedure
+  getConferenceAnalytics: adminProcedure
     .input(
       z.object({
         conferenceId: z.string().optional(),

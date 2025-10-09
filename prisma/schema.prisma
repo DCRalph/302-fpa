@@ -71,6 +71,13 @@ model User {
   school        String?
   role          UserRole  @default(USER)
 
+  professionalPosition String?
+  professionalYears Float?
+  professionalQualification String?
+  professionalSpecialisation String?
+  professionalBio String?
+  
+
   onboardedAt DateTime?
 
   blogPosts     BlogPost[]
@@ -190,6 +197,8 @@ model BlogPost {
   authorId      String
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  likes Int @default(0)
 
   categories BlogPostCategory[]
   tags       BlogPostTag[]
