@@ -7,6 +7,7 @@ import type { RouterOutputs } from "~/trpc/react";
 import type { TRPCClientErrorLike } from "@trpc/client";
 import type { AppRouter } from "~/server/api/root";
 import { authClient } from "~/lib/auth-client";
+import { useEffect } from "react"
 
 type AuthMeOutput = NonNullable<RouterOutputs["auth"]["me"]>;
 
@@ -26,7 +27,12 @@ interface AuthProviderProps {
 
 function AuthProviderInner({ children }: AuthProviderProps) {
   const me = api.auth.me.useQuery();
+  const utils = api.useUtils()
   const { data: sessionData, isPending: isPendingClient } = authClient.useSession();
+
+  useEffect(() => {
+    void utils.auth.me.invalidate()
+  }, [sessionData])
 
   const session = sessionData ?? null;
   const dbUser = me?.data?.dbUser ?? null;
