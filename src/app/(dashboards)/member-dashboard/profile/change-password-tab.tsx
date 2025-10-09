@@ -13,7 +13,7 @@ export function ChangePasswordTab() {
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Change Password</CardTitle>
+                    <CardTitle className="text-2xl font-bold">Change Password</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="max-w-md space-y-4">

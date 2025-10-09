@@ -65,13 +65,13 @@ export default function Profile() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 border-b border-zinc-800">
+      <div className="mb-6 border-b border-muted-foreground/30">
         <div className="flex overflow-x-auto no-scrollbar whitespace-nowrap w-full">
           <button
             onClick={() => setActiveTab("basic-info")}
             className={`px-4 py-2 font-medium ${activeTab === "basic-info"
-              ? "border-b-2 border-red-500 text-white"
-              : "text-zinc-400 hover:text-white"
+              ? "border-b-2 border-primary text-foreground"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <span className="flex items-center">
@@ -82,8 +82,8 @@ export default function Profile() {
           <button
             onClick={() => setActiveTab("professional")}
             className={`px-4 py-2 font-medium ${activeTab === "professional"
-              ? "border-b-2 border-red-500 text-white"
-              : "text-zinc-400 hover:text-white"
+              ? "border-b-2 border-primary text-foreground"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <span className="flex items-center">
@@ -94,8 +94,8 @@ export default function Profile() {
           <button
             onClick={() => setActiveTab("profile-image")}
             className={`px-4 py-2 font-medium ${activeTab === "profile-image"
-              ? "border-b-2 border-red-500 text-white"
-              : "text-zinc-400 hover:text-white"
+              ? "border-b-2 border-primary text-foreground"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <span className="flex items-center">
@@ -106,8 +106,8 @@ export default function Profile() {
           <button
             onClick={() => setActiveTab("change-password")}
             className={`px-4 py-2 font-medium ${activeTab === "change-password"
-              ? "border-b-2 border-red-500 text-white"
-              : "text-zinc-400 hover:text-white"
+              ? "border-b-2 border-primary text-foreground"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <span className="flex items-center">
