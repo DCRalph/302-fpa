@@ -14,6 +14,8 @@ import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Label } from "@radix-ui/react-dropdown-menu";
 
+import Image from "next/image";
+
 export default function CommunityBlog() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all-posts");
@@ -98,9 +100,17 @@ export default function CommunityBlog() {
               <CardContent className="">
                 {/* Author Info */}
                 <div className="mb-4 flex items-center space-x-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
-                    <span className="text-sm font-medium text-black">
-                      {(post.author?.name ?? "?").split(" ").map((n) => n[0]).join("")}
+                  <div className="flex items-center justify-center rounded-full ">
+                    <span className="text-sm font-medium">
+                      {post.author?.image ? (<Image
+                        src={post.author?.image}
+                        alt=""
+                        className="rounded-full"
+                        width={40}
+                        height={40}
+                      />
+                      ) : (post.author?.name ?? "?").split(" ").map((n) => n[0]).join("")}
+
                     </span>
                   </div>
                   <div>
