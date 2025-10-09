@@ -1,6 +1,14 @@
 "use client";
 
-import { User, Mail, Phone, IdCard, ImageIcon, Lock, UserIcon } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  IdCard,
+  ImageIcon,
+  Lock,
+  UserIcon,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { useAuth } from "~/hooks/useAuth";
 import Image from "next/image";
@@ -24,7 +32,6 @@ export default function Profile() {
     "basic-info" | "professional" | "profile-image" | "change-password"
   >("basic-info");
 
-
   return (
     <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6">
       {/* Gradient Profile Header */}
@@ -41,8 +48,8 @@ export default function Profile() {
                   height={137}
                 />
               ) : (
-                <div className="bg-muted flex h-8 w-8 items-center justify-center rounded-full">
-                  <User className="text-muted-foreground h-4 w-4" />
+                <div className="bg-gray-200 mx-12 flex h-[137px] w-[137px] items-center justify-center rounded-full">
+                  <User className="text-gray-700" size={48} />
                 </div>
               )}
             </div>
@@ -65,14 +72,15 @@ export default function Profile() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 border-b border-muted-foreground/30">
-        <div className="flex overflow-x-auto no-scrollbar whitespace-nowrap w-full">
+      <div className="border-muted-foreground/30 mb-6 border-b">
+        <div className="no-scrollbar flex w-full overflow-x-auto whitespace-nowrap">
           <button
             onClick={() => setActiveTab("basic-info")}
-            className={`px-4 py-2 font-medium ${activeTab === "basic-info"
-              ? "border-b-2 border-primary text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
+            className={`px-4 py-2 font-medium ${
+              activeTab === "basic-info"
+                ? "border-primary text-foreground border-b-2"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <span className="flex items-center">
               <UserIcon size={18} className="mr-2" />
@@ -81,10 +89,11 @@ export default function Profile() {
           </button>
           <button
             onClick={() => setActiveTab("professional")}
-            className={`px-4 py-2 font-medium ${activeTab === "professional"
-              ? "border-b-2 border-primary text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
+            className={`px-4 py-2 font-medium ${
+              activeTab === "professional"
+                ? "border-primary text-foreground border-b-2"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <span className="flex items-center">
               <IdCard size={18} className="mr-2" />
@@ -93,10 +102,11 @@ export default function Profile() {
           </button>
           <button
             onClick={() => setActiveTab("profile-image")}
-            className={`px-4 py-2 font-medium ${activeTab === "profile-image"
-              ? "border-b-2 border-primary text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
+            className={`px-4 py-2 font-medium ${
+              activeTab === "profile-image"
+                ? "border-primary text-foreground border-b-2"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <span className="flex items-center">
               <ImageIcon size={18} className="mr-2" />
@@ -105,10 +115,11 @@ export default function Profile() {
           </button>
           <button
             onClick={() => setActiveTab("change-password")}
-            className={`px-4 py-2 font-medium ${activeTab === "change-password"
-              ? "border-b-2 border-primary text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
+            className={`px-4 py-2 font-medium ${
+              activeTab === "change-password"
+                ? "border-primary text-foreground border-b-2"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <span className="flex items-center">
               <Lock size={18} className="mr-2" />

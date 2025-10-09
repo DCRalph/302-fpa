@@ -29,8 +29,8 @@ export function ProfileImageTab() {
                                 height={137}
                             />
                         ) : (
-                            <div className="bg-muted flex h-8 w-8 items-center justify-center rounded-full">
-                                <User className="text-muted-foreground h-4 w-4" />
+                            <div className="bg-muted flex h-[137px] w-[137px] items-center justify-center rounded-full">
+                                <User className="text-muted-foreground" size={48} />
                             </div>
                         )}
 
