@@ -7,11 +7,12 @@ import { Input } from "~/components/ui/input";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export function ChangePasswordTab() {
   const utils = api.useUtils();
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const memberProfileMutation = api.member.profile.changePassword.useMutation({
     onSuccess: async () => {
@@ -25,6 +26,9 @@ export function ChangePasswordTab() {
     onError: (err) => {
       toast.error(err.message ?? "Failed to update password");
     },
+    onSettled: () => {
+        setIsSubmitting(false);
+    }
   });
 
   const [formData, setFormData] = useState({
@@ -39,6 +43,8 @@ export function ChangePasswordTab() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    setIsSubmitting(true);
 
     console.log("Updating profile details:", formData);
 
@@ -105,7 +111,7 @@ export function ChangePasswordTab() {
                 </ul>
               </div>
 
-              <Button type="submit">Update Password</Button>
+              <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Updating..." : "Update Password"}</Button>
             </div>
           </CardContent>
         </Card>

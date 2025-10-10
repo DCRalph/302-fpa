@@ -36,13 +36,21 @@ export default function CreatePostPage() {
   const [imageFile, setImageFile] = useState<File | null>(null); // TODO: Create an S3 bucket to upload images to
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  const utils = api.useUtils();
+
   const createPostMutation = api.member.blog.create.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Invalidate profile and auth.me cache so UI updates
+      await utils.member.blog.invalidate()
+
       toast.success("Post created successfully");
       router.push("/member-dashboard/community-blog");
     },
     onError: (err) => {
       toast.error(err.message ?? "Failed to create post");
+    },
+    onSettled: () => {
+      setIsSubmitting(false);
     },
   });
 
@@ -79,8 +87,6 @@ export default function CreatePostPage() {
     });
 
     router.push("/member-dashboard/community-blog");
-
-    setIsSubmitting(false);
   };
 
   return (

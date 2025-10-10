@@ -14,6 +14,8 @@ import { useRouter } from "next/navigation";
 export function BasicInfoTab() {
   const { dbUser } = useAuth();
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const utils = api.useUtils();
 
   const memberProfileMutation = api.member.profile.update.useMutation({
@@ -22,12 +24,15 @@ export function BasicInfoTab() {
       await utils.member.profile.get.invalidate();
       await utils.auth.me.invalidate();
 
-      toast.success("Details updated successfully");
+      toast.success("Basic Information updated successfully");
       // re-route back to profile page (this will now have refreshed data)
       router.push("/member-dashboard/profile");
     },
     onError: (err) => {
-      toast.error(err.message ?? "Failed to update details");
+      toast.error(err.message ?? "Failed to update Basic Information");
+    },
+    onSettled: () => {
+      setIsSubmitting(false);
     },
   });
 
@@ -54,6 +59,8 @@ export function BasicInfoTab() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    setIsSubmitting(true);
 
     console.log("Updating profile details:", formData);
 
@@ -125,7 +132,9 @@ export function BasicInfoTab() {
                 </p>
               </div>
 
-              <Button type="submit">Update Details</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Updating..." : "Update Basic Information"}
+              </Button>
             </CardContent>
           </Card>
         </form>

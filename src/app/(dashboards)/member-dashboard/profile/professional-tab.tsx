@@ -14,18 +14,26 @@ import { useState, useEffect } from "react";
 export function ProfessionalTab() {
   const { dbUser } = useAuth();
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const utils = api.useUtils();
+
 
   const memberProfileMutation = api.member.profile.update.useMutation({
     onSuccess: async () => {
       // invalidate profile and auth.me cache so UI updates
       await utils.member.profile.get.invalidate();
+      await utils.member.blog.invalidate();
       await utils.auth.me.invalidate();
 
-      toast.success("Professional profile updated successfully");
+      toast.success("Professional Profile updated successfully");
       router.push("/member-dashboard/profile");
     },
     onError: (err) => {
-      toast.error(err.message ?? "Failed to update professional profile");
+      toast.error(err.message ?? "Failed to update Professional Profile");
+    },
+    onSettled: () => {
+      setIsSubmitting(false);
     },
   });
 
@@ -37,7 +45,6 @@ export function ProfessionalTab() {
     professionalBio: dbUser?.professionalBio,
   });
 
-  const utils = api.useUtils();
 
   useEffect(() => {
     setFormData({
@@ -58,6 +65,8 @@ export function ProfessionalTab() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    setIsSubmitting(true);
 
     console.log("Updating profile details:", formData);
 
@@ -143,7 +152,7 @@ export function ProfessionalTab() {
               />
             </div>
 
-            <Button type="submit">Update Professional Profile</Button>
+            <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Updating..." : "Update Professional Profile"}</Button>
           </CardContent>
         </Card>
       </form>
