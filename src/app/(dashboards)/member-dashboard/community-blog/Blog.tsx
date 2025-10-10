@@ -76,9 +76,7 @@ export default function CommunityBlog() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-posts">All Posts</SelectItem>
-                  <SelectItem value="conference-updates">
-                    General
-                  </SelectItem>
+                  <SelectItem value="conference-updates">General</SelectItem>
                   <SelectItem value="resources">Qualification</SelectItem>
                   <SelectItem value="discussions">Research Paper</SelectItem>
                 </SelectContent>
@@ -141,6 +139,17 @@ export default function CommunityBlog() {
                     {post.content}
                   </p>
 
+                  {/* Cover Image */}
+                  {post.coverImageUrl && (
+                    <div className="overflow-hidden rounded-lg mt-6">
+                      <img
+                        src={post.coverImageUrl}
+                        alt="Conference highlights"
+                        className="h-64 w-full object-cover"
+                      />
+                    </div>
+                  )}
+
                   {/* Post Footer */}
                   <div className="flex items-center justify-between pt-2">
                     <div className="flex items-center space-x-4">
@@ -184,7 +193,9 @@ export default function CommunityBlog() {
               </p>
               <div className="grid grid-cols-2 gap-4 space-y-2 pt-4">
                 <Button asChild>
-                  <Link href={"/member-dashboard/community-blog/create"}>Create a Post</Link>
+                  <Link href={"/member-dashboard/community-blog/create"}>
+                    Create a Post
+                  </Link>
                 </Button>
                 <Button variant="outline" className="">
                   View my Posts
