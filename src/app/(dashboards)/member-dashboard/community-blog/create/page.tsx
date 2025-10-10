@@ -33,7 +33,7 @@ export default function CreatePostPage() {
   });
   const [selectedFilter, setSelectedFilter] = useState("general");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null); // TODO: Create an S3 bucket to upload images to
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const createPostMutation = api.member.blog.create.useMutation({

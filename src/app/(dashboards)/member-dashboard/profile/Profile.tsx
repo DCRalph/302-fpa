@@ -9,16 +9,10 @@ import {
   Lock,
   UserIcon,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import { useAuth } from "~/hooks/useAuth";
 import Image from "next/image";
 import { useState } from "react";
-import { Label } from "~/components/ui/label";
-import { Button } from "~/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Input } from "~/components/ui/input";
-import { Badge } from "~/components/ui/badge";
-import { Textarea } from "~/components/ui/textarea";
 import { BasicInfoTab } from "./basic-info-tab";
 import { ProfessionalTab } from "./professional-tab";
 import { ProfileImageTab } from "./profile-image-tab";
@@ -62,7 +56,7 @@ export default function Profile() {
                   <p>{dbUser?.email}</p>
                 </div>
                 <div className="flex items-center space-x-4 text-lg">
-                  <Phone size={24} />
+                  {dbUser?.phone && <Phone size={24} />} 
                   <p>{dbUser?.phone}</p>
                 </div>
               </div>
