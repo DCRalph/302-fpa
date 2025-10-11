@@ -109,8 +109,8 @@ export const memberProfileRouter = createTRPCRouter({
         });
 
         return res;
-      } catch (err: any) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: err?.message ?? "Failed to change password" });
+      } catch (err) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: (err as { message?: string })?.message ?? "Failed to change password" });
       }
     }),
 

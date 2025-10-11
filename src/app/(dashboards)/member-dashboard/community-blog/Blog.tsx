@@ -142,10 +142,12 @@ export default function CommunityBlog() {
                   {/* Cover Image */}
                   {post.coverImageUrl && (
                     <div className="overflow-hidden rounded-lg mt-6">
-                      <img
+                      <Image
                         src={post.coverImageUrl}
                         alt="Conference highlights"
                         className="h-64 w-full object-cover"
+                        width={100}
+                        height={100}
                       />
                     </div>
                   )}

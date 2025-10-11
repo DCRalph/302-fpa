@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import Image from "next/image";
 
 export default function CreatePostPage() {
   const router = useRouter();
@@ -183,10 +184,12 @@ export default function CreatePostPage() {
                 {previewUrl && (
                   <div className="mt-2">
                     <p className="text-muted-foreground text-sm">Preview</p>
-                    <img
+                    <Image
                       src={previewUrl}
                       alt="Selected image preview"
                       className="mt-2 max-h-64 w-auto rounded-md object-contain"
+                      width={100}
+                      height={100}
                     />
                   </div>
                 )}
