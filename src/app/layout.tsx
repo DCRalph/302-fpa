@@ -22,8 +22,8 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
 
   return (
-    <html lang="en" className={`${nunito.className} scroll-smooth`} suppressHydrationWarning>
-      <body>
+    <html lang="en" className={`${nunito.className} scroll-smooth antialiased`} suppressHydrationWarning>
+      <body className="flex-1">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
