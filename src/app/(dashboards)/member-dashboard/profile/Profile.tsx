@@ -57,7 +57,7 @@ export default function Profile() {
                   <p>{dbUser?.email}</p>
                 </div>
                 <div className="flex items-center space-x-4 text-lg">
-                  {dbUser?.phone && <Phone size={24} />} 
+                  {dbUser?.phone && <Phone size={24} />}
                   <p>{dbUser?.phone}</p>
                 </div>
               </div>
@@ -67,6 +67,45 @@ export default function Profile() {
       </div>
 
       {/* Tabs */}
+      <div className="border-muted-foreground/30 mb-6 border-b">
+        {/* <div className="w-screen"> */}
+          <div className="no-scrollbar flex overflow-x-scroll w-full whitespace-nowrap">
+
+            <TabButton
+              isActive={activeTab === "basic-info"}
+              onClick={() => setActiveTab("basic-info")}
+              icon={<UserIcon size={18} />}
+              label="Basic Information"
+              animated
+              layoutId="active-tab"
+            />
+
+            <TabButton
+              isActive={activeTab === "professional"}
+              onClick={() => setActiveTab("professional")}
+              icon={<IdCard size={18} />}
+              label="Professional Profile"
+              animated
+              layoutId="active-tab"
+            />
+            <TabButton
+              isActive={activeTab === "profile-image"}
+              onClick={() => setActiveTab("profile-image")}
+              icon={<ImageIcon size={18} />}
+              label="Profile Image"
+              animated
+              layoutId="active-tab"
+            />
+            <TabButton
+              isActive={activeTab === "change-password"}
+              onClick={() => setActiveTab("change-password")}
+              icon={<Lock size={18} />}
+              label="Change Password"
+              animated
+              layoutId="active-tab"
+            />
+          </div>
+        {/* </div> */}
       <div className="border-muted-foreground/30 mb-6 border-b max-w-full overflow-x-hidden">
         <div
           className="no-scrollbar flex max-w-full overflow-x-auto whitespace-nowrap"
