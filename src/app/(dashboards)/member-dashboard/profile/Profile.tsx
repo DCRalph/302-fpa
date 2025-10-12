@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
 import { Textarea } from "~/components/ui/textarea";
+import { TabButton } from "~/components/tab-button";
 import { BasicInfoTab } from "./basic-info-tab";
 import { ProfessionalTab } from "./professional-tab";
 import { ProfileImageTab } from "./profile-image-tab";
@@ -74,7 +75,7 @@ export default function Profile() {
       {/* Tabs */}
       <div className="border-muted-foreground/30 mb-6 border-b">
         <div className="no-scrollbar flex w-full overflow-x-auto whitespace-nowrap">
-          <button
+          {/* <button
             onClick={() => setActiveTab("basic-info")}
             className={`px-4 py-2 font-medium ${
               activeTab === "basic-info"
@@ -86,8 +87,17 @@ export default function Profile() {
               <UserIcon size={18} className="mr-2" />
               Basic Information
             </span>
-          </button>
-          <button
+          </button> */}
+          <TabButton
+            isActive={activeTab === "basic-info"}
+            onClick={() => setActiveTab("basic-info")}
+            icon={<UserIcon size={18} />}
+            label="Basic Information"
+            animated
+            layoutId="active-tab"
+          />
+
+          {/* <button
             onClick={() => setActiveTab("professional")}
             className={`px-4 py-2 font-medium ${
               activeTab === "professional"
@@ -99,7 +109,16 @@ export default function Profile() {
               <IdCard size={18} className="mr-2" />
               Professional Profile
             </span>
-          </button>
+          </button> */}
+          <TabButton
+            isActive={activeTab === "professional"}
+            onClick={() => setActiveTab("professional")}
+            icon={<IdCard size={18} />}
+            label="Professional Profile"
+            animated
+            layoutId="active-tab"
+          />
+          {/*           
           <button
             onClick={() => setActiveTab("profile-image")}
             className={`px-4 py-2 font-medium ${
@@ -112,8 +131,16 @@ export default function Profile() {
               <ImageIcon size={18} className="mr-2" />
               Profile Image
             </span>
-          </button>
-          <button
+          </button> */}
+          <TabButton
+            isActive={activeTab === "profile-image"}
+            onClick={() => setActiveTab("profile-image")}
+            icon={<ImageIcon size={18} />}
+            label="Profile Image"
+            animated
+            layoutId="active-tab"
+          />
+          {/* <button
             onClick={() => setActiveTab("change-password")}
             className={`px-4 py-2 font-medium ${
               activeTab === "change-password"
@@ -125,7 +152,15 @@ export default function Profile() {
               <Lock size={18} className="mr-2" />
               Change Password
             </span>
-          </button>
+          </button> */}
+          <TabButton
+            isActive={activeTab === "change-password"}
+            onClick={() => setActiveTab("change-password")}
+            icon={<Lock size={18} />}
+            label="Change Password"
+            animated
+            layoutId="active-tab"
+          />
         </div>
       </div>
 
