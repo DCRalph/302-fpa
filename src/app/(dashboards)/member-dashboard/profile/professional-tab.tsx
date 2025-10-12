@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
+import { number } from "zod";
 
 export function ProfessionalTab() {
   const { dbUser } = useAuth();
@@ -38,7 +39,7 @@ export function ProfessionalTab() {
   });
 
   const [professionalPosition, setProfessionalPosition] = useState("");
-  const [professionalYears, setProfessionalYears] = useState(0);
+  const [professionalYears, setProfessionalYears] = useState("");
   const [professionalQualification, setProfessionalQualification] = useState("");
   const [professionalSpecialisation, setProfessionalSpecialisation] = useState("");
   const [professionalBio, setProfessionalBio] = useState("");
@@ -47,7 +48,7 @@ export function ProfessionalTab() {
   useEffect(() => {
     if (dbUser) {
       setProfessionalPosition(dbUser?.professionalPosition ?? "");
-      setProfessionalYears(dbUser?.professionalYears ?? 0);
+      setProfessionalYears(dbUser?.professionalYears?.toString() ?? "");
       setProfessionalQualification(dbUser?.professionalQualification ?? "");
       setProfessionalSpecialisation(dbUser?.professionalSpecialisation ?? "");
       setProfessionalBio(dbUser?.professionalBio ?? "");
@@ -69,11 +70,11 @@ export function ProfessionalTab() {
     });
 
     memberProfileMutation.mutate({
-      professionalPosition: professionalPosition || undefined,
-      professionalYears: professionalYears || undefined,
-      professionalQualification: professionalQualification || undefined,
-      professionalSpecialisation: professionalSpecialisation || undefined,
-      professionalBio: professionalBio || undefined,
+      professionalPosition: professionalPosition,
+      professionalYears: professionalYears,
+      professionalQualification: professionalQualification,
+      professionalSpecialisation: professionalSpecialisation,
+      professionalBio: professionalBio,
     });
   };
 
@@ -102,8 +103,8 @@ export function ProfessionalTab() {
                 <Input
                   id="professionalYears"
                   placeholder="e.g., 15"
-                  value={professionalYears.toString()}
-                  onChange={(e) => setProfessionalYears(Number(e.target.value))}
+                  value={professionalYears}
+                  onChange={(e) => setProfessionalYears(e.target.value)}
                 />
               </div>
             </div>

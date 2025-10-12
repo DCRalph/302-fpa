@@ -17,6 +17,9 @@ import { Label } from "@radix-ui/react-dropdown-menu";
 import Image from "next/image";
 import Link from "next/link";
 
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+
 export default function CommunityBlog() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all-posts");
@@ -135,9 +138,9 @@ export default function CommunityBlog() {
                   <h3 className="text-foreground font-semibold">
                     {post.title}
                   </h3>
-                  <p className="text-foreground/70 whitespace-pre-line">
-                    {post.content}
-                  </p>
+                  <div className="prose prose-blog dark:prose-invert text-foreground/70 whitespace-pre-line">
+                    <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
+                  </div>
 
                   {/* Cover Image */}
                   {post.coverImageUrl && (

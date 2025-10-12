@@ -22,8 +22,8 @@ export function TabButton({
 }: TabButtonProps) {
   const baseClasses = "relative px-4 py-2 font-medium transition-colors";
   const activeClasses = isActive
-    ? "text-white"
-    : "text-zinc-400 hover:text-white";
+    ? "text-foreground"
+    : "text-muted-foreground hover:text-foreground";
   const borderClasses = !animated && isActive ? "border-b-2 border-red-500" : "";
 
   return (
@@ -38,7 +38,7 @@ export function TabButton({
       </span>
       {animated && isActive && layoutId && (
         <motion.div
-          className="absolute bottom-0 left-0 right-0 h-1 bg-red-500"
+          className="absolute bottom-0 left-0 right-0 h-1 bg-primary"
           layoutId={layoutId}
         />
       )}

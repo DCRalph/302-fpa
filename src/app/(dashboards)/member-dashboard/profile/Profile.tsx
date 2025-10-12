@@ -28,7 +28,7 @@ export default function Profile() {
   >("basic-info");
 
   return (
-    <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6">
+    <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6 overflow-x-hidden">
       {/* Gradient Profile Header */}
       <div className="w-full">
         <Card className="from-gradient-blue via-gradient-purple to-gradient-red border-0 bg-gradient-to-r from-25% via-50% to-75% py-12 text-white shadow-lg">
@@ -67,21 +67,11 @@ export default function Profile() {
       </div>
 
       {/* Tabs */}
-      <div className="border-muted-foreground/30 mb-6 border-b">
-        <div className="no-scrollbar flex w-full overflow-x-auto whitespace-nowrap">
-          {/* <button
-            onClick={() => setActiveTab("basic-info")}
-            className={`px-4 py-2 font-medium ${
-              activeTab === "basic-info"
-                ? "border-primary text-foreground border-b-2"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <span className="flex items-center">
-              <UserIcon size={18} className="mr-2" />
-              Basic Information
-            </span>
-          </button> */}
+      <div className="border-muted-foreground/30 mb-6 border-b max-w-full overflow-x-hidden">
+        <div
+          className="no-scrollbar flex max-w-full overflow-x-auto whitespace-nowrap"
+          style={{ WebkitOverflowScrolling: 'touch', zIndex: 0 }}
+        >
           <TabButton
             isActive={activeTab === "basic-info"}
             onClick={() => setActiveTab("basic-info")}
@@ -90,20 +80,6 @@ export default function Profile() {
             animated
             layoutId="active-tab"
           />
-
-          {/* <button
-            onClick={() => setActiveTab("professional")}
-            className={`px-4 py-2 font-medium ${
-              activeTab === "professional"
-                ? "border-primary text-foreground border-b-2"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <span className="flex items-center">
-              <IdCard size={18} className="mr-2" />
-              Professional Profile
-            </span>
-          </button> */}
           <TabButton
             isActive={activeTab === "professional"}
             onClick={() => setActiveTab("professional")}
@@ -112,20 +88,6 @@ export default function Profile() {
             animated
             layoutId="active-tab"
           />
-          {/*           
-          <button
-            onClick={() => setActiveTab("profile-image")}
-            className={`px-4 py-2 font-medium ${
-              activeTab === "profile-image"
-                ? "border-primary text-foreground border-b-2"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <span className="flex items-center">
-              <ImageIcon size={18} className="mr-2" />
-              Profile Image
-            </span>
-          </button> */}
           <TabButton
             isActive={activeTab === "profile-image"}
             onClick={() => setActiveTab("profile-image")}
@@ -134,19 +96,6 @@ export default function Profile() {
             animated
             layoutId="active-tab"
           />
-          {/* <button
-            onClick={() => setActiveTab("change-password")}
-            className={`px-4 py-2 font-medium ${
-              activeTab === "change-password"
-                ? "border-primary text-foreground border-b-2"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <span className="flex items-center">
-              <Lock size={18} className="mr-2" />
-              Change Password
-            </span>
-          </button> */}
           <TabButton
             isActive={activeTab === "change-password"}
             onClick={() => setActiveTab("change-password")}

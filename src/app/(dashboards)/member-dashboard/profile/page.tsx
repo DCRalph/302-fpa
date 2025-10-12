@@ -23,5 +23,6 @@ export default function MemberProfilePage() {
     redirect("/onboarding");
   }
 
+
   return <Profile />;
 }
