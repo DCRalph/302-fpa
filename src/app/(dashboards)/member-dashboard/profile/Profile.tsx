@@ -69,48 +69,8 @@ export default function Profile() {
       {/* Tabs */}
       <div className="border-muted-foreground/30 mb-6 border-b">
         {/* <div className="w-screen"> */}
-          <div className="no-scrollbar flex overflow-x-scroll w-full whitespace-nowrap">
+        <div className="no-scrollbar flex overflow-x-scroll w-full whitespace-nowrap">
 
-            <TabButton
-              isActive={activeTab === "basic-info"}
-              onClick={() => setActiveTab("basic-info")}
-              icon={<UserIcon size={18} />}
-              label="Basic Information"
-              animated
-              layoutId="active-tab"
-            />
-
-            <TabButton
-              isActive={activeTab === "professional"}
-              onClick={() => setActiveTab("professional")}
-              icon={<IdCard size={18} />}
-              label="Professional Profile"
-              animated
-              layoutId="active-tab"
-            />
-            <TabButton
-              isActive={activeTab === "profile-image"}
-              onClick={() => setActiveTab("profile-image")}
-              icon={<ImageIcon size={18} />}
-              label="Profile Image"
-              animated
-              layoutId="active-tab"
-            />
-            <TabButton
-              isActive={activeTab === "change-password"}
-              onClick={() => setActiveTab("change-password")}
-              icon={<Lock size={18} />}
-              label="Change Password"
-              animated
-              layoutId="active-tab"
-            />
-          </div>
-        {/* </div> */}
-      <div className="border-muted-foreground/30 mb-6 border-b max-w-full overflow-x-hidden">
-        <div
-          className="no-scrollbar flex max-w-full overflow-x-auto whitespace-nowrap"
-          style={{ WebkitOverflowScrolling: 'touch', zIndex: 0 }}
-        >
           <TabButton
             isActive={activeTab === "basic-info"}
             onClick={() => setActiveTab("basic-info")}
@@ -119,6 +79,7 @@ export default function Profile() {
             animated
             layoutId="active-tab"
           />
+
           <TabButton
             isActive={activeTab === "professional"}
             onClick={() => setActiveTab("professional")}
@@ -144,20 +105,60 @@ export default function Profile() {
             layoutId="active-tab"
           />
         </div>
-      </div>
+        {/* </div> */}
+        <div className="border-muted-foreground/30 mb-6 border-b max-w-full overflow-x-hidden">
+          <div
+            className="no-scrollbar flex max-w-full overflow-x-auto whitespace-nowrap"
+            style={{ WebkitOverflowScrolling: 'touch', zIndex: 0 }}
+          >
+            <TabButton
+              isActive={activeTab === "basic-info"}
+              onClick={() => setActiveTab("basic-info")}
+              icon={<UserIcon size={18} />}
+              label="Basic Information"
+              animated
+              layoutId="active-tab"
+            />
+            <TabButton
+              isActive={activeTab === "professional"}
+              onClick={() => setActiveTab("professional")}
+              icon={<IdCard size={18} />}
+              label="Professional Profile"
+              animated
+              layoutId="active-tab"
+            />
+            <TabButton
+              isActive={activeTab === "profile-image"}
+              onClick={() => setActiveTab("profile-image")}
+              icon={<ImageIcon size={18} />}
+              label="Profile Image"
+              animated
+              layoutId="active-tab"
+            />
+            <TabButton
+              isActive={activeTab === "change-password"}
+              onClick={() => setActiveTab("change-password")}
+              icon={<Lock size={18} />}
+              label="Change Password"
+              animated
+              layoutId="active-tab"
+            />
+          </div>
+        </div>
 
-      <div className="rounded-xl backdrop-blur-sm">
-        {/* Basic Info Tab */}
-        {activeTab === "basic-info" && <BasicInfoTab />}
+        <div className="rounded-xl backdrop-blur-sm">
+          {/* Basic Info Tab */}
+          {activeTab === "basic-info" && <BasicInfoTab />}
 
-        {/* Professional Profile Tab */}
-        {activeTab === "professional" && <ProfessionalTab />}
+          {/* Professional Profile Tab */}
+          {activeTab === "professional" && <ProfessionalTab />}
 
-        {/* Profile Image Tab */}
-        {activeTab === "profile-image" && <ProfileImageTab />}
+          {/* Profile Image Tab */}
+          {activeTab === "profile-image" && <ProfileImageTab />}
 
-        {/* Change Password Tab */}
-        {activeTab === "change-password" && <ChangePasswordTab />}
+          {/* Change Password Tab */}
+          {activeTab === "change-password" && <ChangePasswordTab />}
+        </div>
       </div>
     </div>
   );
