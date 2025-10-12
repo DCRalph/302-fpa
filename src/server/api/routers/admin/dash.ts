@@ -419,7 +419,7 @@ export const adminDashboardRouter = createTRPCRouter({
       });
 
       const registrationTrend = await Promise.all(
-        last7Days.map(async (date, index) => {
+        last7Days.map(async (date) => {
           const nextDate = new Date(date);
           nextDate.setDate(date.getDate() + 1);
 

@@ -32,6 +32,7 @@ function AuthProviderInner({ children }: AuthProviderProps) {
 
   useEffect(() => {
     void utils.auth.me.invalidate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionData])
 
   const session = sessionData ?? null;

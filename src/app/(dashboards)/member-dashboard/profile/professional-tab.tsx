@@ -37,47 +37,43 @@ export function ProfessionalTab() {
     },
   });
 
-  const [formData, setFormData] = useState({
-    professionalPosition: dbUser?.professionalPosition,
-    professionalYears: dbUser?.professionalYears,
-    professionalQualification: dbUser?.professionalQualification,
-    professionalSpecialisation: dbUser?.professionalSpecialisation,
-    professionalBio: dbUser?.professionalBio,
-  });
+  const [professionalPosition, setProfessionalPosition] = useState("");
+  const [professionalYears, setProfessionalYears] = useState(0);
+  const [professionalQualification, setProfessionalQualification] = useState("");
+  const [professionalSpecialisation, setProfessionalSpecialisation] = useState("");
+  const [professionalBio, setProfessionalBio] = useState("");
 
 
   useEffect(() => {
-    setFormData({
-      professionalPosition: dbUser?.professionalPosition ?? "",
-      professionalYears: dbUser?.professionalYears ?? undefined,
-      professionalQualification: dbUser?.professionalQualification ?? "",
-      professionalSpecialisation: dbUser?.professionalSpecialisation ?? "",
-      professionalBio: dbUser?.professionalBio ?? "",
-    });
+    if (dbUser) {
+      setProfessionalPosition(dbUser?.professionalPosition ?? "");
+      setProfessionalYears(dbUser?.professionalYears ?? 0);
+      setProfessionalQualification(dbUser?.professionalQualification ?? "");
+      setProfessionalSpecialisation(dbUser?.professionalSpecialisation ?? "");
+      setProfessionalBio(dbUser?.professionalBio ?? "");
+    }
   }, [dbUser]);
 
-  const handleInputChange = (
-    field: string,
-    value: string | boolean | number,
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     setIsSubmitting(true);
 
-    console.log("Updating profile details:", formData);
+    console.log("Updating profile details:", {
+      professionalPosition,
+      professionalYears,
+      professionalQualification,
+      professionalSpecialisation,
+      professionalBio,
+    });
 
     memberProfileMutation.mutate({
-      professionalPosition: formData?.professionalPosition ?? undefined,
-      professionalYears: formData?.professionalYears ?? undefined,
-      professionalQualification:
-        formData?.professionalQualification ?? undefined,
-      professionalSpecialisation:
-        formData?.professionalSpecialisation ?? undefined,
-      professionalBio: formData?.professionalBio ?? undefined,
+      professionalPosition: professionalPosition || undefined,
+      professionalYears: professionalYears || undefined,
+      professionalQualification: professionalQualification || undefined,
+      professionalSpecialisation: professionalSpecialisation || undefined,
+      professionalBio: professionalBio || undefined,
     });
   };
 
@@ -97,10 +93,8 @@ export function ProfessionalTab() {
                 <Input
                   id="professionalPosition"
                   placeholder="e.g., Principal, Deputy Principal"
-                  value={`${formData.professionalPosition ?? ""}`}
-                  onChange={(e) =>
-                    handleInputChange("professionalPosition", e.target.value)
-                  }
+                  value={professionalPosition}
+                  onChange={(e) => setProfessionalPosition(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -108,10 +102,8 @@ export function ProfessionalTab() {
                 <Input
                   id="professionalYears"
                   placeholder="e.g., 15"
-                  value={`${formData.professionalYears ?? ""}`}
-                  onChange={(e) =>
-                    handleInputChange("professionalYears", Number(e.target.value))
-                  }
+                  value={professionalYears.toString()}
+                  onChange={(e) => setProfessionalYears(Number(e.target.value))}
                 />
               </div>
             </div>
@@ -122,10 +114,8 @@ export function ProfessionalTab() {
                 <Input
                   id="professionalQualification"
                   placeholder="e.g., Master of Education"
-                  value={`${formData.professionalQualification ?? ""}`}
-                  onChange={(e) =>
-                    handleInputChange("professionalQualification", e.target.value)
-                  }
+                  value={professionalQualification}
+                  onChange={(e) => setProfessionalQualification(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -133,10 +123,8 @@ export function ProfessionalTab() {
                 <Input
                   id="professionalSpecialisation"
                   placeholder="e.g., Educational Leadership"
-                  value={`${formData.professionalSpecialisation ?? ""}`}
-                  onChange={(e) =>
-                    handleInputChange("professionalSpecialisation", e.target.value)
-                  }
+                  value={professionalSpecialisation}
+                  onChange={(e) => setProfessionalSpecialisation(e.target.value)}
                 />
               </div>
             </div>
@@ -147,8 +135,8 @@ export function ProfessionalTab() {
                 id="professionalBio"
                 className="min-h-[120px] w-full rounded-md border px-3 py-2 text-base focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 placeholder="Tell us about your professional background and experience..."
-                value={`${formData.professionalBio ?? ""}`}
-                onChange={(e) => handleInputChange("professionalBio", e.target.value)}
+                value={professionalBio}
+                onChange={(e) => setProfessionalBio(e.target.value)}
               />
             </div>
 
