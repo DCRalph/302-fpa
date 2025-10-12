@@ -6,7 +6,7 @@ import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
 import { api } from "~/trpc/react";
 import { Spinner } from "~/components/ui/spinner";
-import { Edit, Mail, Phone, Calendar, FileText, User2, Search } from "lucide-react";
+import { Edit, Mail, Phone, Calendar, User2, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 

@@ -10,7 +10,9 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 export default function ManageConferencesPage() {
-  const { data: conferences, isLoading } = api.admin.conference.getAll.useQuery();
+  const { data: conferences, isLoading } = api.admin.conference.getAll.useQuery(undefined, {
+    
+  });
   const utils = api.useUtils();
 
   const toggleActiveMutation = api.admin.conference.toggleActive.useMutation({

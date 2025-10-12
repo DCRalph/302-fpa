@@ -14,18 +14,18 @@ import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Label } from "@radix-ui/react-dropdown-menu";
 
+import Image from "next/image";
+import Link from "next/link";
+
 export default function CommunityBlog() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all-posts");
 
-  const { data } = api.member.blog.list.useQuery(
-    {
-      query: searchQuery || undefined,
-      categorySlug:
-        selectedFilter !== "all-posts" ? selectedFilter : undefined,
-      take: 10,
-    },
-  );
+  const { data } = api.member.blog.list.useQuery({
+    query: searchQuery || undefined,
+    categorySlug: selectedFilter !== "all-posts" ? selectedFilter : undefined,
+    take: 10,
+  });
 
   const guidelines = [
     {
@@ -69,19 +69,16 @@ export default function CommunityBlog() {
         <div className="lg:col-span-2">
           <Label className="py-1 text-sm">Filter by Type</Label>
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 w-full">
+            <div className="flex w-full items-center space-x-2">
               <Select value={selectedFilter} onValueChange={setSelectedFilter}>
-                <SelectTrigger className="w-full bg-background py-5">
+                <SelectTrigger className="bg-background w-full py-5">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-posts">All Posts</SelectItem>
-                  <SelectItem value="conference-updates">
-                    Conference Updates
-                  </SelectItem>
-                  <SelectItem value="resources">Resources</SelectItem>
-                  <SelectItem value="discussions">Discussions</SelectItem>
-                  <SelectItem value="announcements">Announcements</SelectItem>
+                  <SelectItem value="conference-updates">General</SelectItem>
+                  <SelectItem value="resources">Qualification</SelectItem>
+                  <SelectItem value="discussions">Research Paper</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -98,16 +95,33 @@ export default function CommunityBlog() {
               <CardContent className="">
                 {/* Author Info */}
                 <div className="mb-4 flex items-center space-x-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
-                    <span className="text-sm font-medium text-black">
-                      {(post.author?.name ?? "?").split(" ").map((n) => n[0]).join("")}
+                  <div
+                    className={`flex h-10 w-10 items-center justify-center rounded-full ${post.author?.image ? "" : "bg-gray-200"} text-black`}
+                  >
+                    <span className="text-sm font-medium">
+                      {post.author?.image ? (
+                        <Image
+                          src={post.author?.image}
+                          alt=""
+                          className="rounded-full"
+                          width={40}
+                          height={40}
+                        />
+                      ) : (
+                        (post.author?.name ?? "?")
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                      )}
                     </span>
                   </div>
                   <div>
-                    <p className="font-medium text-foreground">
+                    <p className="text-foreground font-medium">
                       {post.author?.name ?? "Member"}
                     </p>
-                    <p className="text-sm text-muted-foreground">&nbsp;</p>
+                    <p className="text-muted-foreground text-sm">
+                      {post.author?.professionalPosition ?? "Member"}
+                    </p>
                   </div>
                   <div className="ml-auto">
                     <Badge variant="secondary" className="text-xs">
@@ -118,23 +132,49 @@ export default function CommunityBlog() {
 
                 {/* Post Content */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-foreground">{post.title}</h3>
-                  <p className="text-foreground/70 whitespace-pre-line">{post.content}</p>
+                  <h3 className="text-foreground font-semibold">
+                    {post.title}
+                  </h3>
+                  <p className="text-foreground/70 whitespace-pre-line">
+                    {post.content}
+                  </p>
 
+                  {/* Cover Image */}
+                  {post.coverImageUrl && (
+                    <div className="overflow-hidden rounded-lg mt-6">
+                      <Image
+                        src={post.coverImageUrl}
+                        alt="Conference highlights"
+                        className="h-64 w-full object-cover"
+                        width={100}
+                        height={100}
+                      />
+                    </div>
+                  )}
 
                   {/* Post Footer */}
-                  <div className="flex items-center justify-between pt-2 ">
+                  <div className="flex items-center justify-between pt-2">
                     <div className="flex items-center space-x-4">
-                      <Button variant={"ghost"} className="flex items-center space-x-1 text-muted-foreground transition-colors hover:text-foreground">
+                      <Button
+                        variant={"ghost"}
+                        className="text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors"
+                      >
                         <Heart className="h-4 w-4" />
-                        <span className="text-sm">&nbsp;</span>
+                        <span className="text-sm">{post.likes}</span>
                       </Button>
-                      <Button variant={"ghost"} className="flex items-center space-x-1 text-muted-foreground transition-colors hover:text-foreground">
+                      <Button
+                        variant={"ghost"}
+                        className="text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors"
+                      >
                         <MessageSquareText className="h-4 w-4" />
-                        <span className="text-sm">{post._count?.comments ?? 0}</span>
+                        <span className="text-sm">
+                          {post._count?.comments ?? 0}
+                        </span>
                       </Button>
                     </div>
-                    <p className="text-sm text-muted-foreground">{new Date(post.createdAt).toLocaleDateString()}</p>
+                    <p className="text-muted-foreground text-sm">
+                      {new Date(post.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -150,12 +190,14 @@ export default function CommunityBlog() {
               <CardTitle className="text-2xl font-bold">My Posts</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-base text-foreground/70">
+              <p className="text-foreground/70 text-base">
                 Share your knowledge with the community
               </p>
-              <div className="space-y-2 grid grid-cols-2 gap-4 pt-4">
-                <Button>
-                  Create a Post
+              <div className="grid grid-cols-2 gap-4 space-y-2 pt-4">
+                <Button asChild>
+                  <Link href={"/member-dashboard/community-blog/create"}>
+                    Create a Post
+                  </Link>
                 </Button>
                 <Button variant="outline" className="">
                   View my Posts
@@ -173,11 +215,14 @@ export default function CommunityBlog() {
               {guidelines.map((guideline, index) => (
                 <div key={index} className="flex items-center space-x-2">
                   {guideline.type === "allowed" ? (
-                    <Check className="w-4 flex-shrink-0 text-[#198754]" size={24} />
+                    <Check
+                      className="w-4 flex-shrink-0 text-[#198754]"
+                      size={24}
+                    />
                   ) : (
                     <X className="w-4 flex-shrink-0 text-[#DC3545]" size={24} />
                   )}
-                  <span className="text-sm text-foreground">
+                  <span className="text-foreground text-sm">
                     {guideline.text}
                   </span>
                 </div>

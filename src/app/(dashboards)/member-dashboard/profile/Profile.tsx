@@ -9,7 +9,7 @@ import {
   Lock,
   UserIcon,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import { useAuth } from "~/hooks/useAuth";
 import Image from "next/image";
 import { useState } from "react";
@@ -63,7 +63,7 @@ export default function Profile() {
                   <p>{dbUser?.email}</p>
                 </div>
                 <div className="flex items-center space-x-4 text-lg">
-                  <Phone size={24} />
+                  {dbUser?.phone && <Phone size={24} />} 
                   <p>{dbUser?.phone}</p>
                 </div>
               </div>
