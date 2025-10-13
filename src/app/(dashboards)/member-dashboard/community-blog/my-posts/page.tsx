@@ -5,7 +5,6 @@
 import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
@@ -16,9 +15,13 @@ import remarkGfm from 'remark-gfm';
 import { Textarea } from "~/components/ui/textarea";
 import Image from "next/image";
 
+import { type RouterOutputs } from "~/trpc/react";
+
+type BlogPost = RouterOutputs["member"]["blog"]["myPosts"][number];
+
 
 // BlogPostCard for My Posts
-function BlogPostCard({ post, onDelete }: { post: any; onDelete: (id: string) => void }) {
+function BlogPostCard({ post, onDelete }: { post: BlogPost; onDelete: (id: string) => void }) {
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState("");
     const [localLikeCount, setLocalLikeCount] = useState(post._count?.likes ?? 0);
@@ -98,7 +101,9 @@ function BlogPostCard({ post, onDelete }: { post: any; onDelete: (id: string) =>
                                 {post.categories?.[0]?.category?.name ?? "General"}
                             </Badge>
                         </div>
-                        <p className="text-muted-foreground text-sm line-clamp-2 mt-1">{post.excerpt ?? post.content?.slice(0, 120) + (post.content?.length > 120 ? "..." : "")}</p>
+                        <p className="text-muted-foreground text-sm line-clamp-2 mt-1">
+                            {post.excerpt ?? (post.content.slice(0, 120) + (post.content.length > 120 ? "..." : ""))}
+                        </p>
                         <div className="flex items-center gap-4 mt-2">
                             <span className="text-xs text-muted-foreground">
                                 {new Date(post.createdAt).toLocaleDateString()}
@@ -251,7 +256,6 @@ function BlogPostCard({ post, onDelete }: { post: any; onDelete: (id: string) =>
 }
 
 export default function MyPostsPage() {
-    const router = useRouter();
     const { data, isLoading, refetch } = api.member.blog.myPosts.useQuery();
     const deletePostMutation = api.member.blog.deletePost.useMutation({
         onSuccess: async () => {
@@ -296,7 +300,7 @@ export default function MyPostsPage() {
                         <div className="py-12 text-center text-muted-foreground">You have not created any posts yet.</div>
                     ) : (
                         <div className="space-y-4">
-                            {data.map((post: any) => (
+                            {data.map((post) => (
                                 <BlogPostCard key={post.id} post={post} onDelete={handleDelete} />
                             ))}
                         </div>

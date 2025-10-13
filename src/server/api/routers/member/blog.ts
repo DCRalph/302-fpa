@@ -137,9 +137,28 @@ export const memberBlogRouter = createTRPCRouter({
         orderBy: { createdAt: "desc" },
         include: {
           categories: { include: { category: true } },
+          _count: { select: { comments: true, likes: true } },
         },
       });
-      return posts;
+
+      // Check which posts are liked by the current user
+      const postIds = posts.map((p) => p.id);
+      const userLikes = await ctx.db.blogPostLike.findMany({
+        where: {
+          userId: ctx.dbUser.id,
+          postId: { in: postIds },
+        },
+        select: { postId: true },
+      });
+
+      const likedPostIds = new Set(userLikes.map((like) => like.postId));
+
+      const postsWithLikeStatus = posts.map((post) => ({
+        ...post,
+        isLikedByUser: likedPostIds.has(post.id),
+      }));
+
+      return postsWithLikeStatus;
     }),
 
   // Delete a post

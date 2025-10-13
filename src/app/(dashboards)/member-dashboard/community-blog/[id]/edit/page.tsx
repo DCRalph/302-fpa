@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Card,
@@ -29,8 +29,6 @@ import Image from "next/image";
 
 export default function CreatePostPage() {
   const router = useRouter();
-  const params = useParams();
-  const postId = params.id as string;
   const [formData, setFormData] = useState({
     title: "",
     content: "",

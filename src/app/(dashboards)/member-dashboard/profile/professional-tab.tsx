@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
-import { number } from "zod";
 
 export function ProfessionalTab() {
   const { dbUser } = useAuth();
