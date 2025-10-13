@@ -202,7 +202,6 @@ model BlogPost {
 
 
   categories BlogPostCategory[]
-  tags       BlogPostTag[]
   likes      BlogPostLike[]
   comments   BlogComment[]
 }
@@ -313,14 +312,6 @@ model BlogCategory {
   posts     BlogPostCategory[]
 }
 
-model BlogTag {
-  id        String        @id @default(cuid())
-  name      String
-  slug      String        @unique
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  postTags  BlogPostTag[]
-}
 
 model BlogPostCategory {
   post       BlogPost     @relation(fields: [postId], references: [id])
@@ -329,15 +320,6 @@ model BlogPostCategory {
   categoryId String
 
   @@id([postId, categoryId])
-}
-
-model BlogPostTag {
-  post   BlogPost @relation(fields: [postId], references: [id])
-  postId String
-  tag    BlogTag  @relation(fields: [tagId], references: [id])
-  tagId  String
-
-  @@id([postId, tagId])
 }
 
 model BlogPostLike {
