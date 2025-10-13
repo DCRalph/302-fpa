@@ -117,33 +117,44 @@ export default function AdminDashboardPage() {
             {/* Recent Activity */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <span className="text-2xl">Recent Activity</span>
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-2xl">Recent Activity</CardTitle>
+                  <Link href="/admin-dashboard/activity">
+                    <Button variant="outline" size="sm">
+                      View All
+                    </Button>
+                  </Link>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {adminDashboard?.recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <DynamicIcon
-                        type={activity.icon.type ?? ""}
-                        name={activity.icon.name ?? ""}
-                        props={activity.icon.props ?? {}}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-md text-foreground font-medium">
-                          {activity.title}
-                        </p>
-                        <p className="text-muted-foreground text-sm">
-                          {activity.time}
-                        </p>
-                      </div>
+                  {!adminDashboard?.recentActivity ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Spinner className="size-8" />
                     </div>
-                  )) ?? (
-                      <div className="flex items-center justify-center py-8">
-                        <Spinner className="size-8" />
+                  ) : adminDashboard.recentActivity.length === 0 ? (
+                    <div className="flex items-center justify-center py-8">
+                      <p className="text-muted-foreground">No recent activity</p>
+                    </div>
+                  ) : (
+                    adminDashboard.recentActivity.map((activity, index) => (
+                      <div key={index} className="flex items-start space-x-3">
+                        <DynamicIcon
+                          type={activity.icon.type ?? ""}
+                          name={activity.icon.name ?? ""}
+                          props={activity.icon.props ?? {}}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-md text-foreground font-medium">
+                            {activity.title}
+                          </p>
+                          <p className="text-muted-foreground text-sm">
+                            {activity.time}
+                          </p>
+                        </div>
                       </div>
-                    )}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>

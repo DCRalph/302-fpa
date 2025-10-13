@@ -22,30 +22,10 @@ import Link from "next/link";
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
-type BlogPost = {
-  id: string;
-  title: string;
-  content: string;
-  coverImageUrl: string | null;
-  createdAt: Date;
-  isLikedByUser: boolean;
-  author: {
-    id: string;
-    name: string | null;
-    professionalPosition: string | null;
-    image: string | null;
-  } | null;
-  categories: Array<{
-    category: {
-      id: string;
-      name: string;
-    };
-  }>;
-  _count: {
-    likes: number;
-    comments: number;
-  };
-};
+import { type RouterOutputs } from "~/trpc/react";
+
+type BlogPost = RouterOutputs["member"]["blog"]["list"]["posts"][number];
+
 
 // BlogPostCard Component
 function BlogPostCard({ post }: { post: BlogPost }) {

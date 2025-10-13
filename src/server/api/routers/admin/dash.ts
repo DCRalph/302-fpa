@@ -29,6 +29,52 @@ type RecentActivity = {
 };
 
 export const adminDashboardRouter = createTRPCRouter({
+  // Get paginated list of all activities
+  getAllActivities: adminProcedure
+    .input(
+      z.object({
+        page: z.number().min(1).default(1),
+        pageSize: z.number().min(1).max(100).default(20),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { page, pageSize } = input;
+      const skip = (page - 1) * pageSize;
+
+      const [activities, totalCount] = await Promise.all([
+        ctx.db.userActivity.findMany({
+          orderBy: { createdAt: "desc" },
+          take: pageSize,
+          skip,
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
+        }),
+        ctx.db.userActivity.count(),
+      ]);
+
+      const totalPages = Math.ceil(totalCount / pageSize);
+
+      return {
+        activities,
+        pagination: {
+          page,
+          pageSize,
+          totalCount,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      };
+    }),
+
   getAdminDashboard: adminProcedure.query(async ({ ctx }) => {
     const adminName: string = ctx.dbUser?.name ?? "Admin";
 
@@ -167,41 +213,7 @@ export const adminDashboardRouter = createTRPCRouter({
       };
     }
 
-    // Recent activity (registrations, payments, users, conferences)
-    const [recentRegs, recentPays, recentUsers, recentConferences] = await Promise.all([
-      ctx.db.registration.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 5,
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          conference: { select: { name: true } },
-        },
-      }),
-      ctx.db.payment.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 5,
-        select: {
-          id: true,
-          amountCents: true,
-          status: true,
-          createdAt: true,
-          registration: { select: { name: true } },
-        },
-      }),
-      ctx.db.user.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 5,
-        select: { id: true, name: true, createdAt: true },
-      }),
-      ctx.db.conference.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 3,
-        select: { id: true, name: true, createdAt: true },
-      }),
-    ]);
-
+    // Recent activity - Get last 10 activities from any user
     const toAgo = (d: Date) => {
       const diffMs = Date.now() - d.getTime();
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -212,48 +224,25 @@ export const adminDashboardRouter = createTRPCRouter({
       return weeks === 1 ? "1 week ago" : `${weeks} weeks ago`;
     };
 
-    const recentActivity: RecentActivity[] = [
-      ...recentRegs.map((r) => ({
-        icon: {
-          type: "lucide",
-          name: "CheckCircle",
-          props: { className: "text-primary w-5 flex-shrink-0", size: 24 },
+    const userActivities = await ctx.db.userActivity.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: {
+        user: {
+          select: { name: true },
         },
-        title: `${r.name} registered${r.conference ? ` for ${r.conference.name}` : ""}`,
-        time: toAgo(r.createdAt),
-      })),
-      ...recentPays.map((p) => ({
-        icon: {
-          type: "lucide",
-          name: "CreditCard",
-          props: { className: "text-primary w-5 flex-shrink-0", size: 24 },
-        },
-        title: `${p.status === "succeeded" ? "Payment received" : "Payment update"}: $${((p.amountCents ?? 0) / 100).toFixed(2)}${p.registration?.name ? ` from ${p.registration.name}` : ""}`,
-        time: toAgo(p.createdAt),
-      })),
-      ...recentUsers.map((u) => ({
-        icon: {
-          type: "lucide",
-          name: "UserPlus",
-          props: { className: "text-primary w-5 flex-shrink-0", size: 24 },
-        },
-        title: `New member added: ${u.name ?? u.id}`,
-        time: toAgo(u.createdAt),
-      })),
-      ...recentConferences.map((c) => ({
-        icon: {
-          type: "lucide",
-          name: "Calendar",
-          props: { className: "text-primary w-5 flex-shrink-0", size: 24 },
-        },
-        title: `Conference created: ${c.name}`,
-        time: toAgo(c.createdAt),
-      })),
-    ]
-      .sort((a, b) => {
-        return 0;
-      })
-      .slice(0, 10);
+      },
+    });
+
+    const recentActivity: RecentActivity[] = userActivities.map((activity) => ({
+      icon: {
+        type: "lucide",
+        name: activity.icon,
+        props: { className: "text-primary w-5 flex-shrink-0", size: 24 },
+      },
+      title: activity.title,
+      time: toAgo(activity.createdAt),
+    }));
 
     // Recent registrations table - prioritize latest conference registrations
     const registrations = await ctx.db.registration.findMany({

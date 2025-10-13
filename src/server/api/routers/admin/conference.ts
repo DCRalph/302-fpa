@@ -131,6 +131,20 @@ export const adminConferenceRouter = createTRPCRouter({
         },
       });
 
+      // Log activity
+      await ctx.db.userActivity.create({
+        data: {
+          userId: ctx.dbUser.id,
+          title: `Created conference: ${input.name}`,
+          icon: "Calendar",
+          activity: "admin_conference_created",
+          metadata: {
+            conferenceId: conference.id,
+            conferenceName: input.name,
+          },
+        },
+      });
+
       return conference;
     }),
 
@@ -223,6 +237,20 @@ export const adminConferenceRouter = createTRPCRouter({
         },
       });
 
+      // Log activity
+      await ctx.db.userActivity.create({
+        data: {
+          userId: ctx.dbUser.id,
+          title: `Updated conference: ${conference.name}`,
+          icon: "Edit",
+          activity: "admin_conference_updated",
+          metadata: {
+            conferenceId: conference.id,
+            conferenceName: conference.name,
+          },
+        },
+      });
+
       return conference;
     }),
 
@@ -241,6 +269,20 @@ export const adminConferenceRouter = createTRPCRouter({
       const conference = await ctx.db.conference.update({
         where: { id: input.id },
         data: { isActive: false },
+      });
+
+      // Log activity
+      await ctx.db.userActivity.create({
+        data: {
+          userId: ctx.dbUser.id,
+          title: `Deactivated conference: ${conference.name}`,
+          icon: "XCircle",
+          activity: "admin_conference_deactivated",
+          metadata: {
+            conferenceId: conference.id,
+            conferenceName: conference.name,
+          },
+        },
       });
 
       return conference;

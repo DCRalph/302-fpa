@@ -25,6 +25,20 @@ export const onboardingRouter = createTRPCRouter({
         },
       });
 
+      // Log activity
+      await db.userActivity.create({
+        data: {
+          userId,
+          title: "Completed account setup",
+          icon: "UserCheck",
+          activity: "onboarding_completed",
+          metadata: {
+            name: input.name,
+            school: input.school,
+          },
+        },
+      });
+
       return {
         success: true,
         user: updatedUser,

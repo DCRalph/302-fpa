@@ -85,6 +85,32 @@ export const memberProfileRouter = createTRPCRouter({
         },
       });
 
+      // Determine what was updated for activity title
+      const updatedFields = [];
+      if (input.name !== undefined) updatedFields.push("name");
+      if (input.email !== undefined) updatedFields.push("email");
+      if (input.phone !== undefined) updatedFields.push("phone");
+      if (input.school !== undefined) updatedFields.push("school");
+      if (input.professionalPosition !== undefined) updatedFields.push("position");
+      if (input.professionalYears !== undefined) updatedFields.push("experience");
+      if (input.professionalQualification !== undefined) updatedFields.push("qualification");
+      if (input.professionalSpecialisation !== undefined) updatedFields.push("specialisation");
+      if (input.professionalBio !== undefined) updatedFields.push("bio");
+      if (input.image !== undefined) updatedFields.push("profile image");
+
+      // Log activity
+      await ctx.db.userActivity.create({
+        data: {
+          userId: ctx.dbUser.id,
+          title: `Updated profile: ${updatedFields.join(", ")}`,
+          icon: "UserCog",
+          activity: "profile_updated",
+          metadata: {
+            updatedFields,
+          },
+        },
+      });
+
       return updated;
     }),
 
@@ -105,6 +131,17 @@ export const memberProfileRouter = createTRPCRouter({
           body: {
             currentPassword: input.currentPassword,
             newPassword: input.newPassword,
+          },
+        });
+
+        // Log activity
+        await ctx.db.userActivity.create({
+          data: {
+            userId: ctx.dbUser.id,
+            title: "Changed password",
+            icon: "Lock",
+            activity: "password_changed",
+            metadata: {},
           },
         });
 

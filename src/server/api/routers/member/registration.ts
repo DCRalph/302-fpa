@@ -147,6 +147,21 @@ export const memberRegistrationRouter = createTRPCRouter({
         },
       });
 
+      // Log activity
+      await ctx.db.userActivity.create({
+        data: {
+          userId: ctx.dbUser.id,
+          title: `Registered for ${conference.name}`,
+          icon: "CheckCircle",
+          activity: "conference_registration",
+          metadata: {
+            conferenceId: conference.id,
+            conferenceName: conference.name,
+            registrationId: registration.id,
+          },
+        },
+      });
+
       return { success: true, registration };
     }),
 
@@ -165,7 +180,28 @@ export const memberRegistrationRouter = createTRPCRouter({
       const reg = await ctx.db.registration.update({
         where: { id: input.id },
         data: { status: "cancelled" },
+        include: {
+          conference: {
+            select: { name: true },
+          },
+        },
       });
+
+      // Log activity
+      await ctx.db.userActivity.create({
+        data: {
+          userId: ctx.dbUser.id,
+          title: `Cancelled registration for ${reg.conference?.name ?? "conference"}`,
+          icon: "XCircle",
+          activity: "conference_cancellation",
+          metadata: {
+            conferenceId: reg.conferenceId,
+            conferenceName: reg.conference?.name,
+            registrationId: reg.id,
+          },
+        },
+      });
+
       return reg;
     }),
 });

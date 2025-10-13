@@ -111,6 +111,21 @@ export const memberBlogRouter = createTRPCRouter({
         }
       }
 
+      // Log activity
+      await ctx.db.userActivity.create({
+        data: {
+          userId: ctx.dbUser.id,
+          title: published ? `Published blog post: ${title}` : `Created draft blog post: ${title}`,
+          icon: published ? "BookOpen" : "FileText",
+          activity: published ? "blog_post_published" : "blog_post_created",
+          metadata: {
+            postId: post.id,
+            postTitle: title,
+            published,
+          },
+        },
+      });
+
       return post;
     }),
 
@@ -134,12 +149,27 @@ export const memberBlogRouter = createTRPCRouter({
       // Only allow deleting own posts
       const post = await ctx.db.blogPost.findUnique({
         where: { id: input.id },
-        select: { authorId: true },
+        select: { authorId: true, title: true },
       });
       if (!post || post.authorId !== ctx.dbUser.id) {
         throw new Error("Not authorized to delete this post");
       }
       await ctx.db.blogPost.delete({ where: { id: input.id } });
+
+      // Log activity
+      await ctx.db.userActivity.create({
+        data: {
+          userId: ctx.dbUser.id,
+          title: `Deleted blog post: ${post.title}`,
+          icon: "Trash",
+          activity: "blog_post_deleted",
+          metadata: {
+            postId: input.id,
+            postTitle: post.title,
+          },
+        },
+      });
+
       return { success: true };
     }),
 
@@ -154,7 +184,7 @@ export const memberBlogRouter = createTRPCRouter({
             orderBy: { postId: "desc" },
             take: 5
           }
-          
+
         },
       });
 

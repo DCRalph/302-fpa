@@ -39,13 +39,51 @@ export const memberFilesRouter = createTRPCRouter({
           sizeBytes: null,
         },
       });
+
+      // Log activity
+      await ctx.db.userActivity.create({
+        data: {
+          userId: ctx.dbUser.id,
+          title: `Uploaded file: ${input.filename}`,
+          icon: "Upload",
+          activity: "file_uploaded",
+          metadata: {
+            attachmentId: attachment.id,
+            filename: input.filename,
+            registrationId: latestReg?.id,
+          },
+        },
+      });
+
       return attachment;
     }),
 
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const attachment = await ctx.db.attachment.findUnique({
+        where: { id: input.id },
+        select: { filename: true },
+      });
+
       await ctx.db.attachment.delete({ where: { id: input.id } });
+
+      // Log activity
+      if (attachment) {
+        await ctx.db.userActivity.create({
+          data: {
+            userId: ctx.dbUser.id,
+            title: `Deleted file: ${attachment.filename}`,
+            icon: "Trash2",
+            activity: "file_deleted",
+            metadata: {
+              attachmentId: input.id,
+              filename: attachment.filename,
+            },
+          },
+        });
+      }
+
       return { success: true };
     }),
 });
