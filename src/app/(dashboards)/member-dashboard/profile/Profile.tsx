@@ -43,7 +43,7 @@ export default function Profile() {
                   height={137}
                 />
               ) : (
-                <div className="bg-gray-200 mx-12 flex h-[137px] w-[137px] items-center justify-center rounded-full">
+                <div className="bg-gray-200 mx-12 mb-4 flex h-[137px] w-[137px] items-center justify-center rounded-full">
                   <User className="text-gray-700" size={48} />
                 </div>
               )}
@@ -67,44 +67,7 @@ export default function Profile() {
       </div>
 
       {/* Tabs */}
-      <div className="border-muted-foreground/30 mb-6 border-b">
-        {/* <div className="w-screen"> */}
-        <div className="no-scrollbar flex overflow-x-scroll w-full whitespace-nowrap">
-
-          <TabButton
-            isActive={activeTab === "basic-info"}
-            onClick={() => setActiveTab("basic-info")}
-            icon={<UserIcon size={18} />}
-            label="Basic Information"
-            animated
-            layoutId="active-tab"
-          />
-
-          <TabButton
-            isActive={activeTab === "professional"}
-            onClick={() => setActiveTab("professional")}
-            icon={<IdCard size={18} />}
-            label="Professional Profile"
-            animated
-            layoutId="active-tab"
-          />
-          <TabButton
-            isActive={activeTab === "profile-image"}
-            onClick={() => setActiveTab("profile-image")}
-            icon={<ImageIcon size={18} />}
-            label="Profile Image"
-            animated
-            layoutId="active-tab"
-          />
-          <TabButton
-            isActive={activeTab === "change-password"}
-            onClick={() => setActiveTab("change-password")}
-            icon={<Lock size={18} />}
-            label="Change Password"
-            animated
-            layoutId="active-tab"
-          />
-        </div>
+      <div className="border-muted-foreground/30 mb-6">
         {/* </div> */}
         <div className="border-muted-foreground/30 mb-6 border-b max-w-full overflow-x-hidden">
           <div
