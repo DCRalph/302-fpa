@@ -61,16 +61,20 @@ model User {
   professionalPosition       String?
   professionalQualification  String?
   professionalSpecialisation String?
-  professionalYears          Float?
-  accounts                   Account[]
-  adminNotes                 AdminNote[]                 @relation("UserAdminNotes")
-  BlogComment                BlogComment[]
-  blogPosts                  BlogPost[]
-  BlogPostLike               BlogPostLike[]
-  registrations              Registration[]
-  statusChanges              RegistrationStatusHistory[] @relation("UserStatusChanges")
-  sessions                   Session[]
-  activities                 UserActivity[]
+  professionalBio String?
+  
+
+  onboardedAt DateTime?
+
+  blogPosts     BlogPost[]
+  registrations Registration[]
+  adminNotes    AdminNote[]                 @relation("UserAdminNotes")
+  statusChanges RegistrationStatusHistory[] @relation("UserStatusChanges")
+  activities  UserActivity[]
+
+  blogPostLikes BlogPostLike[]
+  blogPostComments BlogComment[]
+
 }
 
 model VerificationToken {
@@ -162,14 +166,17 @@ model BlogPost {
   published     Boolean            @default(false)
   publishedAt   DateTime?
   authorId      String
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  comments      BlogComment[]
-  author        User               @relation(fields: [authorId], references: [id])
-  categories    BlogPostCategory[]
-  BlogPostLike  BlogPostLike[]
-  tags          BlogPostTag[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+
+  categories BlogPostCategory[]
+  tags       BlogPostTag[]
+  likes      BlogPostLike[]
+  comments   BlogComment[]
 }
+
+// Ticket types (e.g., early-bird, standard, student) used for pricing/management
 
 model TicketType {
   id            String         @id @default(cuid())
@@ -291,15 +298,28 @@ model BlogPostTag {
   @@id([postId, tagId])
 }
 
-model BlogComment {
+model BlogPostLike {
   id        String   @id @default(cuid())
+
   postId    String
-  content   String
-  approved  Boolean  @default(false)
+  post      BlogPost @relation(fields: [postId], references: [id])
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
   createdAt DateTime @default(now())
-  authorId  String
-  User      User     @relation(fields: [authorId], references: [id])
-  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @updatedAt
+}
+
+model BlogComment {
+  id          String   @id @default(cuid())
+  post        BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId      String
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  content     String
+  approved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
 
   @@index([postId])
 }
