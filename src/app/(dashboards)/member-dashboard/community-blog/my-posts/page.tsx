@@ -71,7 +71,7 @@ export default function MyPostsPage() {
                                                 {post.categories?.[0]?.category?.name ?? "General"}
                                             </Badge>
                                         </div>
-                                        <p className="text-muted-foreground text-sm line-clamp-2 mt-1">{post.excerpt || post.content?.slice(0, 120) + (post.content?.length > 120 ? "..." : "")}</p>
+                                        <p className="text-muted-foreground text-sm line-clamp-2 mt-1">{post.excerpt ?? post.content?.slice(0, 120) + (post.content?.length > 120 ? "..." : "")}</p>
                                         <div className="flex items-center gap-4 mt-2">
                                             <span className="text-xs text-muted-foreground">
                                                 {new Date(post.createdAt).toLocaleDateString()}

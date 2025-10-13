@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,16 +10,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  USER
+}
+
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String   @unique
+  token     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
 }
 
 model Account {
@@ -24,6 +34,7 @@ model Account {
   accountId             String
   providerId            String
   userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -33,7 +44,6 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Verification {
@@ -43,23 +53,27 @@ model Verification {
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now()) @updatedAt
+
 }
 
 model User {
-  id                         String                      @id @default(cuid())
-  name                       String?
-  email                      String?                     @unique
-  image                      String?
-  role                       UserRole                    @default(USER)
-  onboardedAt                DateTime?
-  phone                      String?
-  createdAt                  DateTime                    @default(now())
-  updatedAt                  DateTime                    @default(now()) @updatedAt
-  emailVerified              Boolean
-  school                     String?
-  professionalBio            String?
-  professionalPosition       String?
-  professionalQualification  String?
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified Boolean
+  image         String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  sessions  Session[]
+  accounts  Account[]
+
+  phone         String?
+  school        String?
+  role          UserRole  @default(USER)
+
+  professionalPosition String?
+  professionalYears Float?
+  professionalQualification String?
   professionalSpecialisation String?
   professionalBio String?
   
@@ -85,68 +99,84 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+
+
 model Conference {
-  id                        String              @id @default(cuid())
-  name                      String
-  description               String
-  startDate                 DateTime
-  endDate                   DateTime
-  location                  String
-  priceCents                Int
-  currency                  String              @default("FJD")
-  createdAt                 DateTime            @default(now())
-  updatedAt                 DateTime            @updatedAt
-  isActive                  Boolean             @default(true)
-  registrationEndDate       DateTime
-  registrationStartDate     DateTime
-  maxRegistrations          Int                 @default(0)
-  bankTransferAccountName   String
+  id String @id @default(cuid())
+  name String
+  description String
+  isActive Boolean @default(true)
+
+  startDate DateTime
+  endDate DateTime
+  location String
+
+  contacts ConferenceContact[]
+  priceCents Int
+  currency String @default("FJD")
+  bankTransferAccountName String
+  bankTransferBranch String
   bankTransferAccountNumber String
-  bankTransferBranch        String
-  contacts                  ConferenceContact[]
-  registrations             Registration[]
+
+  maxRegistrations Int @default(0) // 0 means unlimited
+  registrations Registration[]
+  registrationStartDate DateTime
+  registrationEndDate DateTime
+  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ConferenceContact {
-  id           String     @id @default(cuid())
-  name         String
+  id String @id @default(cuid())
+  name String
+  fields Json
+
   conferenceId String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  fields       Json
-  conference   Conference @relation(fields: [conferenceId], references: [id])
+  conference Conference @relation(fields: [conferenceId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Registration {
-  id               String                      @id @default(cuid())
+  id               String      @id @default(cuid())
   name             String
   email            String
   phone            String
   school           String
   position         String
   experience       String
-  dietary          String?
-  accommodation    String?
-  message          String?
-  registrationType String
-  status           String                      @default("pending")
+  dietary          String? // Optional field
+  accommodation    String? // Optional field  
+  message          String? // Optional field
+  registrationType String // early-bird, standard, student
+  status           String      @default("pending") // pending, confirmed, cancelled
+  // Optional association to an authenticated user
   userId           String?
+  user             User?       @relation(fields: [userId], references: [id])
+  // Optional association to a ticket type for pricing/management
   ticketTypeId     String?
+  ticketType       TicketType? @relation(fields: [ticketTypeId], references: [id])
+  // Pricing snapshot at time of registration
   priceCents       Int?
-  currency         String                      @default("FJD")
-  paymentStatus    String                      @default("unpaid")
+  currency         String      @default("FJD")
+  // Basic payment/ops fields
+  paymentStatus    String      @default("unpaid") // unpaid, pending, paid, refunded, partial
   checkedInAt      DateTime?
   metadata         Json?
-  createdAt        DateTime                    @default(now())
-  updatedAt        DateTime                    @updatedAt
-  conferenceId     String?
-  notes            AdminNote[]
-  attachments      Attachment[]
-  payments         Payment[]
-  conference       Conference?                 @relation(fields: [conferenceId], references: [id])
-  ticketType       TicketType?                 @relation(fields: [ticketTypeId], references: [id])
-  user             User?                       @relation(fields: [userId], references: [id])
-  statusHistory    RegistrationStatusHistory[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  // Management relations
+  notes         AdminNote[]
+  statusHistory RegistrationStatusHistory[]
+  payments      Payment[]
+  attachments   Attachment[]
+
+  conferenceId String?
+  conference   Conference? @relation(fields: [conferenceId], references: [id])
 
   @@index([email])
   @@index([registrationType])
@@ -157,14 +187,15 @@ model Registration {
 }
 
 model BlogPost {
-  id            String             @id @default(cuid())
+  id            String    @id @default(cuid())
   title         String
-  slug          String?            @unique
+  slug          String?   @unique
   excerpt       String?
   content       String
   coverImageUrl String?
-  published     Boolean            @default(false)
+  published     Boolean   @default(false)
   publishedAt   DateTime?
+  author        User      @relation(fields: [authorId], references: [id])
   authorId      String
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -179,71 +210,80 @@ model BlogPost {
 // Ticket types (e.g., early-bird, standard, student) used for pricing/management
 
 model TicketType {
-  id            String         @id @default(cuid())
-  name          String
-  slug          String         @unique
-  description   String?
-  priceCents    Int
-  currency      String         @default("FJD")
-  isActive      Boolean        @default(true)
-  saleStartsAt  DateTime?
-  saleEndsAt    DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id           String    @id @default(cuid())
+  name         String
+  slug         String    @unique
+  description  String?
+  priceCents   Int
+  currency     String    @default("FJD")
+  isActive     Boolean   @default(true)
+  saleStartsAt DateTime?
+  saleEndsAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
   registrations Registration[]
 }
+
+// Payments recorded against registrations
 
 model Payment {
   id                String       @id @default(cuid())
   registrationId    String
-  provider          String
+  registration      Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  provider          String // e.g., stripe, manual
   providerPaymentId String?
   amountCents       Int
   currency          String       @default("FJD")
-  status            String       @default("pending")
+  status            String       @default("pending") // pending, succeeded, failed, refunded
   receiptUrl        String?
   metadata          Json?
   createdAt         DateTime     @default(now())
-  registration      Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
 
   @@index([registrationId])
 }
+
+// Admin notes attached to registrations
 
 model AdminNote {
   id             String       @id @default(cuid())
   registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
   authorId       String?
+  author         User?        @relation("UserAdminNotes", fields: [authorId], references: [id])
   body           String
   createdAt      DateTime     @default(now())
-  author         User?        @relation("UserAdminNotes", fields: [authorId], references: [id])
-  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
 
   @@index([registrationId])
 }
+
+// Track registration status changes over time
 
 model RegistrationStatusHistory {
   id             String       @id @default(cuid())
   registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
   previousStatus String?
   newStatus      String
   changedById    String?
+  changedBy      User?        @relation("UserStatusChanges", fields: [changedById], references: [id])
   reason         String?
   createdAt      DateTime     @default(now())
-  changedBy      User?        @relation("UserStatusChanges", fields: [changedById], references: [id])
-  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
 
   @@index([registrationId])
 }
 
+// File attachments (e.g., invoices, receipts) that can be linked to registrations
+
 model Attachment {
   id             String        @id @default(cuid())
   registrationId String?
+  registration   Registration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
   url            String
   filename       String
   mimeType       String?
   sizeBytes      Int?
   createdAt      DateTime      @default(now())
-  registration   Registration? @relation(fields: [registrationId], references: [id])
 
   @@index([registrationId])
 }
@@ -251,13 +291,15 @@ model Attachment {
 model UserActivity {
   id        String   @id @default(cuid())
   userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title     String
   icon      String
   activity  String
+
   metadata  Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -281,19 +323,19 @@ model BlogTag {
 }
 
 model BlogPostCategory {
-  postId     String
-  categoryId String
-  category   BlogCategory @relation(fields: [categoryId], references: [id])
   post       BlogPost     @relation(fields: [postId], references: [id])
+  postId     String
+  category   BlogCategory @relation(fields: [categoryId], references: [id])
+  categoryId String
 
   @@id([postId, categoryId])
 }
 
 model BlogPostTag {
-  postId String
-  tagId  String
   post   BlogPost @relation(fields: [postId], references: [id])
+  postId String
   tag    BlogTag  @relation(fields: [tagId], references: [id])
+  tagId  String
 
   @@id([postId, tagId])
 }
@@ -324,6 +366,8 @@ model BlogComment {
   @@index([postId])
 }
 
+// CMS-like primitives
+
 model NewsletterSubscription {
   id          String    @id @default(cuid())
   email       String    @unique
@@ -339,7 +383,7 @@ model ContactMessage {
   phone     String?
   subject   String?
   message   String
-  status    String    @default("open")
+  status    String    @default("open") // open, closed
   createdAt DateTime  @default(now())
   closedAt  DateTime?
 }
@@ -351,19 +395,4 @@ model SiteSettings {
   key         String   @unique
   value       String
   description String?
-}
-
-model BlogPostLike {
-  id        String   @id
-  postId    String
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  BlogPost  BlogPost @relation(fields: [postId], references: [id])
-  User      User     @relation(fields: [userId], references: [id])
-}
-
-enum UserRole {
-  ADMIN
-  USER
 }
