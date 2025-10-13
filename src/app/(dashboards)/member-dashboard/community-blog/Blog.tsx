@@ -9,16 +9,282 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Badge } from "~/components/ui/badge";
-import { Search, Heart, Check, X, MessageSquareText } from "lucide-react";
+import { Textarea } from "~/components/ui/textarea";
+import { Search, Heart, Check, X, MessageSquareText, Send } from "lucide-react";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Label } from "@radix-ui/react-dropdown-menu";
+import { toast } from "sonner";
 
 import Image from "next/image";
 import Link from "next/link";
 
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+
+type BlogPost = {
+  id: string;
+  title: string;
+  content: string;
+  coverImageUrl: string | null;
+  createdAt: Date;
+  isLikedByUser: boolean;
+  author: {
+    id: string;
+    name: string | null;
+    professionalPosition: string | null;
+    image: string | null;
+  } | null;
+  categories: Array<{
+    category: {
+      id: string;
+      name: string;
+    };
+  }>;
+  _count: {
+    likes: number;
+    comments: number;
+  };
+};
+
+// BlogPostCard Component
+function BlogPostCard({ post }: { post: BlogPost }) {
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [localLikeCount, setLocalLikeCount] = useState(post._count.likes);
+  const [isLiked, setIsLiked] = useState(post.isLikedByUser);
+
+  const utils = api.useUtils();
+
+  const likePost = api.member.blog.likePost.useMutation({
+    onSuccess: (data) => {
+      if (data.success) {
+        setIsLiked(true);
+        setLocalLikeCount(data.likeCount ?? 0);
+        toast.success("Post liked!");
+      }
+    },
+    onError: () => {
+      toast.error("Failed to like post");
+    },
+  });
+
+  const unlikePost = api.member.blog.unlikePost.useMutation({
+    onSuccess: (data) => {
+      if (data.success) {
+        setIsLiked(false);
+        setLocalLikeCount(data.likeCount ?? 0);
+        toast.success("Post unliked!");
+      }
+    },
+    onError: () => {
+      toast.error("Failed to unlike post");
+    },
+  });
+
+  const { data: commentsData, refetch: refetchComments } = api.member.blog.getComments.useQuery(
+    { postId: post.id },
+    { enabled: showComments }
+  );
+
+  const addComment = api.member.blog.addComment.useMutation({
+    onSuccess: () => {
+      toast.success("Comment added!");
+      setCommentText("");
+      void refetchComments();
+      void utils.member.blog.list.invalidate();
+    },
+    onError: () => {
+      toast.error("Failed to add comment");
+    },
+  });
+
+  const handleLikeToggle = () => {
+    if (isLiked) {
+      unlikePost.mutate({ postId: post.id });
+    } else {
+      likePost.mutate({ postId: post.id });
+    }
+  };
+
+  const handleAddComment = () => {
+    if (!commentText.trim()) {
+      toast.error("Please enter a comment");
+      return;
+    }
+    addComment.mutate({ postId: post.id, content: commentText });
+  };
+
+  return (
+    <Card className="overflow-hidden">
+      <CardContent className="">
+        {/* Author Info */}
+        <div className="mb-4 flex items-center space-x-3">
+          <div
+            className={`flex h-10 w-10 items-center justify-center rounded-full ${post.author?.image ? "" : "bg-gray-200"} text-black`}
+          >
+            <span className="text-sm font-medium">
+              {post.author?.image ? (
+                <Image
+                  src={post.author.image}
+                  alt=""
+                  className="rounded-full"
+                  width={40}
+                  height={40}
+                />
+              ) : (
+                (post.author?.name ?? "?")
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+              )}
+            </span>
+          </div>
+          <div>
+            <p className="text-foreground font-medium">
+              {post.author?.name ?? "Member"}
+            </p>
+            <p className="text-muted-foreground text-sm">
+              {post.author?.professionalPosition ?? "Member"}
+            </p>
+          </div>
+          <div className="ml-auto">
+            <Badge variant="secondary" className="text-xs">
+              {post.categories[0]?.category?.name ?? "General"}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Post Content */}
+        <div className="space-y-4">
+          <h3 className="text-foreground font-semibold">
+            {post.title}
+          </h3>
+          <div className="prose prose-blog dark:prose-invert text-foreground/70">
+            <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
+          </div>
+
+          {/* Cover Image */}
+          {post.coverImageUrl && (
+            <div className="overflow-hidden rounded-lg mt-6">
+              <Image
+                src={post.coverImageUrl}
+                alt="Post cover"
+                className="h-64 w-full object-cover"
+                width={100}
+                height={100}
+              />
+            </div>
+          )}
+
+          {/* Post Footer */}
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant={"ghost"}
+                onClick={handleLikeToggle}
+                disabled={likePost.isPending || unlikePost.isPending}
+                className={`text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors ${isLiked ? "text-red-500 hover:text-red-600" : ""}`}
+              >
+                <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+                <span className="text-sm">{localLikeCount}</span>
+              </Button>
+              <Button
+                variant={"ghost"}
+                onClick={() => setShowComments(!showComments)}
+                className="text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors"
+              >
+                <MessageSquareText className="h-4 w-4" />
+                <span className="text-sm">
+                  {post._count.comments}
+                </span>
+              </Button>
+            </div>
+            <p className="text-muted-foreground text-sm">
+              {new Date(post.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+
+          {/* Comments Section */}
+          {showComments && (
+            <div className="mt-4 space-y-4 border-t pt-4">
+              {/* Add Comment Form */}
+              <div className="space-y-2">
+                <Textarea
+                  placeholder="Write a comment..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  className="resize-none"
+                  rows={3}
+                />
+                <div className="flex justify-end">
+                  <Button
+                    onClick={handleAddComment}
+                    disabled={addComment.isPending || !commentText.trim()}
+                    size="sm"
+                  >
+                    <Send className="mr-2 h-4 w-4" />
+                    Post Comment
+                  </Button>
+                </div>
+              </div>
+
+              {/* Comments List */}
+              <div className="space-y-3">
+                {commentsData && commentsData.length > 0 ? (
+                  commentsData.map((comment) => (
+                    <div key={comment.id} className="flex space-x-3 rounded-lg bg-muted/50 p-3">
+                      <div
+                        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${comment.author?.image ? "" : "bg-gray-300"} text-black`}
+                      >
+                        {comment.author?.image ? (
+                          <Image
+                            src={comment.author.image}
+                            alt=""
+                            className="rounded-full"
+                            width={32}
+                            height={32}
+                          />
+                        ) : (
+                          <span className="text-xs font-medium">
+                            {(comment.author?.name ?? "?")
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium">
+                              {comment.author?.name ?? "Member"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {comment.author?.professionalPosition ?? "Member"}
+                            </p>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(comment.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <p className="text-sm text-foreground/80">{comment.content}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-sm text-muted-foreground">
+                    No comments yet. Be the first to comment!
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function CommunityBlog() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -94,94 +360,7 @@ export default function CommunityBlog() {
         {/* Main Content - Blog Posts */}
         <div className="space-y-6 lg:col-span-3">
           {data?.posts.map((post) => (
-            <Card key={post.id} className="overflow-hidden">
-              <CardContent className="">
-                {/* Author Info */}
-                <div className="mb-4 flex items-center space-x-3">
-                  <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full ${post.author?.image ? "" : "bg-gray-200"} text-black`}
-                  >
-                    <span className="text-sm font-medium">
-                      {post.author?.image ? (
-                        <Image
-                          src={post.author?.image}
-                          alt=""
-                          className="rounded-full"
-                          width={40}
-                          height={40}
-                        />
-                      ) : (
-                        (post.author?.name ?? "?")
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                      )}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-foreground font-medium">
-                      {post.author?.name ?? "Member"}
-                    </p>
-                    <p className="text-muted-foreground text-sm">
-                      {post.author?.professionalPosition ?? "Member"}
-                    </p>
-                  </div>
-                  <div className="ml-auto">
-                    <Badge variant="secondary" className="text-xs">
-                      {post.categories?.[0]?.category?.name ?? "General"}
-                    </Badge>
-                  </div>
-                </div>
-
-                {/* Post Content */}
-                <div className="space-y-4">
-                  <h3 className="text-foreground font-semibold">
-                    {post.title}
-                  </h3>
-                  <div className="prose prose-blog dark:prose-invert text-foreground/70">
-                    <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
-                  </div>
-
-                  {/* Cover Image */}
-                  {post.coverImageUrl && (
-                    <div className="overflow-hidden rounded-lg mt-6">
-                      <Image
-                        src={post.coverImageUrl}
-                        alt="Conference highlights"
-                        className="h-64 w-full object-cover"
-                        width={100}
-                        height={100}
-                      />
-                    </div>
-                  )}
-
-                  {/* Post Footer */}
-                  <div className="flex items-center justify-between pt-2">
-                    <div className="flex items-center space-x-4">
-                      <Button
-                        variant={"ghost"}
-                        className="text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors"
-                      >
-                        <Heart className="h-4 w-4" />
-                        <span className="text-sm">{post.likes}</span>
-                      </Button>
-                      <Button
-                        variant={"ghost"}
-                        className="text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors"
-                      >
-                        <MessageSquareText className="h-4 w-4" />
-                        <span className="text-sm">
-                          {post._count?.comments ?? 0}
-                        </span>
-                      </Button>
-                    </div>
-                    <p className="text-muted-foreground text-sm">
-                      {new Date(post.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <BlogPostCard key={post.id} post={post} />
           ))}
         </div>
 

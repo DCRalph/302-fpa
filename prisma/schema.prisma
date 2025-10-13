@@ -85,7 +85,9 @@ model User {
   adminNotes    AdminNote[]                 @relation("UserAdminNotes")
   statusChanges RegistrationStatusHistory[] @relation("UserStatusChanges")
   activities  UserActivity[]
-  
+
+  blogPostLikes BlogPostLike[]
+  blogPostComments BlogComment[]
 
 }
 
@@ -198,10 +200,10 @@ model BlogPost {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  likes Int @default(0)
 
   categories BlogPostCategory[]
   tags       BlogPostTag[]
+  likes      BlogPostLike[]
   comments   BlogComment[]
 }
 
@@ -338,12 +340,25 @@ model BlogPostTag {
   @@id([postId, tagId])
 }
 
+model BlogPostLike {
+  id        String   @id @default(cuid())
+
+  postId    String
+  post      BlogPost @relation(fields: [postId], references: [id])
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model BlogComment {
   id          String   @id @default(cuid())
   post        BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId      String
-  authorName  String
-  authorEmail String
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
   content     String
   approved    Boolean  @default(false)
   createdAt   DateTime @default(now())

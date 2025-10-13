@@ -33,7 +33,7 @@ export const memberBlogRouter = createTRPCRouter({
             : {},
           { published: true },
         ],
-      } as const;
+      };
 
       const posts = await ctx.db.blogPost.findMany({
         where,
@@ -43,17 +43,34 @@ export const memberBlogRouter = createTRPCRouter({
         include: {
           author: { select: { id: true, name: true, professionalPosition: true, image: true } },
           categories: { include: { category: true } },
-          _count: { select: { comments: true } },
+          _count: { select: { comments: true, likes: true } },
         },
       });
 
+      // Check which posts are liked by the current user
+      const postIds = posts.map((p) => p.id);
+      const userLikes = await ctx.db.blogPostLike.findMany({
+        where: {
+          userId: ctx.dbUser.id,
+          postId: { in: postIds },
+        },
+        select: { postId: true },
+      });
+
+      const likedPostIds = new Set(userLikes.map((like) => like.postId));
+
+      const postsWithLikeStatus = posts.map((post) => ({
+        ...post,
+        isLikedByUser: likedPostIds.has(post.id),
+      }));
+
       let nextCursor: string | undefined = undefined;
-      if (posts.length > take) {
-        const next = posts.pop();
+      if (postsWithLikeStatus.length > take) {
+        const next = postsWithLikeStatus.pop();
         nextCursor = next?.id;
       }
 
-      return { posts, nextCursor };
+      return { posts: postsWithLikeStatus, nextCursor };
     }),
 
   create: protectedProcedure
@@ -94,25 +111,140 @@ export const memberBlogRouter = createTRPCRouter({
       return post;
     }),
 
+  likePost: protectedProcedure
+    .input(z.object({ postId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if already liked
+      const existingLike = await ctx.db.blogPostLike.findFirst({
+        where: {
+          postId: input.postId,
+          userId: ctx.dbUser.id,
+        },
+      });
+
+      if (existingLike) {
+        return { success: false, message: "Post already liked" };
+      }
+
+      await ctx.db.blogPostLike.create({
+        data: {
+          postId: input.postId,
+          userId: ctx.dbUser.id,
+        },
+      });
+
+      // Get updated like count
+      const likeCount = await ctx.db.blogPostLike.count({
+        where: { postId: input.postId },
+      });
+
+      return { success: true, likeCount };
+    }),
+
+  unlikePost: protectedProcedure
+    .input(z.object({ postId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const existingLike = await ctx.db.blogPostLike.findFirst({
+        where: {
+          postId: input.postId,
+          userId: ctx.dbUser.id,
+        },
+      });
+
+      if (!existingLike) {
+        return { success: false, message: "Post not liked" };
+      }
+
+      await ctx.db.blogPostLike.delete({
+        where: { id: existingLike.id },
+      });
+
+      // Get updated like count
+      const likeCount = await ctx.db.blogPostLike.count({
+        where: { postId: input.postId },
+      });
+
+      return { success: true, likeCount };
+    }),
+
+  isPostLiked: protectedProcedure
+    .input(z.object({ postId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const like = await ctx.db.blogPostLike.findFirst({
+        where: {
+          postId: input.postId,
+          userId: ctx.dbUser.id,
+        },
+      });
+
+      return { isLiked: !!like };
+    }),
+
   addComment: protectedProcedure
     .input(
       z.object({
         postId: z.string(),
-        content: z.string().min(1),
+        content: z.string().min(1).max(2000),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const user = ctx.dbUser;
       const comment = await ctx.db.blogComment.create({
         data: {
           postId: input.postId,
           content: input.content,
-          authorName: user.name ?? "Member",
-          authorEmail: user.email ?? "",
+          authorId: ctx.dbUser.id,
           approved: true,
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              professionalPosition: true,
+            },
+          },
         },
       });
       return comment;
     }),
+
+  getComments: protectedProcedure
+    .input(z.object({ postId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const comments = await ctx.db.blogComment.findMany({
+        where: {
+          postId: input.postId,
+          approved: true,
+        },
+        orderBy: { createdAt: "desc" },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              professionalPosition: true,
+            },
+          },
+        },
+      });
+
+      return comments;
+    }),
+
+  getCommentCount: protectedProcedure
+    .input(z.object({ postId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const count = await ctx.db.blogComment.count({
+        where: {
+          postId: input.postId,
+          approved: true,
+        },
+      });
+
+      return { count };
+    }),
 });
+
 
