@@ -138,7 +138,7 @@ export default function CommunityBlog() {
                   <h3 className="text-foreground font-semibold">
                     {post.title}
                   </h3>
-                  <div className="prose prose-blog dark:prose-invert text-foreground/70 whitespace-pre-line">
+                  <div className="prose prose-blog dark:prose-invert text-foreground/70">
                     <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
                   </div>
 
