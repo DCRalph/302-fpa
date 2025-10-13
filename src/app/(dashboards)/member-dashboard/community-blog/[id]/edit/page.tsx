@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Card,
@@ -29,6 +29,8 @@ import Image from "next/image";
 
 export default function CreatePostPage() {
   const router = useRouter();
+  const params = useParams();
+  const postId = params.id as string;
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -100,11 +102,10 @@ export default function CreatePostPage() {
             {/* Header */}
             <CardHeader>
               <CardTitle className="text-2xl font-bold">
-                Create New Post
+                Edit Post
               </CardTitle>
               <CardDescription className="text-base">
-                Share something with the community — write a title and some
-                content.
+                Review and modify post details.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

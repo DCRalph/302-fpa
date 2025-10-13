@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type Prisma } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 
 export const memberBlogRouter = createTRPCRouter({
+  // Get a list of all posts that match the search query and are published
   list: protectedProcedure
     .input(
       z
@@ -56,6 +58,7 @@ export const memberBlogRouter = createTRPCRouter({
       return { posts, nextCursor };
     }),
 
+  // Create a post
   create: protectedProcedure
     .input(
       z.object({
@@ -94,6 +97,61 @@ export const memberBlogRouter = createTRPCRouter({
       return post;
     }),
 
+  // Get a list of the users current posts regardless if they are published or not
+  myPosts: protectedProcedure
+    .query(async ({ ctx }) => {
+      const posts = await ctx.db.blogPost.findMany({
+        where: { authorId: ctx.dbUser.id },
+        orderBy: { createdAt: "desc" },
+        include: {
+          categories: { include: { category: true } },
+        },
+      });
+      return posts;
+    }),
+
+  // Delete a post
+  deletePost: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Only allow deleting own posts
+      const post = await ctx.db.blogPost.findUnique({
+        where: { id: input.id },
+        select: { authorId: true },
+      });
+      if (!post || post.authorId !== ctx.dbUser.id) {
+        throw new Error("Not authorized to delete this post");
+      }
+      await ctx.db.blogPost.delete({ where: { id: input.id } });
+      return { success: true };
+    }),
+
+  // Get a single post by ID
+  getById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const post = await ctx.db.blogPost.findUnique({
+        where: { id: input.id },
+        include: {
+          categories: {
+            orderBy: { postId: "desc" },
+            take: 5
+          }
+          
+        },
+      });
+
+      if (!post) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Conference not found",
+        });
+      }
+
+      return post;
+    }),
+
+  // Add a comment to a post
   addComment: protectedProcedure
     .input(
       z.object({

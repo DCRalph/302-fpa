@@ -79,9 +79,9 @@ export default function CommunityBlog() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-posts">All Posts</SelectItem>
-                  <SelectItem value="conference-updates">General</SelectItem>
-                  <SelectItem value="resources">Qualification</SelectItem>
-                  <SelectItem value="discussions">Research Paper</SelectItem>
+                  <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="qualification">Qualification</SelectItem>
+                  <SelectItem value="research-paper">Research Paper</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -202,8 +202,10 @@ export default function CommunityBlog() {
                     Create a Post
                   </Link>
                 </Button>
-                <Button variant="outline" className="">
-                  View my Posts
+                <Button variant="outline" asChild>
+                  <Link href={"/member-dashboard/community-blog/my-posts"}>
+                    View my Posts
+                  </Link>
                 </Button>
               </div>
             </CardContent>
