@@ -25,10 +25,10 @@ export async function ConferenceDetailsSection() {
         <div className="bg-card mx-auto mt-12 max-w-5xl rounded-xl border p-8 shadow-sm">
           {isAdmin && (
             <div className="mb-4 flex justify-end">
-              <EditDetails detailsObject={details} />
+              <EditDetails />
             </div>
           )}
-          {details && (
+          {details ? (
             <>
               <h3 className="text-primary text-center text-2xl font-semibold">
                 {details.conferenceTitle}
@@ -45,45 +45,56 @@ export async function ConferenceDetailsSection() {
                 ))}
               </div>
             </>
+          ) : (
+            <div className="text-center py-8">
+              <h3 className="text-primary text-xl font-semibold mb-4">
+                No Active Conference
+              </h3>
+              <p className="text-muted-foreground">
+                There is currently no active conference. Please check back later for updates.
+              </p>
+            </div>
           )}
 
-          <div className="mt-6 grid gap-6 md:grid-cols-2">
-            <div className="rounded-lg border p-4 shadow-md">
-              <h3 className="font-bold">What&rsquo;s Included:</h3>
-              <ul className="text-foreground mt-3 space-y-2 text-sm">
-                {(details?.included ?? []).map((item, idx) => (
-                  <li key={idx} className="mt-0.5 flex items-center gap-2">
-                    <Check className="size-6 text-green-700" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
+          {details && (
+            <div className="mt-6 grid gap-6 md:grid-cols-2">
+              <div className="rounded-lg border p-4 shadow-md">
+                <h3 className="font-bold">What&rsquo;s Included:</h3>
+                <ul className="text-foreground mt-3 space-y-2 text-sm">
+                  {(details?.included ?? []).map((item, idx) => (
+                    <li key={idx} className="mt-0.5 flex items-center gap-2">
+                      <Check className="size-6 text-green-700" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-lg border p-4 shadow-md">
+                <h3 className="font-bold">Contact Information:</h3>
+                <ul className="text-foreground mt-3 space-y-2 text-sm">
+                  {(details?.contacts ?? []).map((c, idx) => (
+                    <li key={idx}>
+                      <span className="text-foreground font-bold">{c.role}:</span>{" "}
+                      {c.email ? (
+                        <Link
+                          target="_blank"
+                          href={`mailto:${c.email}`}
+                          className="text-blue-500 underline hover:text-blue-800"
+                        >
+                          {c.email}
+                        </Link>
+                      ) : (
+                        <>
+                          {c.name}
+                          {c.phone ? ` (${c.phone})` : ""}
+                        </>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            <div className="rounded-lg border p-4 shadow-md">
-              <h3 className="font-bold">Contact Information:</h3>
-              <ul className="text-foreground mt-3 space-y-2 text-sm">
-                {(details?.contacts ?? []).map((c, idx) => (
-                  <li key={idx}>
-                    <span className="text-foreground font-bold">{c.role}:</span>{" "}
-                    {c.email ? (
-                      <Link
-                        target="_blank"
-                        href={`mailto:${c.email}`}
-                        className="text-blue-500 underline hover:text-blue-800"
-                      >
-                        {c.email}
-                      </Link>
-                    ) : (
-                      <>
-                        {c.name}
-                        {c.phone ? ` (${c.phone})` : ""}
-                      </>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </section>

@@ -14,7 +14,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip
 import { format } from "date-fns";
 import { Masonry } from "~/components/Masonry";
 import { z } from "zod";
-import { redirect } from "next/navigation";
 
 type ActivityActionButton = {
   label: string;

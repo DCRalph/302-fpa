@@ -9,8 +9,7 @@ import {
 } from "~/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { useEffect, useState } from "react";
-import { Button } from "../ui/button";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+
 
 export const autoplay = Autoplay({ delay: 8000 });
 
@@ -45,7 +44,7 @@ export function HeroCarousel({ images, onApiReady }: HeroCarouselProps) {
         ))}
       </CarouselContent>
 
-      <Button className="absolute size-8 rounded-full top-1/2 left-4 -translate-y-1/2 md:flex hidden" variant="outline" size="icon" onClick={() => {
+      {/* <Button className="absolute size-8 rounded-full top-1/2 left-4 -translate-y-1/2 md:flex hidden" variant="outline" size="icon" onClick={() => {
         api?.scrollPrev();
         api?.plugins().autoplay.reset();
       }}>
@@ -56,7 +55,7 @@ export function HeroCarousel({ images, onApiReady }: HeroCarouselProps) {
         api?.plugins().autoplay.reset();
       }}>
         <ArrowRight />
-      </Button>
+      </Button> */}
     </Carousel>
   );
 }

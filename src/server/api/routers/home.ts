@@ -103,44 +103,81 @@ export const homeRouter = createTRPCRouter({
   }),
 
   getConferenceDetails: publicProcedure.query(async ({ ctx }) => {
-
-    let conferenceDetails = await ctx.db.siteSettings.findUnique({
+    // Get the latest active conference
+    const conference = await ctx.db.conference.findFirst({
       where: {
-        key: "conferenceDetails",
+        isActive: true,
       },
+      include: {
+        contacts: true,
+      },
+      orderBy: { createdAt: "desc" },
     });
-    if (!conferenceDetails) {
-      const defualtValue: ConferenceDetails = {
-        conferenceTitle: "133rd Fiji Principals Association Conference",
-        rows: [
-          { label: "Date", value: "17th - 19th of September 2025" },
-          { label: "Registration Fee", value: "FJD $250" },
-          { label: "Payment Methods", value: "Crossed cheque or Bank transfer to BSP Samabula (Account: 10065568)" },
-          { label: "Location", value: "Sheraton Golf and Beach Resort" },
-          { label: "Theme", value: "Future Ready Schools - Embracing Digital, Cultural and Global Shift" },
-          { label: "Chief Guest", value: "Minister for Education - Hon Aseri Radrodro" },
-          { label: "Official Opening", value: "6.30 PM on 17th September" },
-        ],
-        included: [
-          "Official Opening Ceremony",
-          "Conference Sessions",
-          "Networking Opportunities",
-          "All Meals Included",
-        ],
-        contacts: [
-          { role: "President", name: "Mr. Vishnu Deo Sharma", phone: "9278360" },
-          { role: "Secretary", name: "Mr. Praveen Chand", phone: "9088290" },
-          { role: "Treasurer", name: "Mr. Pranesh Kumar", phone: "9951918" },
-          { role: "Email", email: "fijiprincipalsassociation@gmail.com" },
-        ],
-      };
-      conferenceDetails = await ctx.db.siteSettings.create({
-        data: {
-          key: "conferenceDetails",
-          value: JSON.stringify(defualtValue),
-        },
-      });
+
+    if (!conference) {
+      // Return null if no active conference found
+      return null;
     }
-    return conferenceDetails;
+
+    // Transform conference data to match ConferenceDetails format
+    const conferenceDetails: ConferenceDetails = {
+      conferenceTitle: conference.name,
+      rows: [
+        {
+          label: "Date",
+          value: `${conference.startDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })} - ${conference.endDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}`
+        },
+        {
+          label: "Registration Fee",
+          value: `${conference.currency} $${(conference.priceCents / 100).toFixed(2)}`
+        },
+        {
+          label: "Payment Methods",
+          value: `Bank transfer to ${conference.bankTransferAccountName} (${conference.bankTransferBranch} - Account: ${conference.bankTransferAccountNumber})`
+        },
+        { label: "Location", value: conference.location },
+        { label: "Description", value: conference.description },
+        {
+          label: "Registration Period",
+          value: `${conference.registrationStartDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })} - ${conference.registrationEndDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}`
+        },
+      ],
+      included: [
+        "Official Opening Ceremony",
+        "Conference Sessions",
+        "Networking Opportunities",
+        "All Meals Included",
+      ],
+      contacts: conference.contacts.map(contact => {
+        const fields = contact.fields as { name?: string; phone?: string; email?: string } | null;
+        return {
+          role: contact.name,
+          name: fields?.name ?? undefined,
+          phone: fields?.phone ?? undefined,
+          email: fields?.email ?? undefined,
+        };
+      }),
+    };
+
+    return {
+      key: "conferenceDetails",
+      value: JSON.stringify(conferenceDetails),
+    };
   }),
 });
