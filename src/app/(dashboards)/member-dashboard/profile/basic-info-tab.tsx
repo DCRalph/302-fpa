@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { useAuth } from "~/hooks/useAuth";
 import { useState, useEffect } from "react";
-import { Badge } from "~/components/ui/badge";
+import { format } from "date-fns";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -141,31 +141,94 @@ export function BasicInfoTab() {
 
         {/* Sidebar - Membership Info */}
         <div className="space-y-6">
-          <Card className="border-primary bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
-            <CardHeader>
-              <CardTitle className="text-foreground text-base font-bold">
-                Membership Status
-                <div>
-                  <Badge className="mt-2">Active</Badge>
+          <Card className="relative overflow-hidden border border-primary/30 bg-gradient-to-br from-blue-50/70 to-purple-50/70 dark:from-blue-950/20 dark:to-purple-950/20 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
+            {/* Decorative gradient ring */}
+            <div
+              className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 blur-2xl"
+              aria-hidden
+            />
+            {/* Subtle animated corner glow */}
+            <div
+              className="pointer-events-none absolute bottom-0 left-0 h-16 w-16 bg-gradient-to-tr from-primary/20 to-transparent animate-pulse"
+              aria-hidden
+            />
+
+            <CardHeader className="pb-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-md bg-primary/10 p-2 ring-1 ring-primary/20">
+                    {/* Replace with your preferred icon */}
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5 text-primary"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5.5 20l2-7L2 9h7l3-7z" />
+                    </svg>
+                  </div>
+                  <CardTitle className="text-base font-bold tracking-tight">
+                    Membership Status
+                  </CardTitle>
                 </div>
-              </CardTitle>
+              </div>
+
+              {/* Subheading line */}
+              <p className="mt-2 text-xs text-muted-foreground">
+                Your account is in good standing.
+              </p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="font-semibold">Joined</div>
-                <div className="text-sm">
-                  {dbUser?.createdAt.toLocaleDateString("en-US")}
+
+            <CardContent className="space-y-5 break-words">
+              <div className="grid grid-cols-1 gap-4">
+                {/* Joined */}
+                <div className="rounded-lg border border-border/60 bg-background/50 p-3 shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
+                  <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
+                    Joined
+                  </div>
+                  <div className="font-medium">
+                    {dbUser?.createdAt.toLocaleDateString("en-US")}
+                  </div>
+                </div>
+
+                {/* User ID */}
+                <div className="group relative rounded-lg border border-border/60 bg-background/50 p-3 shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
+                  <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
+                    User ID
+                  </div>
+                  <div className="font-medium truncate">{dbUser?.id}</div>
+                  {/* Copy button (optional, requires a button component if you want interactivity) */}
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(dbUser?.id ?? "")}
+                    className="absolute right-2 top-2 rounded-md border border-transparent px-2 py-1 text-[10px] text-muted-foreground hover:bg-muted/60"
+                  >
+                    Copy
+                  </button>
+                </div>
+
+                {/* Role */}
+                <div className="rounded-lg border border-border/60 bg-background/50 p-3 shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
+                  <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
+                    Role
+                  </div>
+                  <div className="inline-flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-primary/70" />
+                    <span className="font-medium capitalize">{dbUser?.role}</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="font-semibold">User ID</div>
-                <div className="text-sm">{dbUser?.id}</div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="font-semibold">Role</div>
-                <div className="text-sm">{dbUser?.role}</div>
+              {/* Subtle footer hint */}
+              <div className="mt-2 flex flex-col gap-1 ">
+                <div className="text-xs text-muted-foreground break-words">
+                  ID and role are used for access verification.
+                </div>
+                <div className="text-xs text-muted-foreground break-words">
+                  Last updated:{" "}
+                  {format(new Date(), "MMM d, yyyy")}
+                </div>
               </div>
             </CardContent>
           </Card>

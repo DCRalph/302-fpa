@@ -12,6 +12,9 @@ import { DashboardStatsCard } from "~/components/dash-stat-card";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 import { format } from "date-fns";
+import { Masonry } from "~/components/Masonry";
+import { z } from "zod";
+import { redirect } from "next/navigation";
 
 type ActivityActionButton = {
   label: string;
@@ -75,7 +78,9 @@ export default function MemberDashboardPage() {
             />
           </div>
 
-          <div className="mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:gap-4 md:gap-6 lg:grid-cols-2">
+          {/* <div className="mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:gap-4 md:gap-6 lg:grid-cols-2"> */}
+
+          <Masonry cols={{ base: 1, md: 1, xl: 2 }} gap="gap-4">
             {/* Conference Registration Status */}
 
             <MemberDashboardRegistrationStatusCard
@@ -235,7 +240,11 @@ export default function MemberDashboardPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
+
+
+
+          </Masonry>
+          {/* </div> */}
         </main>
       </div>
     </main>
@@ -301,6 +310,26 @@ function MemberDashboardRegistrationStatusCard({
         </CardContent>
       </Card>
     );
+  }
+
+  const actionsSchema = z.object({
+    primary: z.object({
+      text: z.string(),
+      href: z.string(),
+    }),
+    secondary: z.object({
+      text: z.string(),
+      href: z.string(),
+    }),
+  });
+
+  let actionPrimary: { text: string; href: string } | null = null
+  let actionSecondary: { text: string; href: string } | null = null
+  const { success, data: actions } = actionsSchema.safeParse(stat.actions);
+
+  if (success) {
+    actionPrimary = actions?.primary;
+    actionSecondary = actions?.secondary;
   }
 
   return (
@@ -423,33 +452,43 @@ function MemberDashboardRegistrationStatusCard({
         </div>
 
         {/* Action Buttons */}
-        {stat.showActions && stat.actions && (
+        {stat.showActions && actionPrimary && actionSecondary && (
           <>
             <Separator />
             <div className="flex space-x-2">
-              {stat.actions?.secondary && (
+              {actionSecondary && (
                 <Button
                   variant="outline"
                   size="sm"
+                  asChild
                   className="flex-1"
-                // onClick={() => redirect(stat.actions?.secondary?.href ?? "")}
                 >
-                  {stat.actions?.secondary.text}
+                  <Link
+                    href={actionSecondary?.href ?? ""}
+                    className="flex-1"
+                  >
+                    {actionSecondary.text}
+                  </Link>
                 </Button>
               )}
-              {stat.actions?.primary && (
+              {actionPrimary && (
                 <Button
                   size="sm"
+                  asChild
                   className="flex-1"
-                // onClick={() => redirect(stat.actions?.primary?.href ?? "")}
                 >
-                  {stat.actions?.primary.text}
+                  <Link
+                    href={actionPrimary?.href ?? ""}
+                    className="flex-1"
+                  >
+                    {actionPrimary.text}
+                  </Link>
                 </Button>
               )}
             </div>
           </>
         )}
       </CardContent>
-    </Card>
+    </Card >
   );
 }

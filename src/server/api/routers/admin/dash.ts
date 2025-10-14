@@ -293,6 +293,9 @@ export const adminDashboardRouter = createTRPCRouter({
       latestConferenceId: latestConference?.id,
       totalConferences,
       activeConferences,
+      totalRegistrations,
+      totalConfirmedRegistrations,
+      conferencePaymentsSum,
     };
   }),
 
