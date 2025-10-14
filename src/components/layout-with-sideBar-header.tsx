@@ -12,11 +12,9 @@ export function LayoutWithSideBarHeader({ children, sidebar, header: header }: L
     <SidebarProvider>
       <div className="bg-page-background flex min-h-screen w-full">
         {sidebar}
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-col overflow-x-hidden">
           {header}
-          <main className="h-full">
-            {children}
-          </main>
+          {children}
         </div>
       </div>
     </SidebarProvider>

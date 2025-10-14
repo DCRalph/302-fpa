@@ -23,7 +23,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" className={`${nunito.className} scroll-smooth antialiased`} suppressHydrationWarning>
-      <body className="flex-1">
+      <body className="w-full">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
