@@ -287,20 +287,78 @@ model Attachment {
   @@index([registrationId])
 }
 
+// User-specific activities visible to the user (and optionally to all users if isSystem=true)
 model UserActivity {
   id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title     String
-  icon      String
-  activity  String
-
-  metadata  Json?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  
+  // userId is nullable - when isSystem=true, userId should be null
+  // System activities are shown to all users and are not tied to a specific user
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String?
+  icon        String
+  type        String // e.g., "registration_approved", "signin_new_device", "conference_announced"
+  
+  // If true, this activity is system-wide and visible to all users (e.g., "Registrations opened", "Conference announced")
+  // When isSystem=true, userId must be null
+  isSystem    Boolean  @default(false)
+  
+  // Optional action buttons for the UI
+  actions     Json?    // Array of {label: string, href: string, variant?: string}
+  
+  // Additional context data
+  metadata    Json?
+  
+  // Read status tracking - if readAt is not null, the activity has been read
+  readAt      DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([userId])
+  @@index([isSystem])
+  @@index([createdAt])
+  @@index([readAt])
+}
+
+// App-wide activity log for administrative/audit purposes
+model AppActivity {
+  id        String   @id @default(cuid())
+  
+  // Who performed the action (null for system actions)
+  userId    String?
+  userName  String?  // Denormalized for historical record
+  userEmail String?  // Denormalized for historical record
+  
+  // What happened
+  type        String   // e.g., "user_signup", "user_signin", "blog_created", "registration_updated"
+  action      String   // e.g., "created", "updated", "deleted", "approved", "rejected"
+  entity      String   // e.g., "user", "blog_post", "registration", "conference"
+  entityId    String?  // ID of the affected entity
+  
+  // Details
+  title       String
+  description String?
+  
+  // Context
+  metadata    Json?    // Additional data about the action
+  ipAddress   String?
+  
+  // Severity/Category for filtering
+  severity    String   @default("info") // "info", "warning", "error", "critical"
+  category    String?  // e.g., "auth", "content", "registration", "admin"
+  
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([entity])
+  @@index([entityId])
+  @@index([createdAt])
+  @@index([severity])
+  @@index([category])
 }
 
 model BlogCategory {

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { logUserActivity, logAppActivity } from "~/server/api/lib/activity-logger";
 
 export const adminRegistrationsRouter = createTRPCRouter({
   // Get all registrations for a conference
@@ -163,6 +164,62 @@ export const adminRegistrationsRouter = createTRPCRouter({
         },
         include: {
           conference: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      // Log activity for the user whose registration was approved
+      if (registration.userId) {
+        await logUserActivity(ctx.db, {
+          userId: registration.userId,
+          title: `Registration Approved!`,
+          description: `Your registration for ${registration.conference?.name ?? "the conference"} has been approved`,
+          icon: "CheckCircle2",
+          type: "registration_approved",
+          actions: [
+            {
+              label: "View Details",
+              href: "/member-dashboard/conference-registration",
+              variant: "default",
+            },
+          ],
+          metadata: {
+            conferenceId: registration.conferenceId,
+            conferenceName: registration.conference?.name,
+            registrationId: registration.id,
+            approvedBy: ctx.dbUser.name,
+          },
+        });
+      }
+
+      // Log app activity
+      await logAppActivity(ctx.db, {
+        userId: ctx.dbUser.id,
+        userName: ctx.dbUser.name ?? undefined,
+        userEmail: ctx.dbUser.email ?? undefined,
+        type: "registration_approved",
+        action: "updated",
+        entity: "registration",
+        entityId: registration.id,
+        title: `Registration approved for ${registration.conference?.name ?? "conference"}`,
+        description: `Admin ${ctx.dbUser.name} approved registration for ${registration.user?.name ?? registration.name}`,
+        category: "registration",
+        severity: "info",
+        metadata: {
+          conferenceId: registration.conferenceId,
+          conferenceName: registration.conference?.name,
+          registrationId: registration.id,
+          userId: registration.userId,
+          userName: registration.user?.name ?? registration.name,
+          previousStatus: currentReg.status,
+          newStatus: "confirmed",
+          note: input.note,
         },
       });
 
@@ -220,6 +277,55 @@ export const adminRegistrationsRouter = createTRPCRouter({
         },
         include: {
           conference: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      // Log activity for the user whose registration was denied
+      if (registration.userId) {
+        await logUserActivity(ctx.db, {
+          userId: registration.userId,
+          title: `Registration Denied`,
+          description: `Your registration for ${registration.conference?.name ?? "the conference"} was not approved`,
+          icon: "XCircle",
+          type: "registration_denied",
+          metadata: {
+            conferenceId: registration.conferenceId,
+            conferenceName: registration.conference?.name,
+            registrationId: registration.id,
+            reason: input.reason,
+          },
+        });
+      }
+
+      // Log app activity
+      await logAppActivity(ctx.db, {
+        userId: ctx.dbUser.id,
+        userName: ctx.dbUser.name ?? undefined,
+        userEmail: ctx.dbUser.email ?? undefined,
+        type: "registration_denied",
+        action: "updated",
+        entity: "registration",
+        entityId: registration.id,
+        title: `Registration denied for ${registration.conference?.name ?? "conference"}`,
+        description: `Admin ${ctx.dbUser.name} denied registration for ${registration.user?.name ?? registration.name}`,
+        category: "registration",
+        severity: "warning",
+        metadata: {
+          conferenceId: registration.conferenceId,
+          conferenceName: registration.conference?.name,
+          registrationId: registration.id,
+          userId: registration.userId,
+          userName: registration.user?.name ?? registration.name,
+          previousStatus: currentReg.status,
+          newStatus: "cancelled",
+          reason: input.reason,
         },
       });
 

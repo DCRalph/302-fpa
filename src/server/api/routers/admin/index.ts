@@ -4,6 +4,7 @@ import { adminDashboardRouter } from "./dash";
 import { adminConferenceRouter } from "./conference";
 import { adminRegistrationsRouter } from "./registrations";
 import { adminMembersRouter } from "./members";
+import { adminActivityRouter } from "./activity";
 
 export const adminRouter = createTRPCRouter({
   editHome: editHomeRouter,
@@ -11,4 +12,5 @@ export const adminRouter = createTRPCRouter({
   conference: adminConferenceRouter,
   registrations: adminRegistrationsRouter,
   members: adminMembersRouter,
+  activity: adminActivityRouter,
 });

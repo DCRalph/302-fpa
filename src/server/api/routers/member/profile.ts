@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { auth } from "~/lib/auth";
+import { logUserActivity, logAppActivity } from "~/server/api/lib/activity-logger";
 
 export const memberProfileRouter = createTRPCRouter({
   // Fetch current user's profile and linked accounts
@@ -99,17 +100,34 @@ export const memberProfileRouter = createTRPCRouter({
       if (input.image !== undefined) updatedFields.push("profile image");
 
       // Log activity
-      await ctx.db.userActivity.create({
-        data: {
+      await Promise.all([
+        logUserActivity(ctx.db, {
           userId: ctx.dbUser.id,
-          title: `Updated profile: ${updatedFields.join(", ")}`,
+          title: `Profile updated`,
+          description: `Updated: ${updatedFields.join(", ")}`,
           icon: "UserCog",
-          activity: "profile_updated",
+          type: "profile_updated",
           metadata: {
             updatedFields,
           },
-        },
-      });
+        }),
+        logAppActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          userName: ctx.dbUser.name ?? undefined,
+          userEmail: ctx.dbUser.email ?? undefined,
+          type: "profile_updated",
+          action: "updated",
+          entity: "user",
+          entityId: ctx.dbUser.id,
+          title: `Profile updated`,
+          description: `User updated profile: ${updatedFields.join(", ")}`,
+          category: "profile",
+          severity: "info",
+          metadata: {
+            updatedFields,
+          },
+        }),
+      ]);
 
       return updated;
     }),
@@ -135,15 +153,29 @@ export const memberProfileRouter = createTRPCRouter({
         });
 
         // Log activity
-        await ctx.db.userActivity.create({
-          data: {
+        await Promise.all([
+          logUserActivity(ctx.db, {
             userId: ctx.dbUser.id,
-            title: "Changed password",
+            title: "Password changed",
+            description: "Your password was successfully updated",
             icon: "Lock",
-            activity: "password_changed",
+            type: "password_changed",
             metadata: {},
-          },
-        });
+          }),
+          logAppActivity(ctx.db, {
+            userId: ctx.dbUser.id,
+            userName: ctx.dbUser.name ?? undefined,
+            userEmail: ctx.dbUser.email ?? undefined,
+            type: "password_changed",
+            action: "updated",
+            entity: "user",
+            entityId: ctx.dbUser.id,
+            title: "Password changed",
+            category: "auth",
+            severity: "info",
+            metadata: {},
+          }),
+        ]);
 
         return res;
       } catch (err) {

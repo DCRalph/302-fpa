@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import { logUserActivity, logAppActivity } from "~/server/api/lib/activity-logger";
 
 export const memberBlogRouter = createTRPCRouter({
   // Get a list of all posts that match the search query and are published
@@ -112,19 +113,46 @@ export const memberBlogRouter = createTRPCRouter({
       }
 
       // Log activity
-      await ctx.db.userActivity.create({
-        data: {
+      await Promise.all([
+        logUserActivity(ctx.db, {
           userId: ctx.dbUser.id,
-          title: published ? `Published blog post: ${title}` : `Created draft blog post: ${title}`,
+          title: published ? `Published: ${title}` : `Created draft: ${title}`,
+          description: published ? "Your blog post is now live" : "Your draft has been saved",
           icon: published ? "BookOpen" : "FileText",
-          activity: published ? "blog_post_published" : "blog_post_created",
+          type: published ? "blog_post_published" : "blog_post_draft_created",
+          actions: [
+            {
+              label: "View Post",
+              href: `/member-dashboard/community-blog/${post.id}/edit`,
+              variant: "outline",
+            },
+          ],
           metadata: {
             postId: post.id,
             postTitle: title,
             published,
           },
-        },
-      });
+        }),
+        logAppActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          userName: ctx.dbUser.name ?? undefined,
+          userEmail: ctx.dbUser.email ?? undefined,
+          type: "blog_post_created",
+          action: "created",
+          entity: "blog_post",
+          entityId: post.id,
+          title: `Blog post created: ${title}`,
+          description: published ? "Published" : "Draft",
+          category: "content",
+          severity: "info",
+          metadata: {
+            postId: post.id,
+            postTitle: title,
+            published,
+            categorySlugs,
+          },
+        }),
+      ]);
 
       return post;
     }),
@@ -198,18 +226,35 @@ export const memberBlogRouter = createTRPCRouter({
       await ctx.db.blogPost.delete({ where: { id: input.id } });
 
       // Log activity
-      await ctx.db.userActivity.create({
-        data: {
+      await Promise.all([
+        logUserActivity(ctx.db, {
           userId: ctx.dbUser.id,
-          title: `Deleted blog post: ${post.title}`,
+          title: `Deleted: ${post.title}`,
+          description: "Your blog post has been deleted",
           icon: "Trash",
-          activity: "blog_post_deleted",
+          type: "blog_post_deleted",
           metadata: {
             postId: input.id,
             postTitle: post.title,
           },
-        },
-      });
+        }),
+        logAppActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          userName: ctx.dbUser.name ?? undefined,
+          userEmail: ctx.dbUser.email ?? undefined,
+          type: "blog_post_deleted",
+          action: "deleted",
+          entity: "blog_post",
+          entityId: input.id,
+          title: `Blog post deleted: ${post.title}`,
+          category: "content",
+          severity: "info",
+          metadata: {
+            postId: input.id,
+            postTitle: post.title,
+          },
+        }),
+      ]);
 
       return { success: true };
     }),

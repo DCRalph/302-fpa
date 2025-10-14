@@ -19,6 +19,7 @@ import {
   GraduationCap,
   Users,
   CalendarCog,
+  Activity,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -71,6 +72,11 @@ const adminMenuItems = [
     title: "Manage Conferences",
     url: "/admin-dashboard/manage-conferences",
     icon: CalendarCog,
+  },
+  {
+    title: "Activity",
+    url: "/admin-dashboard/activity",
+    icon: Activity,
   }
 ];
 

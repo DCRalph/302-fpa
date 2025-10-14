@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { logUserActivity, logAppActivity } from "~/server/api/lib/activity-logger";
 
 export const memberRegistrationRouter = createTRPCRouter({
   getLatestConference: protectedProcedure.query(async ({ ctx }) => {
@@ -148,19 +149,47 @@ export const memberRegistrationRouter = createTRPCRouter({
       });
 
       // Log activity
-      await ctx.db.userActivity.create({
-        data: {
+      await Promise.all([
+        logUserActivity(ctx.db, {
           userId: ctx.dbUser.id,
           title: `Registered for ${conference.name}`,
+          description: "Your registration is pending approval",
           icon: "CheckCircle",
-          activity: "conference_registration",
+          type: "conference_registration_submitted",
+          actions: [
+            {
+              label: "View Registration",
+              href: "/member-dashboard/conference-registration",
+              variant: "default",
+            },
+          ],
           metadata: {
             conferenceId: conference.id,
             conferenceName: conference.name,
             registrationId: registration.id,
+            status: "pending",
           },
-        },
-      });
+        }),
+        logAppActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          userName: ctx.dbUser.name ?? undefined,
+          userEmail: ctx.dbUser.email ?? undefined,
+          type: "registration_submitted",
+          action: "created",
+          entity: "registration",
+          entityId: registration.id,
+          title: `Registration submitted for ${conference.name}`,
+          description: `${ctx.dbUser.name ?? input.participantName} registered for ${conference.name}`,
+          category: "registration",
+          severity: "info",
+          metadata: {
+            conferenceId: conference.id,
+            conferenceName: conference.name,
+            registrationId: registration.id,
+            paymentMethod: input.paymentMethod,
+          },
+        }),
+      ]);
 
       return { success: true, registration };
     }),
@@ -188,19 +217,37 @@ export const memberRegistrationRouter = createTRPCRouter({
       });
 
       // Log activity
-      await ctx.db.userActivity.create({
-        data: {
+      await Promise.all([
+        logUserActivity(ctx.db, {
           userId: ctx.dbUser.id,
           title: `Cancelled registration for ${reg.conference?.name ?? "conference"}`,
+          description: "Your registration has been cancelled",
           icon: "XCircle",
-          activity: "conference_cancellation",
+          type: "conference_registration_cancelled",
           metadata: {
             conferenceId: reg.conferenceId,
             conferenceName: reg.conference?.name,
             registrationId: reg.id,
           },
-        },
-      });
+        }),
+        logAppActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          userName: ctx.dbUser.name ?? undefined,
+          userEmail: ctx.dbUser.email ?? undefined,
+          type: "registration_cancelled",
+          action: "updated",
+          entity: "registration",
+          entityId: reg.id,
+          title: `Registration cancelled for ${reg.conference?.name ?? "conference"}`,
+          category: "registration",
+          severity: "info",
+          metadata: {
+            conferenceId: reg.conferenceId,
+            conferenceName: reg.conference?.name,
+            registrationId: reg.id,
+          },
+        }),
+      ]);
 
       return reg;
     }),

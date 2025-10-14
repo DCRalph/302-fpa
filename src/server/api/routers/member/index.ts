@@ -4,6 +4,7 @@ import { memberBlogRouter } from "./blog";
 import { memberRegistrationRouter } from "./registration";
 import { memberFilesRouter } from "./files";
 import { memberProfileRouter } from "./profile";
+import { memberActivityRouter } from "./activity";
 
 export const memberRouter = createTRPCRouter({
   dashboard: memberDashboardRouter,
@@ -11,4 +12,5 @@ export const memberRouter = createTRPCRouter({
   profile: memberProfileRouter,
   registration: memberRegistrationRouter,
   files: memberFilesRouter,
+  activity: memberActivityRouter,
 });

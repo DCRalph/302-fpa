@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { logUserActivity, logAppActivity } from "~/server/api/lib/activity-logger";
 
 export const memberFilesRouter = createTRPCRouter({
   list: protectedProcedure.query(async ({ ctx }) => {
@@ -41,19 +42,37 @@ export const memberFilesRouter = createTRPCRouter({
       });
 
       // Log activity
-      await ctx.db.userActivity.create({
-        data: {
+      await Promise.all([
+        logUserActivity(ctx.db, {
           userId: ctx.dbUser.id,
-          title: `Uploaded file: ${input.filename}`,
+          title: `File uploaded: ${input.filename}`,
+          description: "Your file has been saved",
           icon: "Upload",
-          activity: "file_uploaded",
+          type: "file_uploaded",
           metadata: {
             attachmentId: attachment.id,
             filename: input.filename,
             registrationId: latestReg?.id,
           },
-        },
-      });
+        }),
+        logAppActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          userName: ctx.dbUser.name ?? undefined,
+          userEmail: ctx.dbUser.email ?? undefined,
+          type: "file_uploaded",
+          action: "created",
+          entity: "attachment",
+          entityId: attachment.id,
+          title: `File uploaded: ${input.filename}`,
+          category: "file",
+          severity: "info",
+          metadata: {
+            attachmentId: attachment.id,
+            filename: input.filename,
+            registrationId: latestReg?.id,
+          },
+        }),
+      ]);
 
       return attachment;
     }),
@@ -70,18 +89,35 @@ export const memberFilesRouter = createTRPCRouter({
 
       // Log activity
       if (attachment) {
-        await ctx.db.userActivity.create({
-          data: {
+        await Promise.all([
+          logUserActivity(ctx.db, {
             userId: ctx.dbUser.id,
-            title: `Deleted file: ${attachment.filename}`,
+            title: `File deleted: ${attachment.filename}`,
+            description: "Your file has been removed",
             icon: "Trash2",
-            activity: "file_deleted",
+            type: "file_deleted",
             metadata: {
               attachmentId: input.id,
               filename: attachment.filename,
             },
-          },
-        });
+          }),
+          logAppActivity(ctx.db, {
+            userId: ctx.dbUser.id,
+            userName: ctx.dbUser.name ?? undefined,
+            userEmail: ctx.dbUser.email ?? undefined,
+            type: "file_deleted",
+            action: "deleted",
+            entity: "attachment",
+            entityId: input.id,
+            title: `File deleted: ${attachment.filename}`,
+            category: "file",
+            severity: "info",
+            metadata: {
+              attachmentId: input.id,
+              filename: attachment.filename,
+            },
+          }),
+        ]);
       }
 
       return { success: true };

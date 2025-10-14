@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
+import { logUserActivity, logAppActivity } from "~/server/api/lib/activity-logger";
 
 export const onboardingRouter = createTRPCRouter({
   completeOnboarding: protectedProcedure
@@ -26,18 +27,42 @@ export const onboardingRouter = createTRPCRouter({
       });
 
       // Log activity
-      await db.userActivity.create({
-        data: {
+      await Promise.all([
+        logUserActivity(db, {
           userId,
-          title: "Completed account setup",
+          title: "Welcome to the community!",
+          description: "Your account setup is complete",
           icon: "UserCheck",
-          activity: "onboarding_completed",
+          type: "onboarding_completed",
+          actions: [
+            {
+              label: "Explore Dashboard",
+              href: "/member-dashboard",
+              variant: "default",
+            },
+          ],
           metadata: {
             name: input.name,
             school: input.school,
           },
-        },
-      });
+        }),
+        logAppActivity(db, {
+          userId,
+          userName: input.name,
+          userEmail: ctx.dbUser.email ?? undefined,
+          type: "user_onboarded",
+          action: "updated",
+          entity: "user",
+          entityId: userId,
+          title: `User completed onboarding: ${input.name}`,
+          category: "auth",
+          severity: "info",
+          metadata: {
+            name: input.name,
+            school: input.school,
+          },
+        }),
+      ]);
 
       return {
         success: true,
