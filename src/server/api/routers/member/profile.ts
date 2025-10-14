@@ -2,7 +2,17 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { auth } from "~/lib/auth";
-import { logUserActivity, logAppActivity } from "~/server/api/lib/activity-logger";
+import {
+  logUserActivity,
+  logAppActivity,
+  UserActivityType,
+  AppActivityType,
+  ActivityActionEnum,
+  ActivityEntity,
+  ActivityCategory,
+  ActivitySeverity,
+  getActivityIcon,
+} from "~/server/api/lib/activity-logger";
 
 export const memberProfileRouter = createTRPCRouter({
   // Fetch current user's profile and linked accounts
@@ -105,8 +115,8 @@ export const memberProfileRouter = createTRPCRouter({
           userId: ctx.dbUser.id,
           title: `Profile updated`,
           description: `Updated: ${updatedFields.join(", ")}`,
-          icon: "UserCog",
-          type: "profile_updated",
+          icon: getActivityIcon(UserActivityType.PROFILE_UPDATED),
+          type: UserActivityType.PROFILE_UPDATED,
           metadata: {
             updatedFields,
           },
@@ -115,14 +125,14 @@ export const memberProfileRouter = createTRPCRouter({
           userId: ctx.dbUser.id,
           userName: ctx.dbUser.name ?? undefined,
           userEmail: ctx.dbUser.email ?? undefined,
-          type: "profile_updated",
-          action: "updated",
-          entity: "user",
+          type: AppActivityType.PROFILE_UPDATED,
+          action: ActivityActionEnum.UPDATED,
+          entity: ActivityEntity.USER,
           entityId: ctx.dbUser.id,
           title: `Profile updated`,
           description: `User updated profile: ${updatedFields.join(", ")}`,
-          category: "profile",
-          severity: "info",
+          category: ActivityCategory.PROFILE,
+          severity: ActivitySeverity.INFO,
           metadata: {
             updatedFields,
           },
@@ -158,21 +168,21 @@ export const memberProfileRouter = createTRPCRouter({
             userId: ctx.dbUser.id,
             title: "Password changed",
             description: "Your password was successfully updated",
-            icon: "Lock",
-            type: "password_changed",
+            icon: getActivityIcon(UserActivityType.PASSWORD_CHANGED),
+            type: UserActivityType.PASSWORD_CHANGED,
             metadata: {},
           }),
           logAppActivity(ctx.db, {
             userId: ctx.dbUser.id,
             userName: ctx.dbUser.name ?? undefined,
             userEmail: ctx.dbUser.email ?? undefined,
-            type: "password_changed",
-            action: "updated",
-            entity: "user",
+            type: AppActivityType.PASSWORD_CHANGED,
+            action: ActivityActionEnum.UPDATED,
+            entity: ActivityEntity.USER,
             entityId: ctx.dbUser.id,
             title: "Password changed",
-            category: "auth",
-            severity: "info",
+            category: ActivityCategory.AUTH,
+            severity: ActivitySeverity.INFO,
             metadata: {},
           }),
         ]);

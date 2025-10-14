@@ -1,6 +1,16 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { logUserActivity, logAppActivity } from "~/server/api/lib/activity-logger";
+import {
+  logUserActivity,
+  logAppActivity,
+  UserActivityType,
+  AppActivityType,
+  ActivityActionEnum,
+  ActivityEntity,
+  ActivityCategory,
+  ActivitySeverity,
+  getActivityIcon,
+} from "~/server/api/lib/activity-logger";
 
 export const memberRegistrationRouter = createTRPCRouter({
   getLatestConference: protectedProcedure.query(async ({ ctx }) => {
@@ -154,8 +164,8 @@ export const memberRegistrationRouter = createTRPCRouter({
           userId: ctx.dbUser.id,
           title: `Registered for ${conference.name}`,
           description: "Your registration is pending approval",
-          icon: "CheckCircle",
-          type: "conference_registration_submitted",
+          icon: getActivityIcon(UserActivityType.CONFERENCE_REGISTRATION_SUBMITTED),
+          type: UserActivityType.CONFERENCE_REGISTRATION_SUBMITTED,
           actions: [
             {
               label: "View Registration",
@@ -174,14 +184,14 @@ export const memberRegistrationRouter = createTRPCRouter({
           userId: ctx.dbUser.id,
           userName: ctx.dbUser.name ?? undefined,
           userEmail: ctx.dbUser.email ?? undefined,
-          type: "registration_submitted",
-          action: "created",
-          entity: "registration",
+          type: AppActivityType.REGISTRATION_SUBMITTED,
+          action: ActivityActionEnum.CREATED,
+          entity: ActivityEntity.REGISTRATION,
           entityId: registration.id,
           title: `Registration submitted for ${conference.name}`,
           description: `${ctx.dbUser.name ?? input.participantName} registered for ${conference.name}`,
-          category: "registration",
-          severity: "info",
+          category: ActivityCategory.REGISTRATION,
+          severity: ActivitySeverity.INFO,
           metadata: {
             conferenceId: conference.id,
             conferenceName: conference.name,
@@ -222,8 +232,8 @@ export const memberRegistrationRouter = createTRPCRouter({
           userId: ctx.dbUser.id,
           title: `Cancelled registration for ${reg.conference?.name ?? "conference"}`,
           description: "Your registration has been cancelled",
-          icon: "XCircle",
-          type: "conference_registration_cancelled",
+          icon: getActivityIcon(UserActivityType.CONFERENCE_REGISTRATION_CANCELLED),
+          type: UserActivityType.CONFERENCE_REGISTRATION_CANCELLED,
           metadata: {
             conferenceId: reg.conferenceId,
             conferenceName: reg.conference?.name,
@@ -234,13 +244,13 @@ export const memberRegistrationRouter = createTRPCRouter({
           userId: ctx.dbUser.id,
           userName: ctx.dbUser.name ?? undefined,
           userEmail: ctx.dbUser.email ?? undefined,
-          type: "registration_cancelled",
-          action: "updated",
-          entity: "registration",
+          type: AppActivityType.REGISTRATION_CANCELLED,
+          action: ActivityActionEnum.CANCELLED,
+          entity: ActivityEntity.REGISTRATION,
           entityId: reg.id,
           title: `Registration cancelled for ${reg.conference?.name ?? "conference"}`,
-          category: "registration",
-          severity: "info",
+          category: ActivityCategory.REGISTRATION,
+          severity: ActivitySeverity.INFO,
           metadata: {
             conferenceId: reg.conferenceId,
             conferenceName: reg.conference?.name,

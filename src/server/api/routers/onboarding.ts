@@ -1,7 +1,17 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
-import { logUserActivity, logAppActivity } from "~/server/api/lib/activity-logger";
+import {
+  logUserActivity,
+  logAppActivity,
+  UserActivityType,
+  AppActivityType,
+  ActivityActionEnum,
+  ActivityEntity,
+  ActivityCategory,
+  ActivitySeverity,
+  getActivityIcon,
+} from "~/server/api/lib/activity-logger";
 
 export const onboardingRouter = createTRPCRouter({
   completeOnboarding: protectedProcedure
@@ -32,8 +42,8 @@ export const onboardingRouter = createTRPCRouter({
           userId,
           title: "Welcome to the community!",
           description: "Your account setup is complete",
-          icon: "UserCheck",
-          type: "onboarding_completed",
+          icon: getActivityIcon(UserActivityType.ONBOARDING_COMPLETED),
+          type: UserActivityType.ONBOARDING_COMPLETED,
           actions: [
             {
               label: "Explore Dashboard",
@@ -50,13 +60,13 @@ export const onboardingRouter = createTRPCRouter({
           userId,
           userName: input.name,
           userEmail: ctx.dbUser.email ?? undefined,
-          type: "user_onboarded",
-          action: "updated",
-          entity: "user",
+          type: AppActivityType.USER_ONBOARDED,
+          action: ActivityActionEnum.UPDATED,
+          entity: ActivityEntity.USER,
           entityId: userId,
           title: `User completed onboarding: ${input.name}`,
-          category: "auth",
-          severity: "info",
+          category: ActivityCategory.AUTH,
+          severity: ActivitySeverity.INFO,
           metadata: {
             name: input.name,
             school: input.school,

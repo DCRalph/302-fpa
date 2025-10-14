@@ -1,7 +1,17 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { logSystemActivityForAll, logAppActivity } from "~/server/api/lib/activity-logger";
+import {
+  logSystemActivityForAll,
+  logAppActivity,
+  UserActivityType,
+  AppActivityType,
+  ActivityActionEnum,
+  ActivityEntity,
+  ActivityCategory,
+  ActivitySeverity,
+  getActivityIcon,
+} from "~/server/api/lib/activity-logger";
 
 export const adminConferenceRouter = createTRPCRouter({
   // Get all conferences ordered by creation date (latest first)
@@ -136,8 +146,8 @@ export const adminConferenceRouter = createTRPCRouter({
       await logSystemActivityForAll(ctx.db, {
         title: `New Conference: ${input.name}`,
         description: `${input.name} has been announced! Registration opens ${input.registrationStartDate.toLocaleDateString()}`,
-        icon: "Calendar",
-        type: "conference_announced",
+        icon: getActivityIcon(UserActivityType.CONFERENCE_ANNOUNCED),
+        type: UserActivityType.CONFERENCE_ANNOUNCED,
         actions: [
           {
             label: "View Details",
@@ -159,14 +169,14 @@ export const adminConferenceRouter = createTRPCRouter({
         userId: ctx.dbUser.id,
         userName: ctx.dbUser.name ?? undefined,
         userEmail: ctx.dbUser.email ?? undefined,
-        type: "conference_created",
-        action: "created",
-        entity: "conference",
+        type: AppActivityType.CONFERENCE_CREATED,
+        action: ActivityActionEnum.CREATED,
+        entity: ActivityEntity.CONFERENCE,
         entityId: conference.id,
         title: `Conference created: ${input.name}`,
         description: `Admin ${ctx.dbUser.name} created a new conference`,
-        category: "conference",
-        severity: "info",
+        category: ActivityCategory.CONFERENCE,
+        severity: ActivitySeverity.INFO,
         metadata: {
           conferenceId: conference.id,
           conferenceName: input.name,
@@ -274,14 +284,14 @@ export const adminConferenceRouter = createTRPCRouter({
         userId: ctx.dbUser.id,
         userName: ctx.dbUser.name ?? undefined,
         userEmail: ctx.dbUser.email ?? undefined,
-        type: "conference_updated",
-        action: "updated",
-        entity: "conference",
+        type: AppActivityType.CONFERENCE_UPDATED,
+        action: ActivityActionEnum.UPDATED,
+        entity: ActivityEntity.CONFERENCE,
         entityId: conference.id,
         title: `Conference updated: ${conference.name}`,
         description: `Admin ${ctx.dbUser.name} updated conference details`,
-        category: "conference",
-        severity: "info",
+        category: ActivityCategory.CONFERENCE,
+        severity: ActivitySeverity.INFO,
         metadata: {
           conferenceId: conference.id,
           conferenceName: conference.name,
@@ -314,14 +324,14 @@ export const adminConferenceRouter = createTRPCRouter({
         userId: ctx.dbUser.id,
         userName: ctx.dbUser.name ?? undefined,
         userEmail: ctx.dbUser.email ?? undefined,
-        type: "conference_deactivated",
-        action: "updated",
-        entity: "conference",
+        type: AppActivityType.CONFERENCE_DEACTIVATED,
+        action: ActivityActionEnum.UPDATED,
+        entity: ActivityEntity.CONFERENCE,
         entityId: conference.id,
         title: `Conference deactivated: ${conference.name}`,
         description: `Admin ${ctx.dbUser.name} deactivated the conference`,
-        category: "conference",
-        severity: "warning",
+        category: ActivityCategory.CONFERENCE,
+        severity: ActivitySeverity.WARNING,
         metadata: {
           conferenceId: conference.id,
           conferenceName: conference.name,
@@ -346,6 +356,26 @@ export const adminConferenceRouter = createTRPCRouter({
       const conference = await ctx.db.conference.update({
         where: { id: input.id },
         data: { isActive: input.isActive },
+      });
+
+      // Log app activity
+      await logAppActivity(ctx.db, {
+        userId: ctx.dbUser.id,
+        userName: ctx.dbUser.name ?? undefined,
+        userEmail: ctx.dbUser.email ?? undefined,
+        type: input.isActive ? AppActivityType.CONFERENCE_ACTIVATED : AppActivityType.CONFERENCE_DEACTIVATED,
+        action: ActivityActionEnum.UPDATED,
+        entity: ActivityEntity.CONFERENCE,
+        entityId: conference.id,
+        title: `Conference ${input.isActive ? "activated" : "deactivated"}: ${conference.name}`,
+        description: `Admin ${ctx.dbUser.name} ${input.isActive ? "activated" : "deactivated"} the conference`,
+        category: ActivityCategory.CONFERENCE,
+        severity: input.isActive ? ActivitySeverity.INFO : ActivitySeverity.WARNING,
+        metadata: {
+          conferenceId: conference.id,
+          conferenceName: conference.name,
+          isActive: input.isActive,
+        },
       });
 
       return conference;

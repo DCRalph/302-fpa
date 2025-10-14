@@ -2,7 +2,17 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { logUserActivity, logAppActivity } from "~/server/api/lib/activity-logger";
+import {
+  logUserActivity,
+  logAppActivity,
+  UserActivityType,
+  AppActivityType,
+  ActivityActionEnum,
+  ActivityEntity,
+  ActivityCategory,
+  ActivitySeverity,
+  getActivityIcon,
+} from "~/server/api/lib/activity-logger";
 
 export const memberBlogRouter = createTRPCRouter({
   // Get a list of all posts that match the search query and are published
@@ -118,8 +128,8 @@ export const memberBlogRouter = createTRPCRouter({
           userId: ctx.dbUser.id,
           title: published ? `Published: ${title}` : `Created draft: ${title}`,
           description: published ? "Your blog post is now live" : "Your draft has been saved",
-          icon: published ? "BookOpen" : "FileText",
-          type: published ? "blog_post_published" : "blog_post_draft_created",
+          icon: getActivityIcon(published ? UserActivityType.BLOG_POST_PUBLISHED : UserActivityType.BLOG_POST_DRAFT_CREATED),
+          type: published ? UserActivityType.BLOG_POST_PUBLISHED : UserActivityType.BLOG_POST_DRAFT_CREATED,
           actions: [
             {
               label: "View Post",
@@ -137,14 +147,14 @@ export const memberBlogRouter = createTRPCRouter({
           userId: ctx.dbUser.id,
           userName: ctx.dbUser.name ?? undefined,
           userEmail: ctx.dbUser.email ?? undefined,
-          type: "blog_post_created",
-          action: "created",
-          entity: "blog_post",
+          type: AppActivityType.BLOG_POST_CREATED,
+          action: ActivityActionEnum.CREATED,
+          entity: ActivityEntity.BLOG_POST,
           entityId: post.id,
           title: `Blog post created: ${title}`,
           description: published ? "Published" : "Draft",
-          category: "content",
-          severity: "info",
+          category: ActivityCategory.CONTENT,
+          severity: ActivitySeverity.INFO,
           metadata: {
             postId: post.id,
             postTitle: title,
@@ -201,12 +211,93 @@ export const memberBlogRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, ...updateData } = input;
+      const { id, categorySlugs, ...updateData } = input;
+
+      // Get the current post to check authorization
+      const currentPost = await ctx.db.blogPost.findUnique({
+        where: { id },
+        select: { authorId: true, title: true, published: true },
+      });
+
+      if (!currentPost || currentPost.authorId !== ctx.dbUser.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not authorized to update this post",
+        });
+      }
 
       const post = await ctx.db.blogPost.update({
         where: { id },
-        data: updateData,
+        data: {
+          ...updateData,
+          publishedAt: updateData.published && !currentPost.published ? new Date() : undefined,
+        },
       });
+
+      // Update categories if provided
+      if (categorySlugs !== undefined) {
+        // Remove existing categories
+        await ctx.db.blogPostCategory.deleteMany({
+          where: { postId: id },
+        });
+
+        // Add new categories
+        if (categorySlugs.length > 0) {
+          const categories = await ctx.db.blogCategory.findMany({
+            where: { slug: { in: categorySlugs } },
+            select: { id: true },
+          });
+          if (categories.length > 0) {
+            await ctx.db.blogPostCategory.createMany({
+              data: categories.map((c) => ({ postId: post.id, categoryId: c.id })),
+              skipDuplicates: true,
+            });
+          }
+        }
+      }
+
+      // Log activity
+      await Promise.all([
+        logUserActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          title: `Updated: ${input.title}`,
+          description: updateData.published ? "Blog post updated" : "Draft updated",
+          icon: getActivityIcon(UserActivityType.BLOG_POST_UPDATED),
+          type: UserActivityType.BLOG_POST_UPDATED,
+          actions: [
+            {
+              label: "View Post",
+              href: `/member-dashboard/community-blog/${post.id}/edit`,
+              variant: "outline",
+            },
+          ],
+          metadata: {
+            postId: post.id,
+            postTitle: input.title,
+            published: updateData.published,
+          },
+        }),
+        logAppActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          userName: ctx.dbUser.name ?? undefined,
+          userEmail: ctx.dbUser.email ?? undefined,
+          type: AppActivityType.BLOG_POST_UPDATED,
+          action: ActivityActionEnum.UPDATED,
+          entity: ActivityEntity.BLOG_POST,
+          entityId: post.id,
+          title: `Blog post updated: ${input.title}`,
+          description: `Updated blog post`,
+          category: ActivityCategory.CONTENT,
+          severity: ActivitySeverity.INFO,
+          metadata: {
+            postId: post.id,
+            postTitle: input.title,
+            published: updateData.published,
+            wasPublished: currentPost.published,
+            categorySlugs,
+          },
+        }),
+      ]);
 
       return post;
     }),
@@ -231,8 +322,8 @@ export const memberBlogRouter = createTRPCRouter({
           userId: ctx.dbUser.id,
           title: `Deleted: ${post.title}`,
           description: "Your blog post has been deleted",
-          icon: "Trash",
-          type: "blog_post_deleted",
+          icon: getActivityIcon(UserActivityType.BLOG_POST_DELETED),
+          type: UserActivityType.BLOG_POST_DELETED,
           metadata: {
             postId: input.id,
             postTitle: post.title,
@@ -242,13 +333,13 @@ export const memberBlogRouter = createTRPCRouter({
           userId: ctx.dbUser.id,
           userName: ctx.dbUser.name ?? undefined,
           userEmail: ctx.dbUser.email ?? undefined,
-          type: "blog_post_deleted",
-          action: "deleted",
-          entity: "blog_post",
+          type: AppActivityType.BLOG_POST_DELETED,
+          action: ActivityActionEnum.DELETED,
+          entity: ActivityEntity.BLOG_POST,
           entityId: input.id,
           title: `Blog post deleted: ${post.title}`,
-          category: "content",
-          severity: "info",
+          category: ActivityCategory.CONTENT,
+          severity: ActivitySeverity.INFO,
           metadata: {
             postId: input.id,
             postTitle: post.title,
@@ -355,6 +446,19 @@ export const memberBlogRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Get the post and its author
+      const post = await ctx.db.blogPost.findUnique({
+        where: { id: input.postId },
+        select: { authorId: true, title: true },
+      });
+
+      if (!post) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Post not found",
+        });
+      }
+
       const comment = await ctx.db.blogComment.create({
         data: {
           postId: input.postId,
@@ -373,6 +477,51 @@ export const memberBlogRouter = createTRPCRouter({
           },
         },
       });
+
+      // Notify post author if someone else commented
+      if (post.authorId !== ctx.dbUser.id) {
+        await logUserActivity(ctx.db, {
+          userId: post.authorId,
+          title: "New comment on your post",
+          description: `${ctx.dbUser.name ?? "Someone"} commented on "${post.title}"`,
+          icon: getActivityIcon(UserActivityType.BLOG_COMMENT_RECEIVED),
+          type: UserActivityType.BLOG_COMMENT_RECEIVED,
+          actions: [
+            {
+              label: "View Comment",
+              href: `/member-dashboard/community-blog/${input.postId}/edit`,
+              variant: "outline",
+            },
+          ],
+          metadata: {
+            postId: input.postId,
+            postTitle: post.title,
+            commentId: comment.id,
+            commenterName: ctx.dbUser.name,
+          },
+        });
+      }
+
+      // Log app activity
+      await logAppActivity(ctx.db, {
+        userId: ctx.dbUser.id,
+        userName: ctx.dbUser.name ?? undefined,
+        userEmail: ctx.dbUser.email ?? undefined,
+        type: AppActivityType.BLOG_COMMENT_CREATED,
+        action: ActivityActionEnum.CREATED,
+        entity: ActivityEntity.COMMENT,
+        entityId: comment.id,
+        title: `Comment added on post: ${post.title}`,
+        category: ActivityCategory.CONTENT,
+        severity: ActivitySeverity.INFO,
+        metadata: {
+          postId: input.postId,
+          postTitle: post.title,
+          commentId: comment.id,
+          commentLength: input.content.length,
+        },
+      });
+
       return comment;
     }),
 

@@ -10,6 +10,7 @@ export const adminActivityRouter = createTRPCRouter({
         .object({
           take: z.number().min(1).max(100).default(50),
           cursor: z.string().nullish(),
+          search: z.string().optional(),
           type: z.string().optional(),
           entity: z.string().optional(),
           userId: z.string().optional(),
@@ -32,6 +33,7 @@ export const adminActivityRouter = createTRPCRouter({
       const {
         take = 50,
         cursor,
+        search,
         type,
         entity,
         userId,
@@ -43,6 +45,12 @@ export const adminActivityRouter = createTRPCRouter({
 
       const activities = await ctx.db.appActivity.findMany({
         where: {
+          ...(search && {
+            OR: [
+              { title: { contains: search, mode: "insensitive" } },
+              { description: { contains: search, mode: "insensitive" } },
+            ],
+          }),
           ...(type && { type }),
           ...(entity && { entity }),
           ...(userId && { userId }),

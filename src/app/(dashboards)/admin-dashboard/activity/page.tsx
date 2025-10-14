@@ -1,23 +1,19 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
+import React, { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
-import { Spinner } from "~/components/ui/spinner";
-import { Badge } from "~/components/ui/badge";
 import {
-  ChevronLeft,
-  ChevronRight,
   Activity,
-  Filter,
-  RotateCcw,
-  Clock,
-  User,
+  RefreshCw,
   AlertCircle,
   AlertTriangle,
   Info,
-  XCircle
+  XCircle,
 } from "lucide-react";
+import { format } from "date-fns";
+import { Button } from "~/components/ui/button";
+import { Skeleton } from "~/components/ui/skeleton";
+import { Badge } from "~/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -25,336 +21,612 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
+import { cn } from "~/lib/utils";
+import { Label } from "~/components/ui/label";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Input } from "~/components/ui/input";
+
+type Severity = "info" | "warning" | "error" | "critical";
+type Category = "auth" | "content" | "registration" | "conference" | "file" | "profile";
+
+// Helper function to get appropriate styling for severity
+const getSeverityStyle = (severity: string) => {
+  switch (severity) {
+    case "critical":
+      return {
+        bgColor: "bg-red-100 dark:bg-red-900/20",
+        textColor: "text-red-800 dark:text-red-400",
+        dotColor: "bg-red-500",
+        icon: <XCircle className="h-5 w-5 text-red-500 dark:text-red-400" />,
+      };
+    case "error":
+      return {
+        bgColor: "bg-red-50 dark:bg-red-900/10",
+        textColor: "text-red-600 dark:text-red-400",
+        dotColor: "bg-orange-500 dark:bg-orange-400",
+        icon: <AlertCircle className="h-5 w-5 text-red-500 dark:text-red-400" />,
+      };
+    case "warning":
+      return {
+        bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
+        textColor: "text-yellow-600 dark:text-yellow-400",
+        dotColor: "bg-yellow-500 dark:bg-yellow-400",
+        icon: <AlertTriangle className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />,
+      };
+    case "info":
+    default:
+      return {
+        bgColor: "bg-blue-50 dark:bg-blue-900/20",
+        textColor: "text-blue-600 dark:text-blue-400",
+        dotColor: "bg-blue-500 dark:bg-blue-400",
+        icon: <Info className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
+      };
+  }
+};
+
+// Format metadata as JSON string for display
+const formatMetadata = (metadata: unknown) => {
+  if (!metadata) return "";
+  return JSON.stringify(metadata, null, 2);
+};
+
+const SEVERITIES: Severity[] = ["info", "warning", "error", "critical"];
+const CATEGORIES: Category[] = ["auth", "content", "registration", "conference", "file", "profile"];
 
 export default function ActivityPage() {
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [previousCursors, setPreviousCursors] = useState<string[]>([]);
-  const [typeFilter, setTypeFilter] = useState<string | undefined>(undefined);
-  const [severityFilter, setSeverityFilter] = useState<"info" | "warning" | "error" | "critical" | undefined>(undefined);
-  const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined);
+  const utils = api.useUtils();
+  const REFRESH_MS = 30000;
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const { data, isLoading, refetch } = api.admin.activity.getAll.useQuery({
-    take: 50,
-    cursor: cursor ?? undefined,
-    type: typeFilter,
-    severity: severityFilter,
-    category: categoryFilter,
-  });
+  const [isPaused, setIsPaused] = useState(false);
+  const [limitTo, setLimitTo] = useState<number>(50);
+  const [nextRefreshAt, setNextRefreshAt] = useState<number | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
+  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  // Filters
+  const [selectedSeverities, setSelectedSeverities] = useState<Set<Severity>>(
+    new Set(SEVERITIES)
+  );
+  const [selectedCategories, setSelectedCategories] = useState<Set<Category>>(
+    new Set(CATEGORIES)
+  );
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "critical": return "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20";
-      case "error": return "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20";
-      case "warning": return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20";
-      case "info": return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
-      default: return "bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20";
+  // Auto refresh when not paused
+  useEffect(() => {
+    if (isPaused) {
+      setNextRefreshAt(null);
+      return;
     }
-  };
+    setNextRefreshAt(Date.now() + REFRESH_MS);
+    const id = setInterval(() => {
+      void utils.admin.activity.getAll.invalidate();
+      setNextRefreshAt(Date.now() + REFRESH_MS);
+    }, REFRESH_MS);
+    return () => clearInterval(id);
+  }, [isPaused, utils.admin.activity.getAll]);
 
-  const getSeverityIcon = (severity: string) => {
-    const className = "h-5 w-5";
-    switch (severity) {
-      case "critical": return <XCircle className={className} />;
-      case "error": return <AlertCircle className={className} />;
-      case "warning": return <AlertTriangle className={className} />;
-      case "info": return <Info className={className} />;
-      default: return <Info className={className} />;
+  // Countdown updater
+  useEffect(() => {
+    if (isPaused || nextRefreshAt === null) {
+      setRemainingSeconds(0);
+      return;
     }
+    const id = setInterval(() => {
+      const diff = nextRefreshAt - Date.now();
+      setRemainingSeconds(diff > 0 ? Math.ceil(diff / 1000) : 0);
+    }, 250);
+    return () => clearInterval(id);
+  }, [isPaused, nextRefreshAt]);
+
+  // Debounce search input to avoid excessive requests
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(id);
+  }, [search]);
+
+  // Reset when debounced search term changes (refetch is triggered automatically)
+
+  // Prepare query parameters
+  const queryParams = {
+    take: limitTo,
+    cursor: undefined,
+    search: debouncedSearch.length > 0 ? debouncedSearch : undefined,
+    severity: selectedSeverities.size > 0 && selectedSeverities.size < SEVERITIES.length
+      ? Array.from(selectedSeverities)[0]
+      : undefined,
+    category: selectedCategories.size > 0 && selectedCategories.size < CATEGORIES.length
+      ? Array.from(selectedCategories)[0]
+      : undefined,
   };
 
-  const getSeverityDotColor = (severity: string) => {
-    switch (severity) {
-      case "critical": return "bg-red-500";
-      case "error": return "bg-orange-500";
-      case "warning": return "bg-yellow-500";
-      case "info": return "bg-blue-500";
-      default: return "bg-gray-500";
-    }
-  };
+  // Fetch activities with filters
+  const { data, isLoading, refetch } = api.admin.activity.getAll.useQuery(queryParams);
 
-  const getCategoryColor = (category: string | null) => {
-    if (!category) return "bg-gray-500/10 text-gray-600 dark:text-gray-400";
-    switch (category) {
-      case "auth": return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
-      case "content": return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
-      case "registration": return "bg-green-500/10 text-green-600 dark:text-green-400";
-      case "conference": return "bg-teal-500/10 text-teal-600 dark:text-teal-400";
-      case "file": return "bg-orange-500/10 text-orange-600 dark:text-orange-400";
-      case "profile": return "bg-pink-500/10 text-pink-600 dark:text-pink-400";
-      default: return "bg-gray-500/10 text-gray-600 dark:text-gray-400";
-    }
-  };
-
-  const handleNextPage = () => {
-    if (data?.nextCursor) {
-      if (cursor) {
-        setPreviousCursors([...previousCursors, cursor]);
-      }
-      setCursor(data.nextCursor);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (previousCursors.length > 0) {
-      const newCursors = [...previousCursors];
-      const prevCursor = newCursors.pop();
-      setPreviousCursors(newCursors);
-      setCursor(prevCursor ?? null);
+  useEffect(() => {
+    if (isLoading) {
+      setIsPaused(true);
     } else {
-      setCursor(null);
+      setIsPaused(false);
     }
+  }, [isLoading]);
+
+  const handleRefreshActivities = async () => {
+    await refetch();
+    if (!isPaused) setNextRefreshAt(Date.now() + REFRESH_MS);
   };
 
-  const resetFilters = () => {
-    setTypeFilter(undefined);
-    setSeverityFilter(undefined);
-    setCategoryFilter(undefined);
-    setCursor(null);
-    setPreviousCursors([]);
-    void refetch();
+  const handleDownloadActivities = () => {
+    const rows = (data?.activities ?? []).map((a) => [
+      new Date(a.createdAt).toISOString(),
+      a.type,
+      a.severity,
+      a.category ?? "",
+      a.userName ?? "",
+      a.entity,
+      a.action,
+      a.title?.replaceAll("\n", " ") ?? "",
+      (a.description ?? "").replaceAll("\n", " ")
+    ]);
+    const header = ["timestamp", "type", "severity", "category", "user", "entity", "action", "title", "description"];
+    const csv = [header, ...rows]
+      .map((r) => r.map((v) => `"${String(v).replaceAll('"', '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `activity-log-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
+
+  const handleActivityClick = (activityId: string) => {
+    setSelectedActivityId(activityId);
+    setIsDetailOpen(true);
+  };
+
+  const clearFilters = () => {
+    setSelectedSeverities(new Set(SEVERITIES));
+    setSelectedCategories(new Set(CATEGORIES));
+    setSearch("");
+  };
+
+  const activities = data?.activities ?? [];
 
   return (
-    <main className="text-foreground flex min-h-screen">
-      <div className="flex flex-1 flex-col">
-        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl">
+        <div className="p-8">
           {/* Header */}
-          <div className="mb-6 sm:mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="rounded-lg bg-primary/10 p-2.5">
-                <Activity className="h-6 w-6 text-primary" />
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-primary/10 p-2.5">
+                  <Activity className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                    Activity Log
+                  </h1>
+                  <p className="text-muted-foreground text-sm sm:text-base mt-0.5">
+                    Complete audit trail of all system activities
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                  Activity Log
-                </h1>
-                <p className="text-muted-foreground text-sm sm:text-base mt-0.5">
-                  Complete audit trail of all system activities
-                </p>
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleRefreshActivities}
+                disabled={isLoading}
+              >
+                <RefreshCw className={cn("h-5 w-5", isLoading && "animate-spin")} />
+              </Button>
             </div>
           </div>
 
           {/* Filters */}
-          <Card className="mb-6 shadow-sm gap-2">
-            <CardHeader className="pb-0">
+          <div className="mb-4 rounded-md border bg-card p-3 text-card-foreground">
+            <div className="flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-2">
-                <Filter className="h-5 w-5 text-muted-foreground" />
-                <CardTitle className="text-lg">Filters</CardTitle>
+                <span className="text-xs text-muted-foreground">Limit to</span>
+                <Select value={String(limitTo)} onValueChange={(v) => setLimitTo(Number(v))}>
+                  <SelectTrigger className="h-8 w-28">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[25, 50, 100, 200].map((n) => (
+                      <SelectItem key={n} value={String(n)}>
+                        {n} items
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">Severity</label>
-                  <Select value={severityFilter ?? "all"} onValueChange={(v) => setSeverityFilter(v === "all" ? undefined : v as "info" | "warning" | "error" | "critical")}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select severity" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Severities</SelectItem>
-                      <SelectItem value="info">
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-blue-500" />
-                          Info
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="warning">
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-yellow-500" />
-                          Warning
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="error">
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-orange-500" />
-                          Error
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="critical">
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-red-500" />
-                          Critical
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">Category</label>
-                  <Select value={categoryFilter ?? "all"} onValueChange={(v) => setCategoryFilter(v === "all" ? undefined : v)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="auth">Authentication</SelectItem>
-                      <SelectItem value="content">Content</SelectItem>
-                      <SelectItem value="registration">Registration</SelectItem>
-                      <SelectItem value="conference">Conference</SelectItem>
-                      <SelectItem value="file">Files</SelectItem>
-                      <SelectItem value="profile">Profile</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="sm:col-span-2 lg:col-span-2 flex items-end">
-                  <Button
-                    variant="outline"
-                    onClick={resetFilters}
-                    className="w-full h-10"
-                  >
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Reset Filters
-                  </Button>
-                </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Severity</span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="h-8 w-44 justify-start text-left font-normal">
+                      <div className="flex w-full items-center justify-between">
+                        <span className={selectedSeverities.size === 0 ? "text-muted-foreground" : ""}>
+                          {selectedSeverities.size === 0
+                            ? "Select Severities"
+                            : selectedSeverities.size === SEVERITIES.length
+                              ? "All Severities"
+                              : `${selectedSeverities.size} Selected`}
+                        </span>
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[220px] p-0" align="start">
+                    <div className="space-y-2 p-2">
+                      <div className="flex items-center gap-2 border-b pb-2">
+                        <Checkbox
+                          id="select-all-severities"
+                          checked={selectedSeverities.size === SEVERITIES.length}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedSeverities(new Set(SEVERITIES));
+                            } else {
+                              setSelectedSeverities(new Set());
+                            }
+                          }}
+                        />
+                        <Label htmlFor="select-all-severities" className="text-sm font-medium">
+                          Select All
+                        </Label>
+                      </div>
+                      {SEVERITIES.map((severity) => (
+                        <div key={severity} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`severity-${severity}`}
+                            checked={selectedSeverities.has(severity)}
+                            onCheckedChange={(checked) => {
+                              const newSeverities = new Set(selectedSeverities);
+                              if (checked) {
+                                newSeverities.add(severity);
+                              } else {
+                                newSeverities.delete(severity);
+                              }
+                              setSelectedSeverities(newSeverities);
+                            }}
+                          />
+                          <Label htmlFor={`severity-${severity}`} className="text-sm font-medium capitalize">
+                            {severity}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Activity List */}
-          <Card className="shadow-sm">
-            <CardHeader className="border-b bg-muted/30">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xl">Recent Activity</CardTitle>
-                {!isLoading && data && (
-                  <Badge variant="secondary" className="text-xs">
-                    {data.activities.length} {data.activities.length === 1 ? 'item' : 'items'}
-                  </Badge>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Category</span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="h-8 w-40 justify-start text-left font-normal">
+                      <div className="flex w-full items-center justify-between">
+                        <span className={selectedCategories.size === 0 ? "text-muted-foreground" : ""}>
+                          {selectedCategories.size === 0
+                            ? "Select Categories"
+                            : selectedCategories.size === CATEGORIES.length
+                              ? "All Categories"
+                              : `${selectedCategories.size} Selected`}
+                        </span>
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[220px] p-0" align="start">
+                    <div className="space-y-2 p-2">
+                      <div className="flex items-center gap-2 border-b pb-2">
+                        <Checkbox
+                          id="select-all-categories"
+                          checked={selectedCategories.size === CATEGORIES.length}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedCategories(new Set(CATEGORIES));
+                            } else {
+                              setSelectedCategories(new Set());
+                            }
+                          }}
+                        />
+                        <Label htmlFor="select-all-categories" className="text-sm font-medium">
+                          Select All
+                        </Label>
+                      </div>
+                      {CATEGORIES.map((category) => (
+                        <div key={category} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`category-${category}`}
+                            checked={selectedCategories.has(category)}
+                            onCheckedChange={(checked) => {
+                              const newCategories = new Set(selectedCategories);
+                              if (checked) {
+                                newCategories.add(category);
+                              } else {
+                                newCategories.delete(category);
+                              }
+                              setSelectedCategories(newCategories);
+                            }}
+                          />
+                          <Label htmlFor={`category-${category}`} className="text-sm font-medium capitalize">
+                            {category}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="ml flex-1 min-w-[220px]">
+                <Input
+                  placeholder="Search activities..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                  }}
+                  className="h-8"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="h-8"
+                >
+                  Clear
+                </Button>
+                <Button
+                  variant={isPaused ? "default" : "outline"}
+                  onClick={() => setIsPaused(!isPaused)}
+                  className="h-8"
+                  disabled={isLoading}
+                >
+                  {isPaused ? "Resume" : "Pause"}
+                </Button>
+                <Button onClick={handleDownloadActivities} className="h-8">
+                  Download
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Compact list */}
+          <div className="overflow-hidden rounded-md border bg-card">
+            {/* Top status bar */}
+            <div className="flex items-center justify-between border-b bg-muted/30 px-3 py-2 text-sm">
+              <div className="text-muted-foreground">
+                {activities.length} {activities.length === 1 ? 'activity' : 'activities'}
+              </div>
+              <div className="flex items-center gap-3 text-muted-foreground">
+                {!isPaused ? (
+                  <span className="text-xs">Auto-refresh in {remainingSeconds}s</span>
+                ) : (
+                  <span className="text-xs">Paused</span>
                 )}
               </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              {isLoading ? (
-                <div className="flex flex-col items-center justify-center py-16">
-                  <Spinner className="size-10 mb-4" />
-                  <p className="text-sm text-muted-foreground">Loading activities...</p>
-                </div>
-              ) : !data || data.activities.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16">
-                  <div className="rounded-full bg-muted p-3 mb-4">
-                    <Activity className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <div className="max-h-[70vh] overflow-auto">
+              {activities.map((activity) => (
+                <div
+                  key={activity.id}
+                  onClick={() => handleActivityClick(activity.id)}
+                  className="group flex cursor-pointer items-start gap-2 border-b p-2 hover:bg-accent/50 transition-colors"
+                >
+                  <div
+                    className={cn(
+                      "mt-1 h-2 w-2 rounded-full",
+                      getSeverityStyle(activity.severity).dotColor
+                    )}
+                  />
+                  <div className="min-w-[165px] text-xs tabular-nums text-muted-foreground">
+                    {format(new Date(activity.createdAt), "MMM dd, yyyy HH:mm:ss")}
                   </div>
-                  <p className="text-muted-foreground font-medium mb-1">No activities found</p>
-                  <p className="text-sm text-muted-foreground">Try adjusting your filters</p>
-                </div>
-              ) : (
-                <div className="divide-y">
-                  {/* Activity Items */}
-                  {data.activities.map((activity, index) => (
-                    <div
-                      key={activity.id}
-                      className={`group relative flex items-start gap-4 p-4 sm:p-5 hover:bg-accent/50 transition-all duration-200 ${index === 0 ? '' : ''
-                        }`}
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "rounded px-2 py-0.5 text-[10px] font-semibold",
+                        activity.severity === "critical" || activity.severity === "error"
+                          ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                          : activity.severity === "warning"
+                            ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                            : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                      )}
                     >
-                      {/* Severity indicator bar */}
-                      <div className={`absolute left-0 top-0 bottom-0 w-1 ${getSeverityDotColor(activity.severity)} opacity-0 group-hover:opacity-100 transition-opacity`} />
-
-                      {/* Icon with colored background */}
-                      <div className={`flex-shrink-0 rounded-lg p-2.5 ${getSeverityColor(activity.severity)}`}>
-                        {getSeverityIcon(activity.severity)}
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0 space-y-3">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-foreground font-semibold text-base leading-snug mb-1.5">
-                              {activity.title}
-                            </h3>
-                            {activity.description && (
-                              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                                {activity.description}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap gap-2 justify-end">
-                            <Badge
-                              variant="secondary"
-                              className={`${getSeverityColor(activity.severity)} text-xs font-medium capitalize`}
-                            >
-                              {activity.severity}
-                            </Badge>
-                            {activity.category && (
-                              <Badge
-                                variant="outline"
-                                className={`${getCategoryColor(activity.category)} text-xs font-medium capitalize`}
-                              >
-                                {activity.category}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Metadata row */}
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                          {activity.userName && (
-                            <div className="flex items-center gap-1.5">
-                              <User className="h-3.5 w-3.5" />
-                              <span className="font-medium">{activity.userName}</span>
-                            </div>
-                          )}
-                          {activity.userName && <span className="text-muted-foreground/50">•</span>}
-                          <span className="capitalize">{activity.entity}</span>
-                          <span className="text-muted-foreground/50">•</span>
-                          <span className="capitalize">{activity.action}</span>
-                          <span className="text-muted-foreground/50">•</span>
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="h-3.5 w-3.5" />
-                            <span>{formatDate(activity.createdAt)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Pagination */}
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 bg-muted/20">
-                    <div className="text-sm text-muted-foreground font-medium">
-                      Showing <span className="text-foreground">{data.activities.length}</span> {data.activities.length === 1 ? 'activity' : 'activities'}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handlePrevPage}
-                        disabled={previousCursors.length === 0 && !cursor}
-                        className="min-w-[100px]"
-                      >
-                        <ChevronLeft className="h-4 w-4 mr-1.5" />
-                        Previous
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleNextPage}
-                        disabled={!data.nextCursor}
-                        className="min-w-[100px]"
-                      >
-                        Next
-                        <ChevronRight className="h-4 w-4 ml-1.5" />
-                      </Button>
-                    </div>
+                      {activity.severity}
+                    </span>
+                    {activity.category && (
+                      <span className="rounded bg-muted px-2 py-0.5 text-[10px] uppercase text-muted-foreground">
+                        {activity.category}
+                      </span>
+                    )}
+                  </div>
+                  <div className="ml-2 flex-1 text-xs text-card-foreground">
+                    {activity.userName && (
+                      <span className="text-muted-foreground">[{activity.userName}]</span>
+                    )}{" "}
+                    <span className="font-medium text-foreground">{activity.title}</span>
+                    {activity.description ? (
+                      <span className="text-muted-foreground">: {activity.description}</span>
+                    ) : null}
+                  </div>
+                  <div className="ml-auto text-[10px] uppercase text-muted-foreground">
+                    {activity.entity} • {activity.action}
                   </div>
                 </div>
+              ))}
+              {isLoading && (
+                <div className="p-3 text-center text-xs text-muted-foreground">Loading…</div>
               )}
-            </CardContent>
-          </Card>
-        </main>
+              {!isLoading && activities.length === 0 && (
+                <div className="p-6 text-center text-muted-foreground">No activities found</div>
+              )}
+            </div>
+          </div>
+
+          {/* Activity Detail Dialog */}
+          <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Activity Details</DialogTitle>
+                <DialogDescription>
+                  Detailed information about the selected activity
+                </DialogDescription>
+              </DialogHeader>
+
+              {(() => {
+                const activity = activities.find((a) => a.id === selectedActivityId);
+                if (!activity) {
+                  return (
+                    <div className="space-y-4">
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-24 w-full" />
+                      <Skeleton className="h-32 w-full" />
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-6 px-2">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          Timestamp
+                        </h3>
+                        <p className="text-foreground">
+                          {format(
+                            new Date(activity.createdAt),
+                            "yyyy-MM-dd HH:mm:ss",
+                          )}
+                        </p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground">ID</h3>
+                        <p className="text-foreground text-xs break-all">{activity.id}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          Severity
+                        </h3>
+                        <div className="flex items-center gap-1">
+                          {getSeverityStyle(activity.severity).icon}
+                          <span
+                            className={cn(
+                              "text-sm font-medium capitalize",
+                              getSeverityStyle(activity.severity).textColor,
+                            )}
+                          >
+                            {activity.severity}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          Category
+                        </h3>
+                        <Badge variant="secondary" className="capitalize">
+                          {activity.category ?? "N/A"}
+                        </Badge>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          Entity
+                        </h3>
+                        <p className="text-foreground capitalize">{activity.entity}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          Action
+                        </h3>
+                        <p className="text-foreground capitalize">{activity.action}</p>
+                      </div>
+                      {activity.userName && (
+                        <div>
+                          <h3 className="text-sm font-medium text-muted-foreground">
+                            User
+                          </h3>
+                          <p className="text-foreground">{activity.userName}</p>
+                          {activity.userEmail && (
+                            <p className="text-xs text-muted-foreground">{activity.userEmail}</p>
+                          )}
+                        </div>
+                      )}
+                      {activity.entityId && (
+                        <div>
+                          <h3 className="text-sm font-medium text-muted-foreground">
+                            Entity ID
+                          </h3>
+                          <p className="text-foreground text-xs break-all">{activity.entityId}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground">Title</h3>
+                      <p className="text-foreground">{activity.title}</p>
+                    </div>
+
+                    {activity.description && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          Description
+                        </h3>
+                        <p className="whitespace-pre-wrap text-foreground">
+                          {activity.description}
+                        </p>
+                      </div>
+                    )}
+
+                    {activity.ipAddress && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          IP Address
+                        </h3>
+                        <p className="text-foreground">{activity.ipAddress}</p>
+                      </div>
+                    )}
+
+                    {activity.metadata && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          Metadata
+                        </h3>
+                        <pre
+                          style={{
+                            whiteSpace: "pre-wrap",
+                            wordBreak: "break-word",
+                          }}
+                          className="mt-2 max-h-48 overflow-auto rounded bg-muted p-4 text-sm"
+                        >
+                          {formatMetadata(activity.metadata)}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }
-

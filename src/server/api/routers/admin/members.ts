@@ -1,6 +1,16 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import {
+  logUserActivity,
+  logAppActivity,
+  UserActivityType,
+  AppActivityType,
+  ActivityActionEnum,
+  ActivityEntity,
+  ActivityCategory,
+  ActivitySeverity,
+} from "~/server/api/lib/activity-logger";
 
 export const adminMembersRouter = createTRPCRouter({
   // Get all members
@@ -155,9 +165,75 @@ export const adminMembersRouter = createTRPCRouter({
         });
       }
 
+      // Get current member data to track changes
+      const currentMember = await ctx.db.user.findUnique({
+        where: { id },
+        select: { name: true, email: true, role: true, emailVerified: true },
+      });
+
+      if (!currentMember) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Member not found",
+        });
+      }
+
       const member = await ctx.db.user.update({
         where: { id },
         data: updateData,
+      });
+
+      // Track what was updated
+      const updatedFields: string[] = [];
+      if (input.name !== undefined) updatedFields.push("name");
+      if (input.email !== undefined) updatedFields.push("email");
+      if (input.phone !== undefined) updatedFields.push("phone");
+      if (input.emailVerified !== undefined) updatedFields.push("email verification");
+
+      const roleChanged = input.role !== undefined && input.role !== currentMember.role;
+      if (roleChanged) updatedFields.push("role");
+
+      // Log activity for the member being updated if their role changed
+      if (roleChanged) {
+        await logUserActivity(ctx.db, {
+          userId: id,
+          title: `Your role was updated`,
+          description: `Your role has been changed to ${input.role} by admin ${ctx.dbUser.name}`,
+          icon: "Shield",
+          type: UserActivityType.PROFILE_UPDATED,
+          metadata: {
+            previousRole: currentMember.role,
+            newRole: input.role,
+            updatedBy: ctx.dbUser.name,
+          },
+        });
+      }
+
+      // Log app activity
+      await logAppActivity(ctx.db, {
+        userId: ctx.dbUser.id,
+        userName: ctx.dbUser.name ?? undefined,
+        userEmail: ctx.dbUser.email ?? undefined,
+        type: roleChanged ? AppActivityType.MEMBER_ROLE_CHANGED : AppActivityType.MEMBER_UPDATED,
+        action: ActivityActionEnum.UPDATED,
+        entity: ActivityEntity.USER,
+        entityId: id,
+        title: roleChanged
+          ? `Member role changed: ${currentMember.name} (${currentMember.role} → ${input.role})`
+          : `Member updated: ${member.name}`,
+        description: `Admin updated member details: ${updatedFields.join(", ")}`,
+        category: ActivityCategory.ADMIN,
+        severity: roleChanged ? ActivitySeverity.WARNING : ActivitySeverity.INFO,
+        metadata: {
+          memberId: id,
+          memberName: member.name,
+          memberEmail: member.email,
+          updatedFields,
+          ...(roleChanged && {
+            previousRole: currentMember.role,
+            newRole: input.role,
+          }),
+        },
       });
 
       return member;
@@ -200,8 +276,35 @@ export const adminMembersRouter = createTRPCRouter({
         });
       }
 
+      // Get member details before deletion
+      const memberToDelete = await ctx.db.user.findUnique({
+        where: { id: input.id },
+        select: { name: true, email: true, role: true },
+      });
+
       await ctx.db.user.delete({
         where: { id: input.id },
+      });
+
+      // Log app activity
+      await logAppActivity(ctx.db, {
+        userId: ctx.dbUser.id,
+        userName: ctx.dbUser.name ?? undefined,
+        userEmail: ctx.dbUser.email ?? undefined,
+        type: AppActivityType.MEMBER_DELETED,
+        action: ActivityActionEnum.DELETED,
+        entity: ActivityEntity.USER,
+        entityId: input.id,
+        title: `Member deleted: ${memberToDelete?.name ?? "Unknown"}`,
+        description: `Admin deleted member account`,
+        category: ActivityCategory.ADMIN,
+        severity: ActivitySeverity.WARNING,
+        metadata: {
+          deletedMemberId: input.id,
+          deletedMemberName: memberToDelete?.name,
+          deletedMemberEmail: memberToDelete?.email,
+          deletedMemberRole: memberToDelete?.role,
+        },
       });
 
       return { success: true };

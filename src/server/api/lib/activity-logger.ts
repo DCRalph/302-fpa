@@ -1,7 +1,28 @@
 import { type PrismaClient, type Prisma } from "@prisma/client";
+import type {
+  ActivitySeverity,
+  ActivityCategory,
+  ActivityEntity,
+  ActivityAction,
+  UserActivityType,
+  AppActivityType,
+} from "./activity-types";
+
+// Re-export types and enums for convenience
+export {
+  ActivitySeverity,
+  ActivityCategory,
+  ActivityEntity,
+  ActivityActionEnum,
+  UserActivityType,
+  AppActivityType,
+  getActivityIcon,
+} from "./activity-types";
+
+export type { ActivityAction } from "./activity-types";
 
 // Types for activity logging
-export type ActivityAction = {
+export type ActivityActionButton = {
   label: string;
   href: string;
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
@@ -12,9 +33,9 @@ export type UserActivityInput = {
   title: string;
   description?: string;
   icon: string;
-  type: string;
+  type: UserActivityType;
   isSystem?: boolean; // If true, userId must be null
-  actions?: ActivityAction[];
+  actions?: ActivityActionButton[];
   metadata?: Record<string, unknown>;
 };
 
@@ -22,16 +43,16 @@ export type AppActivityInput = {
   userId?: string;
   userName?: string;
   userEmail?: string;
-  type: string;
-  action: string;
-  entity: string;
+  type: AppActivityType;
+  action: ActivityAction;
+  entity: ActivityEntity;
   entityId?: string;
   title: string;
   description?: string;
   metadata?: Record<string, unknown>;
   ipAddress?: string;
-  severity?: "info" | "warning" | "error" | "critical";
-  category?: string;
+  severity?: ActivitySeverity;
+  category?: ActivityCategory;
 };
 
 /**

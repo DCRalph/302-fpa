@@ -1,7 +1,17 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { logUserActivity, logAppActivity } from "~/server/api/lib/activity-logger";
+import {
+  logUserActivity,
+  logAppActivity,
+  UserActivityType,
+  AppActivityType,
+  ActivityActionEnum,
+  ActivityEntity,
+  ActivityCategory,
+  ActivitySeverity,
+  getActivityIcon,
+} from "~/server/api/lib/activity-logger";
 
 export const adminRegistrationsRouter = createTRPCRouter({
   // Get all registrations for a conference
@@ -180,8 +190,8 @@ export const adminRegistrationsRouter = createTRPCRouter({
           userId: registration.userId,
           title: `Registration Approved!`,
           description: `Your registration for ${registration.conference?.name ?? "the conference"} has been approved`,
-          icon: "CheckCircle2",
-          type: "registration_approved",
+          icon: getActivityIcon(UserActivityType.REGISTRATION_APPROVED),
+          type: UserActivityType.REGISTRATION_APPROVED,
           actions: [
             {
               label: "View Details",
@@ -203,14 +213,14 @@ export const adminRegistrationsRouter = createTRPCRouter({
         userId: ctx.dbUser.id,
         userName: ctx.dbUser.name ?? undefined,
         userEmail: ctx.dbUser.email ?? undefined,
-        type: "registration_approved",
-        action: "updated",
-        entity: "registration",
+        type: AppActivityType.REGISTRATION_APPROVED,
+        action: ActivityActionEnum.APPROVED,
+        entity: ActivityEntity.REGISTRATION,
         entityId: registration.id,
         title: `Registration approved for ${registration.conference?.name ?? "conference"}`,
         description: `Admin ${ctx.dbUser.name} approved registration for ${registration.user?.name ?? registration.name}`,
-        category: "registration",
-        severity: "info",
+        category: ActivityCategory.REGISTRATION,
+        severity: ActivitySeverity.INFO,
         metadata: {
           conferenceId: registration.conferenceId,
           conferenceName: registration.conference?.name,
@@ -293,8 +303,8 @@ export const adminRegistrationsRouter = createTRPCRouter({
           userId: registration.userId,
           title: `Registration Denied`,
           description: `Your registration for ${registration.conference?.name ?? "the conference"} was not approved`,
-          icon: "XCircle",
-          type: "registration_denied",
+          icon: getActivityIcon(UserActivityType.REGISTRATION_DENIED),
+          type: UserActivityType.REGISTRATION_DENIED,
           metadata: {
             conferenceId: registration.conferenceId,
             conferenceName: registration.conference?.name,
@@ -309,14 +319,14 @@ export const adminRegistrationsRouter = createTRPCRouter({
         userId: ctx.dbUser.id,
         userName: ctx.dbUser.name ?? undefined,
         userEmail: ctx.dbUser.email ?? undefined,
-        type: "registration_denied",
-        action: "updated",
-        entity: "registration",
+        type: AppActivityType.REGISTRATION_DENIED,
+        action: ActivityActionEnum.REJECTED,
+        entity: ActivityEntity.REGISTRATION,
         entityId: registration.id,
         title: `Registration denied for ${registration.conference?.name ?? "conference"}`,
         description: `Admin ${ctx.dbUser.name} denied registration for ${registration.user?.name ?? registration.name}`,
-        category: "registration",
-        severity: "warning",
+        category: ActivityCategory.REGISTRATION,
+        severity: ActivitySeverity.WARNING,
         metadata: {
           conferenceId: registration.conferenceId,
           conferenceName: registration.conference?.name,
@@ -378,6 +388,72 @@ export const adminRegistrationsRouter = createTRPCRouter({
             },
           },
         },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          conference: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+      // Notify user if their registration status changed
+      if (registration.userId && currentReg.status !== input.status) {
+        await logUserActivity(ctx.db, {
+          userId: registration.userId,
+          title: `Registration status updated`,
+          description: `Your registration for ${registration.conference?.name ?? "conference"} status changed to ${input.status}`,
+          icon: getActivityIcon(UserActivityType.REGISTRATION_UPDATED),
+          type: UserActivityType.REGISTRATION_UPDATED,
+          actions: [
+            {
+              label: "View Details",
+              href: "/member-dashboard/conference-registration",
+              variant: "default",
+            },
+          ],
+          metadata: {
+            conferenceId: registration.conferenceId,
+            conferenceName: registration.conference?.name,
+            registrationId: registration.id,
+            previousStatus: currentReg.status,
+            newStatus: input.status,
+            reason: input.reason,
+          },
+        });
+      }
+
+      // Log app activity
+      await logAppActivity(ctx.db, {
+        userId: ctx.dbUser.id,
+        userName: ctx.dbUser.name ?? undefined,
+        userEmail: ctx.dbUser.email ?? undefined,
+        type: AppActivityType.REGISTRATION_STATUS_CHANGED,
+        action: ActivityActionEnum.UPDATED,
+        entity: ActivityEntity.REGISTRATION,
+        entityId: registration.id,
+        title: `Registration status updated: ${currentReg.status} → ${input.status}`,
+        description: `Admin updated registration status for ${registration.user?.name ?? registration.name}`,
+        category: ActivityCategory.REGISTRATION,
+        severity: ActivitySeverity.INFO,
+        metadata: {
+          conferenceId: registration.conferenceId,
+          conferenceName: registration.conference?.name,
+          registrationId: registration.id,
+          userId: registration.userId,
+          userName: registration.user?.name ?? registration.name,
+          previousStatus: currentReg.status,
+          newStatus: input.status,
+          paymentStatus: input.paymentStatus,
+          reason: input.reason,
+        },
       });
 
       return registration;
@@ -413,6 +489,39 @@ export const adminRegistrationsRouter = createTRPCRouter({
               email: true,
             },
           },
+          registration: {
+            select: {
+              id: true,
+              name: true,
+              conferenceId: true,
+              conference: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Log app activity
+      await logAppActivity(ctx.db, {
+        userId: ctx.dbUser.id,
+        userName: ctx.dbUser.name ?? undefined,
+        userEmail: ctx.dbUser.email ?? undefined,
+        type: AppActivityType.REGISTRATION_NOTE_ADDED,
+        action: ActivityActionEnum.CREATED,
+        entity: ActivityEntity.REGISTRATION,
+        entityId: input.registrationId,
+        title: `Note added to registration for ${note.registration.name}`,
+        description: `Admin added note to registration`,
+        category: ActivityCategory.REGISTRATION,
+        severity: ActivitySeverity.INFO,
+        metadata: {
+          conferenceId: note.registration.conferenceId,
+          conferenceName: note.registration.conference?.name,
+          registrationId: input.registrationId,
+          noteLength: input.note.length,
         },
       });
 

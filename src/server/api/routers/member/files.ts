@@ -1,6 +1,16 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { logUserActivity, logAppActivity } from "~/server/api/lib/activity-logger";
+import {
+  logUserActivity,
+  logAppActivity,
+  UserActivityType,
+  AppActivityType,
+  ActivityActionEnum,
+  ActivityEntity,
+  ActivityCategory,
+  ActivitySeverity,
+  getActivityIcon,
+} from "~/server/api/lib/activity-logger";
 
 export const memberFilesRouter = createTRPCRouter({
   list: protectedProcedure.query(async ({ ctx }) => {
@@ -47,8 +57,8 @@ export const memberFilesRouter = createTRPCRouter({
           userId: ctx.dbUser.id,
           title: `File uploaded: ${input.filename}`,
           description: "Your file has been saved",
-          icon: "Upload",
-          type: "file_uploaded",
+          icon: getActivityIcon(UserActivityType.FILE_UPLOADED),
+          type: UserActivityType.FILE_UPLOADED,
           metadata: {
             attachmentId: attachment.id,
             filename: input.filename,
@@ -59,13 +69,13 @@ export const memberFilesRouter = createTRPCRouter({
           userId: ctx.dbUser.id,
           userName: ctx.dbUser.name ?? undefined,
           userEmail: ctx.dbUser.email ?? undefined,
-          type: "file_uploaded",
-          action: "created",
-          entity: "attachment",
+          type: AppActivityType.FILE_UPLOADED,
+          action: ActivityActionEnum.CREATED,
+          entity: ActivityEntity.ATTACHMENT,
           entityId: attachment.id,
           title: `File uploaded: ${input.filename}`,
-          category: "file",
-          severity: "info",
+          category: ActivityCategory.CONTENT,
+          severity: ActivitySeverity.INFO,
           metadata: {
             attachmentId: attachment.id,
             filename: input.filename,
@@ -94,8 +104,8 @@ export const memberFilesRouter = createTRPCRouter({
             userId: ctx.dbUser.id,
             title: `File deleted: ${attachment.filename}`,
             description: "Your file has been removed",
-            icon: "Trash2",
-            type: "file_deleted",
+            icon: getActivityIcon(UserActivityType.FILE_DELETED),
+            type: UserActivityType.FILE_DELETED,
             metadata: {
               attachmentId: input.id,
               filename: attachment.filename,
@@ -105,13 +115,13 @@ export const memberFilesRouter = createTRPCRouter({
             userId: ctx.dbUser.id,
             userName: ctx.dbUser.name ?? undefined,
             userEmail: ctx.dbUser.email ?? undefined,
-            type: "file_deleted",
-            action: "deleted",
-            entity: "attachment",
+            type: AppActivityType.FILE_DELETED,
+            action: ActivityActionEnum.DELETED,
+            entity: ActivityEntity.ATTACHMENT,
             entityId: input.id,
             title: `File deleted: ${attachment.filename}`,
-            category: "file",
-            severity: "info",
+            category: ActivityCategory.CONTENT,
+            severity: ActivitySeverity.INFO,
             metadata: {
               attachmentId: input.id,
               filename: attachment.filename,
