@@ -10,9 +10,9 @@ interface LayoutWithSideBarHeaderProps {
 export function LayoutWithSideBarHeader({ children, sidebar, header: header }: LayoutWithSideBarHeaderProps) {
   return (
     <SidebarProvider>
-      <div className="bg-page-background flex min-h-screen w-full">
+      <div className="bg-page-background flex  min-h-screen w-full">
         {sidebar}
-        <div className="flex flex-col overflow-x-hidden">
+        <div className="flex flex-1 flex-col overflow-x-hidden">
           {header}
           {children}
         </div>
