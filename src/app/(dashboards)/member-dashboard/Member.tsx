@@ -10,6 +10,8 @@ import { DynamicIcon } from "~/components/DynamicIcon";
 import { Spinner } from "~/components/ui/spinner";
 import { DashboardStatsCard } from "~/components/dash-stat-card";
 import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
+import { format } from "date-fns";
 
 type ActivityActionButton = {
   label: string;
@@ -21,6 +23,7 @@ type RecentActivityItem = {
   icon: { type: string; name: string; props?: Record<string, string | number> };
   title: string;
   time: string;
+  createdAtISO?: string;
   description?: string;
   metaLines?: string[];
   actions?: ActivityActionButton[];
@@ -100,7 +103,14 @@ export default function MemberDashboardPage() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between">
                           <p className="text-md text-foreground font-medium">{activity.title}</p>
-                          <p className="text-muted-foreground text-xs shrink-0">{activity.time}</p>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="text-muted-foreground text-xs w-fit">{activity.time}</p>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {activity.createdAtISO ? format(new Date(activity.createdAtISO), "MMM d yyyy h:mmaaa").toLowerCase() : ""}
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
                         {activity.description && (
                           <p className="text-muted-foreground mt-1 text-sm">
@@ -187,11 +197,9 @@ export default function MemberDashboardPage() {
                                 {post.published ? (
                                   <>
                                     <Badge>Published</Badge>
-                                    <span>
+                                    <span title={post.publishedAt ? format(new Date(post.publishedAt), "MMM d yyyy h:mmaaa") : undefined}>
                                       {post.publishedAt
-                                        ? new Date(
-                                          post.publishedAt,
-                                        ).toLocaleDateString()
+                                        ? new Date(post.publishedAt).toLocaleDateString()
                                         : "—"}
                                     </span>
                                   </>

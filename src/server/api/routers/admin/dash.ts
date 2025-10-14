@@ -8,6 +8,7 @@ type RecentConferenceRegistration = {
   status: "Paid" | "Pending" | "Overdue";
   amountPaid: number;
   amountDue: number;
+  createdAtISO?: string;
 };
 
 type StatIcon = {
@@ -26,6 +27,7 @@ type RecentActivity = {
   icon: StatIcon;
   title: string;
   time: string;
+  createdAtISO?: string;
 };
 
 export const adminDashboardRouter = createTRPCRouter({
@@ -242,6 +244,7 @@ export const adminDashboardRouter = createTRPCRouter({
       },
       title: activity.title,
       time: toAgo(activity.createdAt),
+      createdAtISO: activity.createdAt.toISOString(),
     }));
 
     // Recent registrations table - prioritize latest conference registrations
@@ -277,6 +280,7 @@ export const adminDashboardRouter = createTRPCRouter({
         status,
         amountPaid: Number((netPaid / 100).toFixed(2)),
         amountDue: Number((due / 100).toFixed(2)),
+        createdAtISO: reg.createdAt.toISOString(),
       };
     });
 

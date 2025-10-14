@@ -12,6 +12,8 @@ import { DashboardStatsCard } from "~/components/dash-stat-card";
 import { useAuth } from "~/hooks/useAuth";
 import Link from "next/link";
 import { Badge } from "~/components/ui/badge";
+import { format } from "date-fns";
+import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 
 
 
@@ -148,9 +150,16 @@ export default function AdminDashboardPage() {
                           <p className="text-md text-foreground font-medium">
                             {activity.title}
                           </p>
-                          <p className="text-muted-foreground text-sm">
-                            {activity.time}
-                          </p>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="text-muted-foreground text-sm w-fit">
+                                {activity.time}
+                              </p>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {activity.createdAtISO ? format(new Date(activity.createdAtISO), "MMM d yyyy h:mmaaa") : ""}
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
                       </div>
                     ))

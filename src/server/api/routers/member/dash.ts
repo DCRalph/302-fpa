@@ -277,11 +277,10 @@ export const memberDashboardRouter = createTRPCRouter({
           .filter((a) => a && typeof a === 'object' && 'label' in (a as Record<string, unknown>) && 'href' in (a as Record<string, unknown>))
           .map((a) => {
             const aa = a as Record<string, unknown>;
-            return {
-              label: String(aa.label ?? ''),
-              href: String(aa.href ?? '#'),
-              variant: (aa.variant as string | undefined) ?? 'default',
-            };
+            const label = typeof aa.label === 'string' ? aa.label : '';
+            const href = typeof aa.href === 'string' ? aa.href : '#';
+            const variant = typeof aa.variant === 'string' ? aa.variant : 'default';
+            return { label, href, variant };
           })
         : [];
 
@@ -308,6 +307,7 @@ export const memberDashboardRouter = createTRPCRouter({
         icon: { type: 'lucide', name: activity.icon, props: { className: 'size-6 text-blue-500' } },
         title: activity.title,
         time: toAgo(activity.createdAt),
+        createdAtISO: activity.createdAt.toISOString(),
         description: activity.description ?? undefined,
         metaLines,
         actions,

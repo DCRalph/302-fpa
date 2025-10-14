@@ -37,6 +37,7 @@ import { cn } from "~/lib/utils";
 import { Label } from "~/components/ui/label";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 
 type Severity = "info" | "warning" | "error" | "critical";
 type Category = "auth" | "content" | "registration" | "conference" | "file" | "profile";
@@ -437,9 +438,16 @@ export default function ActivityPage() {
                       getSeverityStyle(activity.severity).dotColor
                     )}
                   />
-                  <div className="min-w-[165px] text-xs tabular-nums text-muted-foreground">
-                    {format(new Date(activity.createdAt), "MMM dd, yyyy HH:mm:ss")}
-                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="min-w-[165px] text-xs tabular-nums text-muted-foreground">
+                        {format(new Date(activity.createdAt), "MMM dd, yyyy HH:mm:ss")}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {format(new Date(activity.createdAt), "MMM d yyyy h:mmaaa")}
+                    </TooltipContent>
+                  </Tooltip>
                   <div className="flex items-center gap-2">
                     <span
                       className={cn(
