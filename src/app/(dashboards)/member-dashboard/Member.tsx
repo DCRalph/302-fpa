@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth } from "~/hooks/useAuth";
-import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
@@ -13,23 +12,7 @@ import { DashboardStatsCard } from "~/components/dash-stat-card";
 import Link from "next/link";
 
 export default function MemberDashboardPage() {
-  const { session, dbUser, isPending } = useAuth();
-
-  if (isPending) {
-    return (
-      <div className="flex items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  if (!session) {
-    redirect("/signin");
-  }
-
-  if (!dbUser?.onboardedAt) {
-    redirect("/onboarding");
-  }
+  const { dbUser } = useAuth();
 
   const { data: memberDashboard } =
     api.member.dashboard.getMemberDashboard.useQuery();
@@ -171,8 +154,8 @@ export default function MemberDashboardPage() {
                                     <span>
                                       {post.publishedAt
                                         ? new Date(
-                                            post.publishedAt,
-                                          ).toLocaleDateString()
+                                          post.publishedAt,
+                                        ).toLocaleDateString()
                                         : "—"}
                                     </span>
                                   </>
@@ -217,14 +200,14 @@ export default function MemberDashboardPage() {
 
 type RegistrationStatus = {
   state:
-    | "no_conference"
-    | "not_registered"
-    | "pending"
-    | "cancelled"
-    | "confirmed_unpaid"
-    | "confirmed_paid"
-    | "confirmed_partial"
-    | "refunded";
+  | "no_conference"
+  | "not_registered"
+  | "pending"
+  | "cancelled"
+  | "confirmed_unpaid"
+  | "confirmed_paid"
+  | "confirmed_partial"
+  | "refunded";
   title: string;
   description: string;
   icon: {
@@ -405,7 +388,7 @@ function MemberDashboardRegistrationStatusCard({
                   variant="outline"
                   size="sm"
                   className="flex-1"
-                  onClick={() => redirect(stat.actions?.secondary?.href ?? "")}
+                  // onClick={() => redirect(stat.actions?.secondary?.href ?? "")}
                 >
                   {stat.actions?.secondary.text}
                 </Button>
@@ -414,7 +397,7 @@ function MemberDashboardRegistrationStatusCard({
                 <Button
                   size="sm"
                   className="flex-1"
-                  onClick={() => redirect(stat.actions?.primary?.href ?? "")}
+                  // onClick={() => redirect(stat.actions?.primary?.href ?? "")}
                 >
                   {stat.actions?.primary.text}
                 </Button>
