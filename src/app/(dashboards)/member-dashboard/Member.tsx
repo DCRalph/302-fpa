@@ -11,6 +11,21 @@ import { Spinner } from "~/components/ui/spinner";
 import { DashboardStatsCard } from "~/components/dash-stat-card";
 import Link from "next/link";
 
+type ActivityActionButton = {
+  label: string;
+  href: string;
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+};
+
+type RecentActivityItem = {
+  icon: { type: string; name: string; props?: Record<string, string | number> };
+  title: string;
+  time: string;
+  description?: string;
+  metaLines?: string[];
+  actions?: ActivityActionButton[];
+};
+
 export default function MemberDashboardPage() {
   const { dbUser } = useAuth();
 
@@ -73,20 +88,41 @@ export default function MemberDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {memberDashboard?.recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <DynamicIcon
-                        type={activity.icon.type ?? ""}
-                        name={activity.icon.name ?? ""}
-                        props={activity.icon.props ?? {}}
-                      />
+                  {(memberDashboard?.recentActivity as unknown as RecentActivityItem[] | undefined)?.map((activity: RecentActivityItem, index: number) => (
+                    <div key={index} className="flex items-start gap-3">
+                      {activity.icon ? (
+                        <DynamicIcon
+                          type={activity.icon.type ?? ""}
+                          name={activity.icon.name ?? ""}
+                          props={activity.icon.props ?? {}}
+                        />
+                      ) : null}
                       <div className="min-w-0 flex-1">
-                        <p className="text-md text-foreground font-medium">
-                          {activity.title}
-                        </p>
-                        <p className="text-muted-foreground text-sm">
-                          {activity.time}
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-md text-foreground font-medium">{activity.title}</p>
+                          <p className="text-muted-foreground text-xs shrink-0">{activity.time}</p>
+                        </div>
+                        {activity.description && (
+                          <p className="text-muted-foreground mt-1 text-sm">
+                            {activity.description}
+                          </p>
+                        )}
+                        {activity.metaLines && activity.metaLines.length > 0 && (
+                          <ul className="text-muted-foreground mt-2 list-disc space-y-1 pl-5 text-xs">
+                            {activity.metaLines.map((line: string, i: number) => (
+                              <li key={i}>{line}</li>
+                            ))}
+                          </ul>
+                        )}
+                        {activity.actions && activity.actions.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {activity.actions.map((a: ActivityActionButton, i: number) => (
+                              <Button key={i} size="sm" variant={(a.variant ?? "outline")} asChild>
+                                <Link href={a.href}>{a.label}</Link>
+                              </Button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -388,7 +424,7 @@ function MemberDashboardRegistrationStatusCard({
                   variant="outline"
                   size="sm"
                   className="flex-1"
-                  // onClick={() => redirect(stat.actions?.secondary?.href ?? "")}
+                // onClick={() => redirect(stat.actions?.secondary?.href ?? "")}
                 >
                   {stat.actions?.secondary.text}
                 </Button>
@@ -397,7 +433,7 @@ function MemberDashboardRegistrationStatusCard({
                 <Button
                   size="sm"
                   className="flex-1"
-                  // onClick={() => redirect(stat.actions?.primary?.href ?? "")}
+                // onClick={() => redirect(stat.actions?.primary?.href ?? "")}
                 >
                   {stat.actions?.primary.text}
                 </Button>

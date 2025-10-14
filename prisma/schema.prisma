@@ -164,6 +164,7 @@ model Registration {
   currency         String      @default("FJD")
   // Basic payment/ops fields
   paymentStatus    String      @default("unpaid") // unpaid, pending, paid, refunded, partial
+  
   checkedInAt      DateTime?
   metadata         Json?
   createdAt        DateTime    @default(now())

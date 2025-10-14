@@ -10,6 +10,14 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { RegistrationDetailsDialog } from "./RegistrationDetailsDialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { toast } from "sonner";
 
 export default function ConferenceRegistrationsPage() {
   const params = useParams();
@@ -27,6 +35,52 @@ export default function ConferenceRegistrationsPage() {
 
   const [selectedRegistrationId, setSelectedRegistrationId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [edited, setEdited] = useState<Record<string, { status: "pending" | "confirmed" | "cancelled"; paymentStatus: "unpaid" | "pending" | "paid" | "refunded" | "partial" }>>({});
+
+  const utils = api.useUtils();
+  const updateStatusMutation = api.admin.registrations.updateStatus.useMutation({
+    // Optimistic update
+    onMutate: async (input) => {
+      await utils.admin.registrations.getByConferenceId.cancel({ conferenceId });
+      const previous = utils.admin.registrations.getByConferenceId.getData({ conferenceId });
+
+      utils.admin.registrations.getByConferenceId.setData({ conferenceId }, (old) => {
+        if (!old) return old;
+        return old.map((r) =>
+          r.id === input.id
+            ? {
+              ...r,
+              status: input.status,
+              paymentStatus: input.paymentStatus ?? r.paymentStatus,
+            }
+            : r,
+        );
+      });
+
+      return { previous };
+    },
+    onError: (err, _input, context) => {
+      if (context?.previous) {
+        utils.admin.registrations.getByConferenceId.setData({ conferenceId }, context.previous);
+      }
+      toast.error(err.message ?? "Failed to update registration");
+    },
+    onSuccess: async (_data, variables) => {
+      toast.success("Registration updated");
+      // Clear edited state for the saved row
+      setEdited((prev) => {
+        const next = { ...prev };
+        delete next[variables.id];
+        return next;
+      });
+      setSavingId(null);
+    },
+    onSettled: async () => {
+      await utils.admin.registrations.getByConferenceId.invalidate({ conferenceId });
+      setSavingId(null);
+    },
+  });
 
   const handleViewDetails = (registrationId: string) => {
     setSelectedRegistrationId(registrationId);
@@ -114,6 +168,14 @@ export default function ConferenceRegistrationsPage() {
                 const expectedAmount = registration.priceCents ?? registration.conference?.priceCents ?? 0;
                 const amountDue = Math.max(expectedAmount - totalPaid, 0);
 
+                const editedValues = edited[registration.id] ?? {
+                  status: registration.status as "pending" | "confirmed" | "cancelled",
+                  paymentStatus: registration.paymentStatus as "unpaid" | "pending" | "paid" | "refunded" | "partial",
+                };
+                const isDirty =
+                  editedValues.status !== (registration.status as "pending" | "confirmed" | "cancelled") ||
+                  editedValues.paymentStatus !== (registration.paymentStatus as "unpaid" | "pending" | "paid" | "refunded" | "partial");
+
                 return (
                   <Card key={registration.id} className="border-muted">
                     <CardContent>
@@ -171,6 +233,105 @@ export default function ConferenceRegistrationsPage() {
                               </div>
                             )}
                           </div>
+
+                          <div className="flex flex-wrap items-center gap-3 pt-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground text-xs">Status</span>
+                              <Select
+                                value={editedValues.status}
+                                disabled={savingId === registration.id && updateStatusMutation.isPending}
+                                onValueChange={(value) => {
+                                  setEdited((prev) => ({
+                                    ...prev,
+                                    [registration.id]: {
+                                      ...editedValues,
+                                      status: value as "pending" | "confirmed" | "cancelled",
+                                    },
+                                  }));
+                                }}
+                              >
+                                <SelectTrigger size="sm" aria-label="Change registration status">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">pending</SelectItem>
+                                  <SelectItem value="confirmed">confirmed</SelectItem>
+                                  <SelectItem value="cancelled">cancelled</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground text-xs">Payment</span>
+                              <Select
+                                value={editedValues.paymentStatus}
+                                disabled={savingId === registration.id && updateStatusMutation.isPending}
+                                onValueChange={(value) => {
+                                  setEdited((prev) => ({
+                                    ...prev,
+                                    [registration.id]: {
+                                      ...editedValues,
+                                      paymentStatus: value as
+                                        | "unpaid"
+                                        | "pending"
+                                        | "paid"
+                                        | "refunded"
+                                        | "partial",
+                                    },
+                                  }));
+                                }}
+                              >
+                                <SelectTrigger size="sm" aria-label="Change payment status">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="unpaid">unpaid</SelectItem>
+                                  <SelectItem value="pending">pending</SelectItem>
+                                  <SelectItem value="paid">paid</SelectItem>
+                                  <SelectItem value="partial">partial</SelectItem>
+                                  <SelectItem value="refunded">refunded</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {savingId === registration.id && updateStatusMutation.isPending && (
+                              <span className="text-muted-foreground text-xs">Saving…</span>
+                            )}
+                          </div>
+
+                          {/* Row-level Save/Cancel controls */}
+                          {isDirty && (
+                            <div className="flex items-center gap-2 pt-1">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setSavingId(registration.id);
+                                  updateStatusMutation.mutate({
+                                    id: registration.id,
+                                    status: editedValues.status,
+                                    paymentStatus: editedValues.paymentStatus,
+                                  });
+                                }}
+                                disabled={savingId === registration.id && updateStatusMutation.isPending}
+                              >
+                                {savingId === registration.id && updateStatusMutation.isPending ? "Saving…" : "Save"}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEdited((prev) => {
+                                    const next = { ...prev };
+                                    delete next[registration.id];
+                                    return next;
+                                  });
+                                }}
+                                disabled={savingId === registration.id && updateStatusMutation.isPending}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          )}
                         </div>
 
                         <div className="flex flex-col gap-2">

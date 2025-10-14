@@ -269,17 +269,59 @@ export const memberDashboardRouter = createTRPCRouter({
       take: 5, // Get last 5 activities
     });
 
-    const activities = userActivities.map(activity => ({
-      icon: { type: "lucide", name: activity.icon, props: { className: "size-6 text-blue-500" } },
-      title: activity.title,
-      time: toAgo(activity.createdAt),
-    }));
+    const activities = userActivities.map((activity) => {
+      // Safely parse actions JSON
+      const rawActions = activity.actions as unknown;
+      const actions = Array.isArray(rawActions)
+        ? rawActions
+          .filter((a) => a && typeof a === 'object' && 'label' in (a as Record<string, unknown>) && 'href' in (a as Record<string, unknown>))
+          .map((a) => {
+            const aa = a as Record<string, unknown>;
+            return {
+              label: String(aa.label ?? ''),
+              href: String(aa.href ?? '#'),
+              variant: (aa.variant as string | undefined) ?? 'default',
+            };
+          })
+        : [];
+
+      // Build metadata details
+      const md = (activity.metadata as unknown as Record<string, unknown>) ?? {};
+      const metaLines: string[] = [];
+      if (typeof md.conferenceName === 'string' && md.conferenceName) {
+        metaLines.push(`Conference: ${md.conferenceName}`);
+      }
+      if (typeof md.registrationId === 'string' && md.registrationId) {
+        metaLines.push(`Registration ID: ${md.registrationId}`);
+      }
+      if (typeof md.previousStatus === 'string' && typeof md.newStatus === 'string') {
+        metaLines.push(`Status: ${md.previousStatus} → ${md.newStatus}`);
+      }
+      if (
+        typeof md.previousPaymentStatus === 'string' &&
+        typeof md.newPaymentStatus === 'string'
+      ) {
+        metaLines.push(`Payment: ${md.previousPaymentStatus} → ${md.newPaymentStatus}`);
+      }
+
+      return {
+        icon: { type: 'lucide', name: activity.icon, props: { className: 'size-6 text-blue-500' } },
+        title: activity.title,
+        time: toAgo(activity.createdAt),
+        description: activity.description ?? undefined,
+        metaLines,
+        actions,
+      };
+    });
 
     const recentActivity = activities.length > 0 ? activities : [
       {
         icon: { type: "lucide", name: "Info", props: { className: "size-6 text-blue-500" } },
         title: "No recent activity",
         time: "",
+        description: undefined,
+        metaLines: [] as string[],
+        actions: [] as { label: string; href: string; variant?: string }[],
       },
     ];
 

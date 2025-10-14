@@ -404,12 +404,29 @@ export const adminRegistrationsRouter = createTRPCRouter({
         },
       });
 
-      // Notify user if their registration status changed
-      if (registration.userId && currentReg.status !== input.status) {
+      // Notify user if their registration status or payment status changed
+      const statusChanged = currentReg.status !== input.status;
+      const paymentStatusChanged = Boolean(
+        input.paymentStatus && currentReg.paymentStatus !== input.paymentStatus,
+      );
+
+      if (registration.userId && (statusChanged || paymentStatusChanged)) {
+        const changes: string[] = [];
+        if (statusChanged) {
+          changes.push(`status: ${currentReg.status} → ${input.status}`);
+        }
+        if (paymentStatusChanged) {
+          changes.push(
+            `payment: ${currentReg.paymentStatus} → ${input.paymentStatus}`,
+          );
+        }
+
         await logUserActivity(ctx.db, {
           userId: registration.userId,
-          title: `Registration status updated`,
-          description: `Your registration for ${registration.conference?.name ?? "conference"} status changed to ${input.status}`,
+          title: `Registration updated`,
+          description:
+            `Your registration for ${registration.conference?.name ?? "conference"} was updated` +
+            (changes.length ? ` (${changes.join(", ")})` : ""),
           icon: getActivityIcon(UserActivityType.REGISTRATION_UPDATED),
           type: UserActivityType.REGISTRATION_UPDATED,
           actions: [
@@ -425,6 +442,8 @@ export const adminRegistrationsRouter = createTRPCRouter({
             registrationId: registration.id,
             previousStatus: currentReg.status,
             newStatus: input.status,
+            previousPaymentStatus: currentReg.paymentStatus,
+            newPaymentStatus: input.paymentStatus ?? currentReg.paymentStatus,
             reason: input.reason,
           },
         });
@@ -435,12 +454,16 @@ export const adminRegistrationsRouter = createTRPCRouter({
         userId: ctx.dbUser.id,
         userName: ctx.dbUser.name ?? undefined,
         userEmail: ctx.dbUser.email ?? undefined,
-        type: AppActivityType.REGISTRATION_STATUS_CHANGED,
+        type: statusChanged
+          ? AppActivityType.REGISTRATION_STATUS_CHANGED
+          : AppActivityType.REGISTRATION_PAYMENT_STATUS_CHANGED,
         action: ActivityActionEnum.UPDATED,
         entity: ActivityEntity.REGISTRATION,
         entityId: registration.id,
-        title: `Registration status updated: ${currentReg.status} → ${input.status}`,
-        description: `Admin updated registration status for ${registration.user?.name ?? registration.name}`,
+        title: statusChanged
+          ? `Registration status updated: ${currentReg.status} → ${input.status}`
+          : `Registration payment updated: ${currentReg.paymentStatus} → ${input.paymentStatus}`,
+        description: `Admin updated registration for ${registration.user?.name ?? registration.name}`,
         category: ActivityCategory.REGISTRATION,
         severity: ActivitySeverity.INFO,
         metadata: {
@@ -451,7 +474,8 @@ export const adminRegistrationsRouter = createTRPCRouter({
           userName: registration.user?.name ?? registration.name,
           previousStatus: currentReg.status,
           newStatus: input.status,
-          paymentStatus: input.paymentStatus,
+          previousPaymentStatus: currentReg.paymentStatus,
+          newPaymentStatus: input.paymentStatus ?? currentReg.paymentStatus,
           reason: input.reason,
         },
       });
