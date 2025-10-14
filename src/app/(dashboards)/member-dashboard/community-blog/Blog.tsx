@@ -10,7 +10,14 @@ import {
 } from "~/components/ui/select";
 import { Badge } from "~/components/ui/badge";
 import { Textarea } from "~/components/ui/textarea";
-import { Search, Heart, Check, X, MessageSquareText, Send } from "lucide-react";
+import {
+  Search,
+  Heart,
+  Check,
+  X,
+  MessageSquareText,
+  Send,
+} from "lucide-react";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Label } from "@radix-ui/react-dropdown-menu";
@@ -19,13 +26,12 @@ import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 
-import Markdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 import { type RouterOutputs } from "~/trpc/react";
 
 type BlogPost = RouterOutputs["member"]["blog"]["list"]["posts"][number];
-
 
 // BlogPostCard Component
 function BlogPostCard({ post }: { post: BlogPost }) {
@@ -62,10 +68,11 @@ function BlogPostCard({ post }: { post: BlogPost }) {
     },
   });
 
-  const { data: commentsData, refetch: refetchComments } = api.member.blog.getComments.useQuery(
-    { postId: post.id },
-    { enabled: showComments }
-  );
+  const { data: commentsData, refetch: refetchComments } =
+    api.member.blog.getComments.useQuery(
+      { postId: post.id },
+      { enabled: showComments },
+    );
 
   const addComment = api.member.blog.addComment.useMutation({
     onSuccess: () => {
@@ -137,16 +144,14 @@ function BlogPostCard({ post }: { post: BlogPost }) {
 
         {/* Post Content */}
         <div className="space-y-4">
-          <h3 className="text-foreground font-semibold">
-            {post.title}
-          </h3>
-          <div className="prose prose-blog dark:prose-invert text-foreground/70">
+          <h3 className="text-foreground font-semibold">{post.title}</h3>
+          <div className="prose prose-blog dark:prose-invert text-foreground/70 max-w-full">
             <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
           </div>
 
           {/* Cover Image */}
           {post.coverImageUrl && (
-            <div className="overflow-hidden rounded-lg mt-6">
+            <div className="mt-6 overflow-hidden rounded-lg">
               <Image
                 src={post.coverImageUrl}
                 alt="Post cover"
@@ -175,9 +180,7 @@ function BlogPostCard({ post }: { post: BlogPost }) {
                 className="text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors"
               >
                 <MessageSquareText className="h-4 w-4" />
-                <span className="text-sm">
-                  {post._count.comments}
-                </span>
+                <span className="text-sm">{post._count.comments}</span>
               </Button>
             </div>
             <p className="text-muted-foreground text-sm">
@@ -213,7 +216,10 @@ function BlogPostCard({ post }: { post: BlogPost }) {
               <div className="space-y-3">
                 {commentsData && commentsData.length > 0 ? (
                   commentsData.map((comment) => (
-                    <div key={comment.id} className="flex space-x-3 rounded-lg bg-muted/50 p-3">
+                    <div
+                      key={comment.id}
+                      className="bg-muted/50 flex space-x-3 rounded-lg p-3"
+                    >
                       <div
                         className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${comment.author?.image ? "" : "bg-gray-300"} text-black`}
                       >
@@ -240,20 +246,22 @@ function BlogPostCard({ post }: { post: BlogPost }) {
                             <p className="text-sm font-medium">
                               {comment.author?.name ?? "Member"}
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-muted-foreground text-xs">
                               {comment.author?.professionalPosition ?? "Member"}
                             </p>
                           </div>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-muted-foreground text-xs">
                             {new Date(comment.createdAt).toLocaleDateString()}
                           </p>
                         </div>
-                        <p className="text-sm text-foreground/80">{comment.content}</p>
+                        <p className="text-foreground/80 text-sm">
+                          {comment.content}
+                        </p>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-center text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-center text-sm">
                     No comments yet. Be the first to comment!
                   </p>
                 )}

@@ -8,8 +8,9 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { api } from "~/trpc/react";
 import { DynamicIcon } from "~/components/DynamicIcon";
-import { Spinner } from "~/components/ui/spinner"
+import { Spinner } from "~/components/ui/spinner";
 import { DashboardStatsCard } from "~/components/dash-stat-card";
+import Link from "next/link";
 
 export default function MemberDashboardPage() {
   const { session, dbUser, isPending } = useAuth();
@@ -30,8 +31,9 @@ export default function MemberDashboardPage() {
     redirect("/onboarding");
   }
 
-  const { data: memberDashboard } = api.member.dashboard.getMemberDashboard.useQuery();
-
+  const { data: memberDashboard } =
+    api.member.dashboard.getMemberDashboard.useQuery();
+  const { data: blogPosts } = api.member.blog.myPosts.useQuery();
 
   return (
     <main className="text-foreground flex">
@@ -40,7 +42,7 @@ export default function MemberDashboardPage() {
         {/* Content */}
         <main className="flex-1 p-3 sm:p-4 md:p-6">
           <div className="mb-4 sm:mb-6 md:mb-8">
-            <h2 className="text-foreground mb-1 text-xl sm:text-2xl font-bold">
+            <h2 className="text-foreground mb-1 text-xl font-bold sm:text-2xl">
               Welcome back, {dbUser?.name ?? "Member"}
             </h2>
             <p className="text-muted-foreground text-sm sm:text-base">
@@ -49,24 +51,35 @@ export default function MemberDashboardPage() {
           </div>
 
           {/* Stats Cards */}
-          <div className="mb-6 sm:mb-8 grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 lg:grid-cols-2 xl:grid-cols-4">
-
+          <div className="mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:gap-4 md:gap-6 lg:grid-cols-2 xl:grid-cols-4">
             {/* Registration Status */}
-            <DashboardStatsCard stat={memberDashboard?.stats.registrationStatus} title="Registration Status" />
+            <DashboardStatsCard
+              stat={memberDashboard?.stats.registrationStatus}
+              title="Registration Status"
+            />
             {/* Payment Status */}
-            <DashboardStatsCard stat={memberDashboard?.stats.paymentStatus} title="Payment Status" />
+            <DashboardStatsCard
+              stat={memberDashboard?.stats.paymentStatus}
+              title="Payment Status"
+            />
             {/* Community Blog */}
-            <DashboardStatsCard stat={memberDashboard?.stats.communityBlog} title="Community Blog" />
+            <DashboardStatsCard
+              stat={memberDashboard?.stats.communityBlog}
+              title="Community Blog"
+            />
             {/* Documents */}
-            <DashboardStatsCard stat={memberDashboard?.stats.documents} title="Documents" />
-
+            <DashboardStatsCard
+              stat={memberDashboard?.stats.documents}
+              title="Documents"
+            />
           </div>
 
-          <div className="mb-6 sm:mb-8 grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 lg:grid-cols-2">
+          <div className="mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:gap-4 md:gap-6 lg:grid-cols-2">
             {/* Conference Registration Status */}
 
-            <MemberDashboardRegistrationStatusCard stat={memberDashboard?.registrationStatus} />
-
+            <MemberDashboardRegistrationStatusCard
+              stat={memberDashboard?.registrationStatus}
+            />
 
             {/* Recent Activity */}
             <Card>
@@ -105,15 +118,73 @@ export default function MemberDashboardPage() {
                   <div className="flex w-full items-center justify-between">
                     <span className="text-2xl">Recent Blog Posts</span>
                     <div className="flex items-center space-x-2">
-                      <Button variant={"outline"}>View All</Button>
-                      <Button>Create Post</Button>
+                      <Button variant={"outline"} asChild>
+                        <Link
+                          href={"/member-dashboard/community-blog/my-posts"}
+                        >
+                          View All
+                        </Link>
+                      </Button>
+                      <Button asChild>
+                        <Link href={"/member-dashboard/community-blog/create"}>
+                          Create Post
+                        </Link>
+                      </Button>
                     </div>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <p className="text-muted-foreground">No blog posts yet</p>
+                  <div className="text-muted-foreground space-y-4">
+                    {!blogPosts || blogPosts.length === 0 ? (
+                      <p className="text-muted-foreground">
+                        You haven&apos;t created any posts yet.
+                      </p>
+                    ) : (
+                      blogPosts
+                        .slice(0, 3) // show 3 most recent posts
+                        .map((post) => (
+                          <div
+                            key={post.id}
+                            className="border-border bg-muted/30 hover:bg-muted/50 flex items-start gap-4 rounded-lg border p-4 transition-colors"
+                          >
+                            {/* Post Content */}
+                            <div className="min-w-0 flex-1">
+                              <Link
+                                href={`/member-dashboard/community-blog/${post.id}/edit`}
+                                className="text-foreground line-clamp-1 font-semibold hover:underline"
+                              >
+                                {post.title}
+                              </Link>
+                              <p className="text-muted-foreground line-clamp-2 text-sm">
+                                {post.excerpt ?? post.content}
+                              </p>
+                              <div className="text-muted-foreground mt-2 flex items-center gap-3 text-xs">
+                                <Badge variant="outline" className="text-xs">
+                                  {post.categories?.[0]?.category?.name ??
+                                    "General"}
+                                </Badge>
+                                {post.published ? (
+                                  <>
+                                    <Badge>Published</Badge>
+                                    <span>
+                                      {post.publishedAt
+                                        ? new Date(
+                                            post.publishedAt,
+                                          ).toLocaleDateString()
+                                        : "—"}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <Badge variant={"secondary"}>Draft</Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -144,20 +215,16 @@ export default function MemberDashboardPage() {
   );
 }
 
-
-
-
-
 type RegistrationStatus = {
   state:
-  | "no_conference"
-  | "not_registered"
-  | "pending"
-  | "cancelled"
-  | "confirmed_unpaid"
-  | "confirmed_paid"
-  | "confirmed_partial"
-  | "refunded";
+    | "no_conference"
+    | "not_registered"
+    | "pending"
+    | "cancelled"
+    | "confirmed_unpaid"
+    | "confirmed_paid"
+    | "confirmed_partial"
+    | "refunded";
   title: string;
   description: string;
   icon: {
@@ -190,7 +257,9 @@ interface MemberDashboardRegistrationStatusCardProps {
   stat: RegistrationStatus | null | undefined;
 }
 
-function MemberDashboardRegistrationStatusCard({ stat }: MemberDashboardRegistrationStatusCardProps) {
+function MemberDashboardRegistrationStatusCard({
+  stat,
+}: MemberDashboardRegistrationStatusCardProps) {
   // Loading state
   if (!stat) {
     return (
@@ -228,17 +297,15 @@ function MemberDashboardRegistrationStatusCard({ stat }: MemberDashboardRegistra
           />
 
           {/* Title */}
-          <h3 className="text-lg font-semibold text-foreground">
+          <h3 className="text-foreground text-lg font-semibold">
             {stat.title}
           </h3>
 
           {/* Description */}
-          <p className="mb-4 text-muted-foreground">
-            {stat.description}
-          </p>
+          <p className="text-muted-foreground mb-4">{stat.description}</p>
 
           {/* Registration Details */}
-          <div className="space-y-2 text-sm text-foreground">
+          <div className="text-foreground space-y-2 text-sm">
             {stat.conferenceDate && (
               <p>
                 <strong>Date:</strong> {stat.conferenceDate}
@@ -272,9 +339,10 @@ function MemberDashboardRegistrationStatusCard({ stat }: MemberDashboardRegistra
             {stat.registrationType && (
               <p>
                 <strong>Registration Type:</strong>{" "}
-                {stat.registrationType.split("-").map(word =>
-                  word.charAt(0).toUpperCase() + word.slice(1)
-                ).join(" ")}
+                {stat.registrationType
+                  .split("-")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")}
               </p>
             )}
 
@@ -285,11 +353,13 @@ function MemberDashboardRegistrationStatusCard({ stat }: MemberDashboardRegistra
             )}
 
             {stat.paymentStatus && (
-              <p className="flex justify-center items-center gap-2">
+              <p className="flex items-center justify-center gap-2">
                 <strong>Payment Status:</strong>{" "}
                 <Badge
                   variant={stat.badgeVariant}
-                  className={stat.badgeBgColor ? `text-white ${stat.badgeBgColor}` : ""}
+                  className={
+                    stat.badgeBgColor ? `text-white ${stat.badgeBgColor}` : ""
+                  }
                 >
                   {stat.badgeText}
                 </Badge>
@@ -310,11 +380,13 @@ function MemberDashboardRegistrationStatusCard({ stat }: MemberDashboardRegistra
 
             {/* Show badge for states without payment status */}
             {!stat.paymentStatus && stat.state !== "not_registered" && (
-              <p className="flex justify-center items-center gap-2">
+              <p className="flex items-center justify-center gap-2">
                 <strong>Status:</strong>{" "}
                 <Badge
                   variant={stat.badgeVariant}
-                  className={stat.badgeBgColor ? `text-white ${stat.badgeBgColor}` : ""}
+                  className={
+                    stat.badgeBgColor ? `text-white ${stat.badgeBgColor}` : ""
+                  }
                 >
                   {stat.badgeText}
                 </Badge>

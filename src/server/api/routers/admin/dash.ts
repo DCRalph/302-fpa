@@ -213,7 +213,7 @@ export const adminDashboardRouter = createTRPCRouter({
       };
     }
 
-    // Recent activity - Get last 10 activities from any user
+    // Recent activity - Get last 5 activities from any user
     const toAgo = (d: Date) => {
       const diffMs = Date.now() - d.getTime();
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -226,7 +226,7 @@ export const adminDashboardRouter = createTRPCRouter({
 
     const userActivities = await ctx.db.userActivity.findMany({
       orderBy: { createdAt: "desc" },
-      take: 10,
+      take: 5,
       include: {
         user: {
           select: { name: true },

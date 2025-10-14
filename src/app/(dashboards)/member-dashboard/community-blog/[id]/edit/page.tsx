@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Card,
@@ -27,13 +27,33 @@ import {
 
 import Image from "next/image";
 
-export default function CreatePostPage() {
+export default function EditPostPage() {
   const router = useRouter();
+  const params = useParams();
+  const postId = params.id as string;
+
+  const { data: post } = api.member.blog.getById.useQuery(
+    { id: postId },
+    { enabled: !!postId },
+  );
+
   const [formData, setFormData] = useState({
     title: "",
     content: "",
     published: true,
   });
+
+  // Populate form when post data is loaded
+  useEffect(() => {
+    if (post) {
+      setFormData({
+        title: post.title ?? "",
+        content: post.content ?? "",
+        published: post.published ?? true,
+      });
+    }
+  }, [post]);
+
   const [selectedFilter, setSelectedFilter] = useState("general");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null); // TODO: Create an S3 bucket to upload images to
@@ -41,16 +61,16 @@ export default function CreatePostPage() {
 
   const utils = api.useUtils();
 
-  const createPostMutation = api.member.blog.create.useMutation({
+  const updatePostMutation = api.member.blog.update.useMutation({
     onSuccess: async () => {
       // Invalidate profile and auth.me cache so UI updates
-      await utils.member.blog.invalidate()
+      await utils.member.blog.invalidate();
 
-      toast.success("Post created successfully");
+      toast.success("Post updated successfully");
       router.push("/member-dashboard/community-blog");
     },
     onError: (err) => {
-      toast.error(err.message ?? "Failed to create post");
+      toast.error(err.message ?? "Failed to update post");
     },
     onSettled: () => {
       setIsSubmitting(false);
@@ -82,7 +102,8 @@ export default function CreatePostPage() {
     // NOTE: image upload is not wired to the backend yet. If you have an
     // endpoint for uploads, upload `imageFile` first and include the image URL
     // in the mutation payload. For now we send the basic post data only.
-    createPostMutation.mutate({
+    updatePostMutation.mutate({
+      id: postId,
       title: formData.title,
       content: formData.content,
       published: formData.published,
@@ -99,9 +120,7 @@ export default function CreatePostPage() {
           <Card>
             {/* Header */}
             <CardHeader>
-              <CardTitle className="text-2xl font-bold">
-                Edit Post
-              </CardTitle>
+              <CardTitle className="text-2xl font-bold">Edit Post</CardTitle>
               <CardDescription className="text-base">
                 Review and modify post details.
               </CardDescription>
@@ -200,8 +219,8 @@ export default function CreatePostPage() {
                   <Checkbox
                     id="published"
                     checked={!formData.published} // inverse: checked means "draft"
-                    onCheckedChange={(checked) =>
-                      handleInputChange("published", !checked) // invert the value
+                    onCheckedChange={
+                      (checked) => handleInputChange("published", !checked) // invert the value
                     }
                   />
                   <Label htmlFor="published">Mark as draft</Label>
@@ -215,7 +234,7 @@ export default function CreatePostPage() {
                   className="flex-1"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Creating..." : "Create Post"}
+                  {isSubmitting ? "Updating..." : "Update Post"}
                 </Button>
 
                 <Button
@@ -225,7 +244,7 @@ export default function CreatePostPage() {
                   asChild
                 >
                   <Link
-                    href="/member-dashboard/community-blog"
+                    href="/member-dashboard/community-blog/my-posts"
                     className="flex-1"
                   >
                     Cancel

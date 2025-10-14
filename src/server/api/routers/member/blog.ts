@@ -161,8 +161,30 @@ export const memberBlogRouter = createTRPCRouter({
       return postsWithLikeStatus;
     }),
 
+  // Update member details
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        title: z.string().min(3),
+        content: z.string().min(1),
+        categorySlugs: z.array(z.string()).optional(),
+        published: z.boolean().default(true),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...updateData } = input;
+
+      const post = await ctx.db.blogPost.update({
+        where: { id },
+        data: updateData,
+      });
+
+      return post;
+    }),
+
   // Delete a post
-  deletePost: protectedProcedure
+  delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Only allow deleting own posts
@@ -198,13 +220,6 @@ export const memberBlogRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const post = await ctx.db.blogPost.findUnique({
         where: { id: input.id },
-        include: {
-          categories: {
-            orderBy: { postId: "desc" },
-            take: 5
-          }
-
-        },
       });
 
       if (!post) {
