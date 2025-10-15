@@ -287,7 +287,7 @@ function BlogPostCard({
 
 export default function MyPostsPage() {
   const { data, isLoading, refetch } = api.member.blog.myPosts.useQuery();
-  const deletePostMutation = api.member.blog.delete.useMutation({
+  const deletePostMutation = api.member.blog.deletePost.useMutation({
     onSuccess: async () => {
       toast.success("Post deleted successfully");
       await refetch();

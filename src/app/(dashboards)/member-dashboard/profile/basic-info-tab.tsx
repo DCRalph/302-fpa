@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Copy } from "lucide-react";
 
 export function BasicInfoTab() {
   const { dbUser } = useAuth();
@@ -141,26 +142,26 @@ export function BasicInfoTab() {
 
         {/* Sidebar - Membership Info */}
         <div className="space-y-6">
-          <Card className="relative overflow-hidden border border-primary/30 bg-gradient-to-br from-blue-50/70 to-purple-50/70 dark:from-blue-950/20 dark:to-purple-950/20 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
+          <Card className="border-primary/30 relative overflow-hidden border bg-gradient-to-br from-blue-50/70 to-purple-50/70 shadow-sm backdrop-blur-sm transition-shadow hover:shadow-md dark:from-blue-950/20 dark:to-purple-950/20">
             {/* Decorative gradient ring */}
             <div
-              className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 blur-2xl"
+              className="from-primary/20 pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-gradient-to-br to-purple-500/20 blur-2xl"
               aria-hidden
             />
             {/* Subtle animated corner glow */}
             <div
-              className="pointer-events-none absolute bottom-0 left-0 h-16 w-16 bg-gradient-to-tr from-primary/20 to-transparent animate-pulse"
+              className="from-primary/20 pointer-events-none absolute bottom-0 left-0 h-16 w-16 animate-pulse bg-gradient-to-tr to-transparent"
               aria-hidden
             />
 
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <div className="rounded-md bg-primary/10 p-2 ring-1 ring-primary/20">
+                  <div className="bg-primary/10 ring-primary/20 rounded-md p-2 ring-1">
                     {/* Replace with your preferred icon */}
                     <svg
                       viewBox="0 0 24 24"
-                      className="h-5 w-5 text-primary"
+                      className="text-primary h-5 w-5"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
@@ -175,7 +176,7 @@ export function BasicInfoTab() {
               </div>
 
               {/* Subheading line */}
-              <p className="mt-2 text-xs text-muted-foreground">
+              <p className="text-muted-foreground mt-2 text-sm">
                 Your account is in good standing.
               </p>
             </CardHeader>
@@ -183,8 +184,8 @@ export function BasicInfoTab() {
             <CardContent className="space-y-5 break-words">
               <div className="grid grid-cols-1 gap-4">
                 {/* Joined */}
-                <div className="rounded-lg border border-border/60 bg-background/50 p-3 shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
-                  <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
+                <div className="border-border/60 bg-background/50 rounded-lg border p-3 shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
+                  <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
                     Joined
                   </div>
                   <div className="font-medium">
@@ -193,41 +194,45 @@ export function BasicInfoTab() {
                 </div>
 
                 {/* User ID */}
-                <div className="group relative rounded-lg border border-border/60 bg-background/50 p-3 shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
-                  <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
+                <div className="group border-border/60 bg-background/50 relative rounded-lg border p-3 shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
+                  <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
                     User ID
                   </div>
-                  <div className="font-medium truncate">{dbUser?.id}</div>
+                  <div className="truncate font-medium">{dbUser?.id}</div>
                   {/* Copy button (optional, requires a button component if you want interactivity) */}
-                  <button
+                  <Button
+                    variant={"ghost"}
                     type="button"
-                    onClick={() => navigator.clipboard.writeText(dbUser?.id ?? "")}
-                    className="absolute right-2 top-2 rounded-md border border-transparent px-2 py-1 text-[10px] text-muted-foreground hover:bg-muted/60"
+                    onClick={() =>
+                      navigator.clipboard.writeText(dbUser?.id ?? "")
+                    }
+                    className="text-muted-foreground hover:bg-muted/60 absolute top-2 right-2 rounded-md border border-transparent px-2 py-1 text-[10px]"
                   >
-                    Copy
-                  </button>
+                    <Copy size={16} />
+                  </Button>
                 </div>
 
                 {/* Role */}
-                <div className="rounded-lg border border-border/60 bg-background/50 p-3 shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
-                  <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
+                <div className="border-border/60 bg-background/50 rounded-lg border p-3 shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
+                  <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
                     Role
                   </div>
                   <div className="inline-flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-primary/70" />
-                    <span className="font-medium capitalize">{dbUser?.role}</span>
+                    <span className="bg-primary/70 h-2 w-2 rounded-full" />
+                    <span className="font-medium capitalize">
+                      {dbUser?.role}
+                    </span>
                   </div>
                 </div>
               </div>
 
               {/* Subtle footer hint */}
-              <div className="mt-2 flex flex-col gap-1 ">
-                <div className="text-xs text-muted-foreground break-words">
+              <div className="mt-2 flex flex-col gap-1">
+                <div className="text-muted-foreground text-xs break-words">
                   ID and role are used for access verification.
                 </div>
-                <div className="text-xs text-muted-foreground break-words">
-                  Last updated:{" "}
-                  {format(new Date(), "MMM d, yyyy")}
+                <div className="text-muted-foreground text-xs break-words">
+                  Last updated: {format(new Date(), "MMM d, yyyy")}
                 </div>
               </div>
             </CardContent>

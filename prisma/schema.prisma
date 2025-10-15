@@ -403,6 +403,7 @@ model BlogComment {
   content     String
   approved    Boolean  @default(false)
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([postId])
 }

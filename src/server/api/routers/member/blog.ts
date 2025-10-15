@@ -87,7 +87,7 @@ export const memberBlogRouter = createTRPCRouter({
     }),
 
   // Create a post
-  create: protectedProcedure
+  createPost: protectedProcedure
     .input(
       z.object({
         title: z.string().min(3),
@@ -200,7 +200,7 @@ export const memberBlogRouter = createTRPCRouter({
     }),
 
   // Update member details
-  update: protectedProcedure
+  updatePost: protectedProcedure
     .input(
       z.object({
         id: z.string(),
@@ -303,7 +303,7 @@ export const memberBlogRouter = createTRPCRouter({
     }),
 
   // Delete a post
-  delete: protectedProcedure
+  deletePost: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Only allow deleting own posts
@@ -438,6 +438,7 @@ export const memberBlogRouter = createTRPCRouter({
       return { isLiked: !!like };
     }),
 
+  // Add comment
   addComment: protectedProcedure
     .input(
       z.object({
@@ -523,6 +524,68 @@ export const memberBlogRouter = createTRPCRouter({
       });
 
       return comment;
+    }),
+
+  // Update comment
+  updateComment: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        content: z.string().min(1).max(2000),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+
+      // Get the post and its author
+      const currentComment = await ctx.db.blogComment.findUnique({
+        where: { id: input.id },
+        select: { authorId: true, content: true },
+      });
+
+      if (!currentComment) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Comment not found",
+        });
+      }
+
+      const comment = await ctx.db.blogComment.update({
+        where: { id: input.id},
+        data: {
+          ...input,
+        },
+      });
+
+      return comment;
+    }),
+
+  // Delete comment
+  deleteComment: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+
+      // Get the comment
+      const comment = await ctx.db.blogComment.findUnique({
+        where: { id: input.id },
+        select: { authorId: true, content: true },
+      });
+
+      if (!comment) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Comment not found",
+        });
+      }
+
+      await ctx.db.blogComment.delete({
+        where: { id: input.id },
+      });
+
+      return { success: true };
     }),
 
   getComments: protectedProcedure

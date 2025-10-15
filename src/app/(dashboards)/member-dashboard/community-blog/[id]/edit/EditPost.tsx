@@ -61,7 +61,7 @@ export default function EditPostPage() {
 
   const utils = api.useUtils();
 
-  const updatePostMutation = api.member.blog.update.useMutation({
+  const updatePostMutation = api.member.blog.updatePost.useMutation({
     onSuccess: async () => {
       // Invalidate profile and auth.me cache so UI updates
       await utils.member.blog.invalidate();

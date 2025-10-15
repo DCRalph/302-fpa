@@ -19,6 +19,8 @@ import {
   X,
   MessageSquareText,
   Send,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { useState } from "react";
 import { api } from "~/trpc/react";
@@ -33,10 +35,17 @@ import remarkGfm from "remark-gfm";
 
 import { type RouterOutputs } from "~/trpc/react";
 
+import { useAuth } from "~/hooks/useAuth";
+
+import CommentItem from "~/components/community-blog/comment-item";
+
 type BlogPost = RouterOutputs["member"]["blog"]["list"]["posts"][number];
+
 
 // BlogPostCard Component
 function BlogPostCard({ post }: { post: BlogPost }) {
+  const { dbUser } = useAuth();
+
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [localLikeCount, setLocalLikeCount] = useState(post._count.likes);
@@ -76,6 +85,7 @@ function BlogPostCard({ post }: { post: BlogPost }) {
       { enabled: showComments },
     );
 
+  // Add comment
   const addComment = api.member.blog.addComment.useMutation({
     onSuccess: () => {
       toast.success("Comment added!");
@@ -86,6 +96,25 @@ function BlogPostCard({ post }: { post: BlogPost }) {
     onError: () => {
       toast.error("Failed to add comment");
     },
+  });
+
+  // Update comment
+  const updateComment = api.member.blog.updateComment.useMutation({
+    onSuccess: () => {
+      toast.success("Comment updated!");
+      void refetchComments();
+    },
+    onError: () => toast.error("Failed to update comment"),
+  });
+
+  // Delete comment
+  const deleteComment = api.member.blog.deleteComment.useMutation({
+    onSuccess: () => {
+      toast.success("Comment deleted!");
+      void refetchComments();
+      void utils.member.blog.list.invalidate();
+    },
+    onError: () => toast.error("Failed to delete comment"),
   });
 
   const handleLikeToggle = () => {
@@ -218,49 +247,15 @@ function BlogPostCard({ post }: { post: BlogPost }) {
               <div className="space-y-3">
                 {commentsData && commentsData.length > 0 ? (
                   commentsData.map((comment) => (
-                    <div
+                    <CommentItem
                       key={comment.id}
-                      className="bg-muted/50 flex space-x-3 rounded-lg p-3"
-                    >
-                      <div
-                        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${comment.author?.image ? "" : "bg-gray-300"} text-black`}
-                      >
-                        {comment.author?.image ? (
-                          <Image
-                            src={comment.author.image}
-                            alt=""
-                            className="rounded-full"
-                            width={32}
-                            height={32}
-                          />
-                        ) : (
-                          <span className="text-xs font-medium">
-                            {(comment.author?.name ?? "?")
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium">
-                              {comment.author?.name ?? "Member"}
-                            </p>
-                            <p className="text-muted-foreground text-xs">
-                              {comment.author?.professionalPosition ?? "Member"}
-                            </p>
-                          </div>
-                          <p className="text-muted-foreground text-xs">
-                            {new Date(comment.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <p className="text-foreground/80 text-sm">
-                          {comment.content}
-                        </p>
-                      </div>
-                    </div>
+                      comment={comment}
+                      currentUserId={dbUser?.id}
+                      onUpdate={(id, content) =>
+                        updateComment.mutate({ id: id, content })
+                      }
+                      onDelete={(id) => deleteComment.mutate({ id })}
+                    />
                   ))
                 ) : (
                   <p className="text-muted-foreground text-center text-sm">
