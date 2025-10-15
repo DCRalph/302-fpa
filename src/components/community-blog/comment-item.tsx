@@ -24,13 +24,17 @@ import Image from "next/image";
 import { useState } from "react";
 import { MoreVertical, Pencil, Trash2, Check, X } from "lucide-react";
 
+import { type RouterOutputs } from "~/trpc/react";
+
+type Comment = RouterOutputs["member"]["blog"]["getComments"][number];
+
 function CommentItem({
   comment,
   currentUserId,
   onUpdate,
   onDelete,
 }: {
-  comment: any;
+  comment: Comment;
   currentUserId?: string;
   onUpdate: (id: string, content: string) => void;
   onDelete: (id: string) => void;

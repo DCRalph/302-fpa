@@ -19,8 +19,6 @@ import {
   X,
   MessageSquareText,
   Send,
-  Pencil,
-  Trash2,
 } from "lucide-react";
 import { useState } from "react";
 import { api } from "~/trpc/react";

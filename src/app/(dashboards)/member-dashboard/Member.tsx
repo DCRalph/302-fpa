@@ -79,7 +79,7 @@ export default function MemberDashboardPage() {
 
           {/* <div className="mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:gap-4 md:gap-6 lg:grid-cols-2"> */}
 
-          <Masonry cols={{ base: 1, md: 1, xl: 2 }} gap="gap-4">
+          <Masonry cols={{ base: 1, md: 2, xl: 2 }} gap="gap-4">
             {/* Conference Registration Status */}
 
             <MemberDashboardRegistrationStatusCard

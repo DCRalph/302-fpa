@@ -122,6 +122,7 @@ export default function CreatePostPage() {
                     required
                   />
                 </div>
+                
                 {/* Post Type */}
                 <div className="space-y-2">
                   <Label htmlFor="title">
