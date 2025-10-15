@@ -151,9 +151,11 @@ function BlogPostCard({
         <div className="flex flex-col gap-2 md:flex-row md:items-start md:gap-6">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h2 className="line-clamp-1 text-lg font-semibold">
-                {post.title}
-              </h2>
+              <Link href={`/member-dashboard/community-blog/${post.id}`}>
+                <h2 className="line-clamp-1 text-lg font-semibold hover:text-primary cursor-pointer transition-colors">
+                  {post.title}
+                </h2>
+              </Link>
               <Badge
                 variant={post.published ? "default" : "secondary"}
                 className="text-xs"
@@ -171,10 +173,10 @@ function BlogPostCard({
               </span>
               {Math.abs(
                 new Date(post.updatedAt).getTime() -
-                  new Date(post.createdAt).getTime(),
+                new Date(post.createdAt).getTime(),
               ) > 5000 && (
-                <span className="text-muted-foreground text-xs">(Edited)</span>
-              )}
+                  <span className="text-muted-foreground text-xs">(Edited)</span>
+                )}
             </div>
 
             {/* Post Content Preview */}

@@ -182,7 +182,11 @@ function BlogPostCard({ post }: { post: BlogPost }) {
 
         {/* Post Content */}
         <div className="space-y-4">
-          <h3 className="text-foreground font-semibold">{post.title}</h3>
+          <Link href={`/member-dashboard/community-blog/${post.id}`}>
+            <h3 className="text-foreground font-semibold hover:text-primary cursor-pointer transition-colors">
+              {post.title}
+            </h3>
+          </Link>
           <div className="prose prose-blog dark:prose-invert text-foreground/70 max-w-full">
             <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
           </div>

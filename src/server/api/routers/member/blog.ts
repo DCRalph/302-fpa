@@ -356,16 +356,54 @@ export const memberBlogRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const post = await ctx.db.blogPost.findUnique({
         where: { id: input.id },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              professionalPosition: true,
+            },
+          },
+          categories: {
+            include: {
+              category: {
+                select: {
+                  name: true,
+                  slug: true,
+                },
+              },
+            },
+          },
+          _count: {
+            select: {
+              likes: true,
+              comments: true,
+            },
+          },
+          likes: {
+            where: {
+              userId: ctx.dbUser.id,
+            },
+            select: {
+              id: true,
+            },
+          },
+        },
       });
 
       if (!post) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Conference not found",
+          message: "Post not found",
         });
       }
 
-      return post;
+      return {
+        ...post,
+        isLikedByUser: post.likes.length > 0,
+        likes: undefined, // Remove the likes array since we only need the count
+      };
     }),
 
   // Add a comment to a post
@@ -550,7 +588,7 @@ export const memberBlogRouter = createTRPCRouter({
       }
 
       const comment = await ctx.db.blogComment.update({
-        where: { id: input.id},
+        where: { id: input.id },
         data: {
           ...input,
         },
