@@ -93,10 +93,8 @@ function CommentItem({
               <p className="text-muted-foreground text-xs">
                 {comment.createdAt.toLocaleDateString()}
               </p>
-              {Math.abs(
-                comment.updatedAt.getTime() -
-                comment.createdAt.getTime(),
-              ) > 5000 && (
+              {
+                comment.updatedAt.getTime() !== comment.createdAt.getTime() && (
                   <span className="text-muted-foreground text-xs">(Edited)</span>
                 )}
             </div>
