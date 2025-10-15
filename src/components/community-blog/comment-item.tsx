@@ -23,6 +23,10 @@ import { Textarea } from "~/components/ui/textarea";
 import Image from "next/image";
 import { useState } from "react";
 import { MoreVertical, Pencil, Trash2, Check, X } from "lucide-react";
+import { type RouterOutputs } from "~/trpc/react";
+
+// Type for comment with author relation
+type CommentWithAuthor = RouterOutputs["member"]["blog"]["getComments"][number];
 
 function CommentItem({
   comment,
@@ -30,7 +34,7 @@ function CommentItem({
   onUpdate,
   onDelete,
 }: {
-  comment: any;
+  comment: CommentWithAuthor;
   currentUserId?: string;
   onUpdate: (id: string, content: string) => void;
   onDelete: (id: string) => void;
@@ -51,9 +55,8 @@ function CommentItem({
     <div className="bg-muted/50 flex space-x-3 rounded-lg p-3 sm:flex-row">
       {/* Avatar */}
       <div
-        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
-          comment.author?.image ? "" : "bg-gray-300"
-        } text-black`}
+        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${comment.author?.image ? "" : "bg-gray-300"
+          } text-black`}
       >
         {comment.author?.image ? (
           <Image
@@ -88,14 +91,14 @@ function CommentItem({
           <div className="flex items-center justify-between space-x-2 sm:justify-end">
             <div className="lg:flex space-x-2">
               <p className="text-muted-foreground text-xs">
-                {new Date(comment.createdAt).toLocaleDateString()}
+                {comment.createdAt.toLocaleDateString()}
               </p>
               {Math.abs(
-                new Date(comment.updatedAt).getTime() -
-                  new Date(comment.createdAt).getTime(),
+                comment.updatedAt.getTime() -
+                comment.createdAt.getTime(),
               ) > 5000 && (
-                <span className="text-muted-foreground text-xs">(Edited)</span>
-              )}
+                  <span className="text-muted-foreground text-xs">(Edited)</span>
+                )}
             </div>
 
             {/* Author Action Menu */}

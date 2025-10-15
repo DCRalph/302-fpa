@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { use, useState } from "react";
+import { useState } from "react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -33,7 +33,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
-import { DropdownMenuItem } from "~/components/ui/dropdown-menu";
 import CommentItem from "~/components/community-blog/comment-item";
 
 import { useAuth } from "~/hooks/useAuth";
@@ -326,7 +325,6 @@ function BlogPostCard({
 }
 
 export default function MyPostsPage() {
-  const [openDialog, setOpenDialog] = useState(false);
 
   const { data, isLoading, refetch } = api.member.blog.myPosts.useQuery();
   const deletePostMutation = api.member.blog.deletePost.useMutation({
