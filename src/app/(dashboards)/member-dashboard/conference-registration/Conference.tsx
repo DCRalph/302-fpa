@@ -29,11 +29,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import Link from "next/link";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
-import { type ConferenceContact } from "@prisma/client";
-import { z } from "zod";
+import InformationPanels from "./infomation-panels";
 
 export default function ConferenceRegistration() {
   const [formData, setFormData] = useState({
@@ -192,7 +190,7 @@ export default function ConferenceRegistration() {
 
       {/* Existing Registration Status */}
       {existingRegistration && (
-        <div className="relative grid h-full grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Left Column - Registration Status */}
           <div className="space-y-6 lg:col-span-2">
             <Card className="">
@@ -445,93 +443,8 @@ export default function ConferenceRegistration() {
             </Card>
           </div>
 
-          {/* Right Column - Information Panels */}
-          <div className="h-full">
-            <div className="sticky top-20 space-y-6">
-              {/* Bank Transfer Details */}
-              <Card
-                id="bank-details-section"
-                className="border-primary bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"
-              >
-                <CardHeader>
-                  <CardTitle className="text-2xl font-bold text-foreground">
-                    Bank Transfer Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-foreground">
-                  <div>
-                    <span className="font-bold">Registration Fee:</span>
-                    <span className="ml-2">
-                      {conference
-                        ? `${conference.currency} $${(conference.priceCents / 100).toFixed(2)}`
-                        : "TBD"}
-                    </span>
-                  </div>
-                  <Separator
-                    orientation="horizontal"
-                    className="my-4 bg-[#CCCCCC] dark:bg-white/60"
-                  />
-                  <div>
-                    <span className="font-semibold">Account Name:</span>
-                    <span className="ml-2">
-                      {conference?.bankTransferAccountName ?? "TBD"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-semibold">Bank & Branch:</span>
-                    <span className="ml-2">
-                      {conference?.bankTransferBranch ?? "TBD"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-semibold">Account Number:</span>
-                    <span className="ml-2">
-                      {conference?.bankTransferAccountNumber}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+          {conference && (<InformationPanels conference={conference} />)}
 
-              {/* Contact Information */}
-              <Card
-                id="contact-section"
-                className="border-primary bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"
-              >
-                <CardHeader>
-                  <CardTitle className="text-2xl font-bold text-foreground">
-                    Contact Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 text-foreground">
-                  {conference?.contacts && conference.contacts.length > 0 ? (
-                    <>
-                      {conference.contacts.map((contact, index: number) => (
-                        <RegistrationContactRow
-                          contact={contact}
-                          index={index}
-                          key={index}
-                        />
-                      ))}
-                    </>
-                  ) : (
-                    <div className="text-center text-sm opacity-75">
-                      <p>Contact information not available at this time.</p>
-                      <p className="mt-2">
-                        Please email{" "}
-                        <Link
-                          target="_blank"
-                          href="mailto:fijiprincipalsassociation@gmail.com"
-                          className="text-blue-800 hover:underline"
-                        >
-                          fijiprincipalsassociation@gmail.com
-                        </Link>
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
         </div>
       )}
 
@@ -909,161 +822,11 @@ export default function ConferenceRegistration() {
                 </CardContent>
               </Card>
             </form>
-          </div>
 
-          {/* Right Column - Information Panels */}
-          <div className="h-full">
-            <div className="sticky top-20 space-y-6">
-              {/* Bank Transfer Details */}
-              <Card
-                id="bank-details-section"
-                className="border-primary bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"
-              >
-                <CardHeader>
-                  <CardTitle className="text-foreground text-2xl font-bold">
-                    Bank Transfer Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-foreground">
-                  <div>
-                    <span className="font-bold">Registration Fee:</span>
-                    <span className="ml-2">
-                      {conference
-                        ? `${conference.currency} $${(conference.priceCents / 100).toFixed(2)}`
-                        : "TBD"}
-                    </span>
-                  </div>
-                  <Separator
-                    orientation="horizontal"
-                    className="my-4 bg-[#CCCCCC] dark:bg-white/60"
-                  />
-                  <div>
-                    <span className="font-semibold">Account Name:</span>
-                    <span className="ml-2">
-                      {conference?.bankTransferAccountName ?? "TBD"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-semibold">Bank & Branch:</span>
-                    <span className="ml-2">
-                      {conference?.bankTransferBranch ?? "TBD"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-semibold">Account Number:</span>
-                    <span className="ml-2">
-                      {conference?.bankTransferAccountNumber}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Contact Information */}
-              <Card
-                id="contact-section"
-                className="border-primary bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"
-              >
-                <CardHeader>
-                  <CardTitle className="text-foreground text-2xl font-bold">
-                    Contact Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 text-foreground">
-                  {conference?.contacts && conference.contacts.length > 0 ? (
-                    <>
-                      {conference.contacts.map((contact, index: number) => (
-                        <RegistrationContactRow
-                          contact={contact}
-                          index={index}
-                          key={index}
-                        />
-                      ))}
-                    </>
-                  ) : (
-                    <div className="text-center text-sm opacity-75">
-                      <p>Contact information not available at this time.</p>
-                      <p className="mt-2">
-                        Please email{" "}
-                        <Link
-                          target="_blank"
-                          href="mailto:fijiprincipalsassociation@gmail.com"
-                          className="text-blue-800 hover:underline"
-                        >
-                          fijiprincipalsassociation@gmail.com
-                        </Link>
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
           </div>
+          {conference && (<InformationPanels conference={conference} />)}
         </div>
       )}
-    </div>
-  );
-}
-
-const fieldsSchema = z.object({
-  email: z.string().optional(),
-  phone: z.string().optional(),
-  school: z.string().optional(),
-});
-
-function RegistrationContactRow({
-  contact,
-  index,
-}: {
-  contact: ConferenceContact;
-  index: number;
-}) {
-  const { data: fields, success } = fieldsSchema.safeParse(contact.fields);
-
-  if (!success) {
-    return null;
-  }
-
-  return (
-    <div key={contact.id || index}>
-      {index > 0 && (
-        <Separator
-          orientation="horizontal"
-          className="mb-4 bg-[#CCCCCC] dark:bg-white/60"
-        />
-      )}
-      <div>
-        <div className="text-md">
-          <strong>{contact.name}</strong>
-        </div>
-
-        {fields.phone && (
-          <div className="text-sm">
-            <strong>Phone:</strong> {fields.phone}
-          </div>
-        )}
-        {fields.school && (
-          <div className="text-sm">
-            <strong>School:</strong> {fields.school}
-          </div>
-        )}
-        {fields.email && (
-          <div className="text-sm">
-            <strong>Email:</strong>{" "}
-            <Link
-              target="_blank"
-              href={`mailto:${fields.email}`}
-              className="text-blue-800 hover:underline"
-            >
-              {fields.email}
-            </Link>
-          </div>
-        )}
-        {fields.phone && (
-          <div className="text-sm">
-            <strong>Phone:</strong> {fields.phone}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

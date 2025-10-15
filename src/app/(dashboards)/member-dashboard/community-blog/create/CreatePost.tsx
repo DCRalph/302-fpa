@@ -87,6 +87,7 @@ export default function CreatePostPage() {
       title: formData.title,
       content: formData.content,
       published: formData.published,
+      categorySlugs: [selectedFilter],
       // image: uploadedImageUrl ?? undefined,
     });
 

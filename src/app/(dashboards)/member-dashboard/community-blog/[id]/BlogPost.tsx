@@ -134,7 +134,7 @@ export default function BlogPost({ post }: BlogPostProps) {
         </Button>
       </div>
 
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden p-0">
         <CardContent className="p-6">
           {/* Author Info */}
           <div className="mb-6 flex items-center space-x-3">
@@ -233,7 +233,7 @@ export default function BlogPost({ post }: BlogPostProps) {
               </div>
 
               {/* Add Comment Form */}
-              <Card className="bg-muted/30">
+              <Card className="bg-muted/30 p-0">
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <div>

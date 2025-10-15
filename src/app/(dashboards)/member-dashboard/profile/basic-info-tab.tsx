@@ -208,7 +208,7 @@ export function BasicInfoTab() {
                     }
                     className="text-muted-foreground hover:bg-muted/60 absolute top-2 right-2 rounded-md border border-transparent px-2 py-1 text-[10px]"
                   >
-                    <Copy size={16} />
+                    <Copy />
                   </Button>
                 </div>
 
