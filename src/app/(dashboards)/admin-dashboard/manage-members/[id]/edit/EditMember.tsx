@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Button } from "~/components/ui/button";
@@ -21,6 +27,17 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Calendar, FileText, User2, Shield } from "lucide-react";
 import Link from "next/link";
 import { Spinner } from "~/components/ui/spinner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
 
 export default function EditMemberPage() {
   const router = useRouter();
@@ -29,7 +46,7 @@ export default function EditMemberPage() {
 
   const { data: member, isLoading } = api.admin.members.getById.useQuery(
     { id: memberId },
-    { enabled: !!memberId }
+    { enabled: !!memberId },
   );
 
   const [formData, setFormData] = useState({
@@ -100,9 +117,7 @@ export default function EditMemberPage() {
   };
 
   const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this member? This action cannot be undone.")) {
-      deleteMemberMutation.mutate({ id: memberId });
-    }
+    deleteMemberMutation.mutate({ id: memberId });
   };
 
   if (isLoading) {
@@ -136,7 +151,9 @@ export default function EditMemberPage() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold">Edit Member</h1>
-            <p className="text-muted-foreground mt-1">Update member details and permissions</p>
+            <p className="text-muted-foreground mt-1">
+              Update member details and permissions
+            </p>
           </div>
           <Badge variant={member.role === "ADMIN" ? "default" : "secondary"}>
             {member.role}
@@ -197,14 +214,18 @@ export default function EditMemberPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Role & Permissions</CardTitle>
-                <CardDescription>Manage user role and account status</CardDescription>
+                <CardDescription>
+                  Manage user role and account status
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
                   <Select
                     value={formData.role}
-                    onValueChange={(value: "USER" | "ADMIN") => handleInputChange("role", value)}
+                    onValueChange={(value: "USER" | "ADMIN") =>
+                      handleInputChange("role", value)
+                    }
                   >
                     <SelectTrigger id="role">
                       <SelectValue placeholder="Select role" />
@@ -233,9 +254,14 @@ export default function EditMemberPage() {
                   <Checkbox
                     id="emailVerified"
                     checked={formData.emailVerified}
-                    onCheckedChange={(checked) => handleInputChange("emailVerified", checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      handleInputChange("emailVerified", checked as boolean)
+                    }
                   />
-                  <Label htmlFor="emailVerified" className="text-sm font-normal">
+                  <Label
+                    htmlFor="emailVerified"
+                    className="text-sm font-normal"
+                  >
                     Email verified
                   </Label>
                 </div>
@@ -249,7 +275,9 @@ export default function EditMemberPage() {
                 disabled={updateMemberMutation.isPending}
                 className="flex-1"
               >
-                {updateMemberMutation.isPending ? "Updating..." : "Update Member"}
+                {updateMemberMutation.isPending
+                  ? "Updating..."
+                  : "Update Member"}
               </Button>
               <Link href="/admin-dashboard/manage-members" className="flex-1">
                 <Button type="button" variant="outline" className="w-full">
@@ -270,16 +298,40 @@ export default function EditMemberPage() {
                 <div>
                   <p className="font-medium">Delete Member</p>
                   <p className="text-muted-foreground text-sm">
-                    Permanently delete this member account. This action cannot be undone.
+                    Permanently delete this member account. This action cannot
+                    be undone.
                   </p>
                 </div>
-                <Button
-                  variant="destructive"
-                  onClick={handleDelete}
-                  disabled={deleteMemberMutation.isPending}
-                >
-                  {deleteMemberMutation.isPending ? "Deleting..." : "Delete"}
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      disabled={deleteMemberMutation.isPending}
+                    >
+                      {deleteMemberMutation.isPending
+                        ? "Deleting..."
+                        : "Delete"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this post?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently
+                        delete your post and remove it from the community blog.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/70"
+                        onClick={handleDelete}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>
@@ -296,8 +348,12 @@ export default function EditMemberPage() {
               <div className="flex items-center gap-3">
                 <FileText className="text-muted-foreground h-5 w-5" />
                 <div>
-                  <p className="text-muted-foreground text-xs">Conference Registrations</p>
-                  <p className="text-2xl font-bold">{member._count.registrations}</p>
+                  <p className="text-muted-foreground text-xs">
+                    Conference Registrations
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {member._count.registrations}
+                  </p>
                 </div>
               </div>
               <Separator />
@@ -305,7 +361,9 @@ export default function EditMemberPage() {
                 <FileText className="text-muted-foreground h-5 w-5" />
                 <div>
                   <p className="text-muted-foreground text-xs">Blog Posts</p>
-                  <p className="text-2xl font-bold">{member._count.blogPosts}</p>
+                  <p className="text-2xl font-bold">
+                    {member._count.blogPosts}
+                  </p>
                 </div>
               </div>
               <Separator />
@@ -330,18 +388,26 @@ export default function EditMemberPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Recent Registrations</CardTitle>
-                <CardDescription>Latest {member.registrations.length} registrations</CardDescription>
+                <CardDescription>
+                  Latest {member.registrations.length} registrations
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {member.registrations.map((registration) => (
                     <div key={registration.id} className="text-sm">
-                      <p className="font-medium">{registration.conference?.name ?? "Conference"}</p>
+                      <p className="font-medium">
+                        {registration.conference?.name ?? "Conference"}
+                      </p>
                       <div className="text-muted-foreground flex items-center gap-2 text-xs">
                         <Badge variant="outline" className="text-xs">
                           {registration.status}
                         </Badge>
-                        <span>{new Date(registration.createdAt).toLocaleDateString()}</span>
+                        <span>
+                          {new Date(
+                            registration.createdAt,
+                          ).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -355,18 +421,25 @@ export default function EditMemberPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Recent Blog Posts</CardTitle>
-                <CardDescription>Latest {member.blogPosts.length} posts</CardDescription>
+                <CardDescription>
+                  Latest {member.blogPosts.length} posts
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {member.blogPosts.map((post) => (
                     <div key={post.id} className="text-sm">
-                      <p className="font-medium line-clamp-1">{post.title}</p>
+                      <p className="line-clamp-1 font-medium">{post.title}</p>
                       <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                        <Badge variant={post.published ? "default" : "secondary"} className="text-xs">
+                        <Badge
+                          variant={post.published ? "default" : "secondary"}
+                          className="text-xs"
+                        >
                           {post.published ? "Published" : "Draft"}
                         </Badge>
-                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                        <span>
+                          {new Date(post.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -379,4 +452,3 @@ export default function EditMemberPage() {
     </main>
   );
 }
-

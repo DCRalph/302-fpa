@@ -48,7 +48,7 @@ function CommentItem({
   };
 
   return (
-    <div className="bg-muted/50 flex rounded-lg p-3 sm:flex-row space-x-3">
+    <div className="bg-muted/50 flex space-x-3 rounded-lg p-3 sm:flex-row">
       {/* Avatar */}
       <div
         className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
@@ -75,7 +75,7 @@ function CommentItem({
 
       {/* Main Content */}
       <div className="flex-1 space-y-1 sm:mt-0">
-        <div className="flex gap-1 sm:flex-row sm:items-center justify-between">
+        <div className="flex justify-between gap-1 sm:flex-row sm:items-center">
           <div>
             <p className="text-sm font-medium">
               {comment.author?.name ?? "Member"}
@@ -86,15 +86,17 @@ function CommentItem({
           </div>
 
           <div className="flex items-center justify-between space-x-2 sm:justify-end">
-            <p className="text-muted-foreground text-xs">
-              {new Date(comment.createdAt).toLocaleDateString()}
-            </p>
-            {Math.abs(
-              new Date(comment.updatedAt).getTime() -
-                new Date(comment.createdAt).getTime(),
-            ) > 5000 && (
-              <span className="text-muted-foreground text-xs">(Edited)</span>
-            )}
+            <div className="lg:flex space-x-2">
+              <p className="text-muted-foreground text-xs">
+                {new Date(comment.createdAt).toLocaleDateString()}
+              </p>
+              {Math.abs(
+                new Date(comment.updatedAt).getTime() -
+                  new Date(comment.createdAt).getTime(),
+              ) > 5000 && (
+                <span className="text-muted-foreground text-xs">(Edited)</span>
+              )}
+            </div>
 
             {/* Author Action Menu */}
             {isAuthor && (
@@ -103,7 +105,7 @@ function CommentItem({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-muted-foreground hover:text-foreground h-7 w-7"
+                    className="text-muted-foreground hover:text-foreground h-7 w-7 md:flex"
                   >
                     <MoreVertical className="h-4 w-4" />
                   </Button>
@@ -125,10 +127,10 @@ function CommentItem({
                       >
                         <AlertDialogTrigger asChild>
                           <DropdownMenuItem
-                            className="text-[#DC3545] focus:text-[#DC3545]"
+                            className="text-destructive focus:text-destructive"
                             onSelect={(e) => e.preventDefault()} // prevent closing immediately
                           >
-                            <Trash2 className="mr-2 h-4 w-4 text-[#DC3545]" />{" "}
+                            <Trash2 className="text-destructive mr-2 h-4 w-4" />{" "}
                             Delete
                           </DropdownMenuItem>
                         </AlertDialogTrigger>
@@ -145,7 +147,7 @@ function CommentItem({
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
-                              className="bg-[#DC3545] hover:bg-[#DC3545]/70"
+                              className="bg-destructive hover:bg-destructive/70"
                               onClick={() => {
                                 onDelete(comment.id);
                                 setOpenDialog(false);
@@ -190,7 +192,7 @@ function CommentItem({
                 onClick={handleSave}
                 className="flex items-center space-x-1 bg-[#198754] hover:bg-[#198754]/80"
               >
-                <Check className="h-4 w-4 text-white" /> 
+                <Check className="h-4 w-4 text-white" />
                 <span className="text-white">Save</span>
               </Button>
             </div>

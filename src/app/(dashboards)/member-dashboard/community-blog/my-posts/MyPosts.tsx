@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { useState } from "react";
+import { use, useState } from "react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -22,6 +22,21 @@ import { Textarea } from "~/components/ui/textarea";
 import Image from "next/image";
 
 import { type RouterOutputs } from "~/trpc/react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
+import { DropdownMenuItem } from "~/components/ui/dropdown-menu";
+import CommentItem from "~/components/community-blog/comment-item";
+
+import { useAuth } from "~/hooks/useAuth";
 
 type BlogPost = RouterOutputs["member"]["blog"]["myPosts"][number];
 
@@ -33,6 +48,7 @@ function BlogPostCard({
   post: BlogPost;
   onDelete: (id: string) => void;
 }) {
+  const { dbUser } = useAuth();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [localLikeCount, setLocalLikeCount] = useState(post._count?.likes ?? 0);
@@ -45,6 +61,9 @@ function BlogPostCard({
         setIsLiked(true);
         setLocalLikeCount(data.likeCount ?? 0);
         toast.success("Post liked!");
+
+        void utils.member.blog.myPosts.invalidate();
+        void utils.member.blog.list.invalidate();
       }
     },
     onError: () => {
@@ -58,6 +77,9 @@ function BlogPostCard({
         setIsLiked(false);
         setLocalLikeCount(data.likeCount ?? 0);
         toast.success("Post unliked!");
+
+        void utils.member.blog.myPosts.invalidate();
+        void utils.member.blog.list.invalidate();
       }
     },
     onError: () => {
@@ -71,18 +93,43 @@ function BlogPostCard({
       { enabled: showComments },
     );
 
+  // Add comment
   const addComment = api.member.blog.addComment.useMutation({
     onSuccess: () => {
       toast.success("Comment added!");
       setCommentText("");
       void refetchComments();
+
       void utils.member.blog.myPosts.invalidate();
+      void utils.member.blog.list.invalidate();
     },
     onError: () => {
       toast.error("Failed to add comment");
     },
   });
 
+  // Update comment
+  const updateComment = api.member.blog.updateComment.useMutation({
+    onSuccess: () => {
+      toast.success("Comment updated!");
+      void refetchComments();
+    },
+    onError: () => toast.error("Failed to update comment"),
+  });
+
+  // Delete comment
+  const deleteComment = api.member.blog.deleteComment.useMutation({
+    onSuccess: () => {
+      toast.success("Comment deleted!");
+      void refetchComments();
+
+      void utils.member.blog.myPosts.invalidate();
+      void utils.member.blog.list.invalidate();
+    },
+    onError: () => toast.error("Failed to delete comment"),
+  });
+
+  //
   const handleLikeToggle = () => {
     if (isLiked) {
       unlikePost.mutate({ postId: post.id });
@@ -125,10 +172,10 @@ function BlogPostCard({
               </span>
               {Math.abs(
                 new Date(post.updatedAt).getTime() -
-                new Date(post.createdAt).getTime(),
+                  new Date(post.createdAt).getTime(),
               ) > 5000 && (
-                  <span className="text-muted-foreground text-xs">(Edited)</span>
-                )}
+                <span className="text-muted-foreground text-xs">(Edited)</span>
+              )}
             </div>
 
             {/* Post Content Preview */}
@@ -176,89 +223,11 @@ function BlogPostCard({
                 </Button>
               </div>
             </div>
-            {/* Comments Section */}
-            {showComments && (
-              <div className="mt-4 space-y-4 border-t pt-4">
-                {/* Add Comment Form */}
-                <div className="space-y-2">
-                  <Textarea
-                    placeholder="Write a comment..."
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    className="resize-none"
-                    rows={3}
-                  />
-                  <div className="flex justify-end">
-                    <Button
-                      onClick={handleAddComment}
-                      disabled={addComment.isPending || !commentText.trim()}
-                      size="sm"
-                    >
-                      <Send className="mr-2 h-4 w-4" />
-                      Post Comment
-                    </Button>
-                  </div>
-                </div>
-                {/* Comments List */}
-                <div className="space-y-3">
-                  {commentsData && commentsData.length > 0 ? (
-                    commentsData.map((comment) => (
-                      <div
-                        key={comment.id}
-                        className="bg-muted/50 flex space-x-3 rounded-lg p-3"
-                      >
-                        <div
-                          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${comment.author?.image ? "" : "bg-gray-300"} text-black`}
-                        >
-                          {comment.author?.image ? (
-                            <Image
-                              src={comment.author.image}
-                              alt=""
-                              className="rounded-full"
-                              width={32}
-                              height={32}
-                            />
-                          ) : (
-                            <span className="text-xs font-medium">
-                              {(comment.author?.name ?? "?")
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium">
-                                {comment.author?.name ?? "Member"}
-                              </p>
-                              <p className="text-muted-foreground text-xs">
-                                {comment.author?.professionalPosition ??
-                                  "Member"}
-                              </p>
-                            </div>
-                            <p className="text-muted-foreground text-xs">
-                              {new Date(comment.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <p className="text-foreground/80 text-sm">
-                            {comment.content}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-muted-foreground text-center text-sm">
-                      No comments yet. Be the first to comment!
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
+
           {/* Actions: Edit/Delete */}
           <div className="mt-4 flex items-center gap-2 md:mt-0 md:flex-col md:justify-center md:gap-3">
+            {/* Edit Button */}
             <Button
               asChild
               variant="outline"
@@ -270,22 +239,95 @@ function BlogPostCard({
                 <Pencil className="h-4 w-4" />
               </Link>
             </Button>
-            <Button
-              variant="destructive"
-              size="icon"
-              onClick={() => onDelete(post.id)}
-              title="Delete post"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+
+            {/* Delete with AlertDialog */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  title="Delete post"
+                  className="hover:bg-destructive/80"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete this post?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    your post and remove it from the community blog.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive hover:bg-destructive/70"
+                    onClick={() => onDelete(post.id)}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
+
+        {/* Comments Section */}
+        {showComments && (
+          <div className="mt-4 space-y-4 border-t pt-4">
+            {/* Add Comment Form */}
+            <div className="space-y-2">
+              <Textarea
+                placeholder="Write a comment..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                className="resize-none"
+                rows={3}
+              />
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleAddComment}
+                  disabled={addComment.isPending || !commentText.trim()}
+                  size="sm"
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  Post Comment
+                </Button>
+              </div>
+            </div>
+
+            {/* Comments List */}
+            <div className="space-y-3">
+              {commentsData && commentsData.length > 0 ? (
+                commentsData.map((comment) => (
+                  <CommentItem
+                    key={comment.id}
+                    comment={comment}
+                    currentUserId={dbUser?.id}
+                    onUpdate={(id, content) =>
+                      updateComment.mutate({ id: id, content })
+                    }
+                    onDelete={(id) => deleteComment.mutate({ id })}
+                  />
+                ))
+              ) : (
+                <p className="text-muted-foreground text-center text-sm">
+                  No comments yet. Be the first to comment!
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 }
 
 export default function MyPostsPage() {
+  const [openDialog, setOpenDialog] = useState(false);
+
   const { data, isLoading, refetch } = api.member.blog.myPosts.useQuery();
   const deletePostMutation = api.member.blog.deletePost.useMutation({
     onSuccess: async () => {
@@ -298,13 +340,7 @@ export default function MyPostsPage() {
   });
 
   const handleDelete = (id: string) => {
-    if (
-      confirm(
-        "Are you sure you want to delete this post? This action cannot be undone.",
-      )
-    ) {
-      deletePostMutation.mutate({ id });
-    }
+    deletePostMutation.mutate({ id });
   };
 
   return (

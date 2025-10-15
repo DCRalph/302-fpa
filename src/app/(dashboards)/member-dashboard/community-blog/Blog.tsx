@@ -41,7 +41,6 @@ import CommentItem from "~/components/community-blog/comment-item";
 
 type BlogPost = RouterOutputs["member"]["blog"]["list"]["posts"][number];
 
-
 // BlogPostCard Component
 function BlogPostCard({ post }: { post: BlogPost }) {
   const { dbUser } = useAuth();
@@ -59,6 +58,9 @@ function BlogPostCard({ post }: { post: BlogPost }) {
         setIsLiked(true);
         setLocalLikeCount(data.likeCount ?? 0);
         toast.success("Post liked!");
+
+        void utils.member.blog.myPosts.invalidate();
+        void utils.member.blog.list.invalidate();
       }
     },
     onError: () => {
@@ -72,6 +74,9 @@ function BlogPostCard({ post }: { post: BlogPost }) {
         setIsLiked(false);
         setLocalLikeCount(data.likeCount ?? 0);
         toast.success("Post unliked!");
+
+        void utils.member.blog.myPosts.invalidate();
+        void utils.member.blog.list.invalidate();
       }
     },
     onError: () => {
@@ -91,6 +96,8 @@ function BlogPostCard({ post }: { post: BlogPost }) {
       toast.success("Comment added!");
       setCommentText("");
       void refetchComments();
+
+      void utils.member.blog.myPosts.invalidate();
       void utils.member.blog.list.invalidate();
     },
     onError: () => {
@@ -112,6 +119,8 @@ function BlogPostCard({ post }: { post: BlogPost }) {
     onSuccess: () => {
       toast.success("Comment deleted!");
       void refetchComments();
+
+      void utils.member.blog.myPosts.invalidate();
       void utils.member.blog.list.invalidate();
     },
     onError: () => toast.error("Failed to delete comment"),
@@ -360,7 +369,7 @@ export default function CommunityBlog() {
               <p className="text-foreground/70 text-base">
                 Share your knowledge with the community
               </p>
-              <div className="grid grid-cols-2 gap-4 space-y-2 pt-4">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 space-y-2 pt-4">
                 <Button asChild>
                   <Link href={"/member-dashboard/community-blog/create"}>
                     Create a Post
@@ -389,7 +398,10 @@ export default function CommunityBlog() {
                       size={24}
                     />
                   ) : (
-                    <X className="w-4 flex-shrink-0 text-[#DC3545]" size={24} />
+                    <X
+                      className="text-destructive w-4 flex-shrink-0"
+                      size={24}
+                    />
                   )}
                   <span className="text-foreground text-sm">
                     {guideline.text}
