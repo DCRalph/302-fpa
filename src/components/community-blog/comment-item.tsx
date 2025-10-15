@@ -22,7 +22,7 @@ import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
 import Image from "next/image";
 import { useState } from "react";
-import { MoreHorizontal, Pencil, Trash2, Check, X } from "lucide-react";
+import { MoreVertical, Pencil, Trash2, Check, X } from "lucide-react";
 
 function CommentItem({
   comment,
@@ -48,7 +48,7 @@ function CommentItem({
   };
 
   return (
-    <div className="bg-muted/50 flex flex-col sm:flex-row sm:space-x-3 rounded-lg p-3">
+    <div className="bg-muted/50 flex rounded-lg p-3 sm:flex-row space-x-3">
       {/* Avatar */}
       <div
         className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
@@ -74,8 +74,8 @@ function CommentItem({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 mt-2 sm:mt-0 space-y-1">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+      <div className="flex-1 space-y-1 sm:mt-0">
+        <div className="flex gap-1 sm:flex-row sm:items-center justify-between">
           <div>
             <p className="text-sm font-medium">
               {comment.author?.name ?? "Member"}
@@ -85,10 +85,16 @@ function CommentItem({
             </p>
           </div>
 
-          <div className="flex items-center justify-between sm:justify-end space-x-2">
+          <div className="flex items-center justify-between space-x-2 sm:justify-end">
             <p className="text-muted-foreground text-xs">
               {new Date(comment.createdAt).toLocaleDateString()}
             </p>
+            {Math.abs(
+              new Date(comment.updatedAt).getTime() -
+                new Date(comment.createdAt).getTime(),
+            ) > 5000 && (
+              <span className="text-muted-foreground text-xs">(Edited)</span>
+            )}
 
             {/* Author Action Menu */}
             {isAuthor && (
@@ -97,9 +103,9 @@ function CommentItem({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground h-7 w-7"
                   >
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
 
@@ -113,13 +119,17 @@ function CommentItem({
                       <DropdownMenuSeparator />
 
                       {/* Delete with confirmation */}
-                      <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
+                      <AlertDialog
+                        open={openDialog}
+                        onOpenChange={setOpenDialog}
+                      >
                         <AlertDialogTrigger asChild>
                           <DropdownMenuItem
-                            className="text-red-600 focus:text-red-600"
+                            className="text-[#DC3545] focus:text-[#DC3545]"
                             onSelect={(e) => e.preventDefault()} // prevent closing immediately
                           >
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            <Trash2 className="mr-2 h-4 w-4 text-[#DC3545]" />{" "}
+                            Delete
                           </DropdownMenuItem>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -135,7 +145,7 @@ function CommentItem({
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
-                              className="bg-red-600 hover:bg-red-700"
+                              className="bg-[#DC3545] hover:bg-[#DC3545]/70"
                               onClick={() => {
                                 onDelete(comment.id);
                                 setOpenDialog(false);
@@ -178,9 +188,10 @@ function CommentItem({
               <Button
                 size="sm"
                 onClick={handleSave}
-                className="flex items-center space-x-1 bg-green-600 hover:bg-green-700"
+                className="flex items-center space-x-1 bg-[#198754] hover:bg-[#198754]/80"
               >
-                <Check className="h-4 w-4" /> <span>Save</span>
+                <Check className="h-4 w-4 text-white" /> 
+                <span className="text-white">Save</span>
               </Button>
             </div>
           </div>
