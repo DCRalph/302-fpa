@@ -16,7 +16,7 @@ import { Label } from "~/components/ui/label";
 import { api } from "~/trpc/react";
 import { Spinner } from "~/components/ui/spinner";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Calendar, DollarSign, User, Mail, Phone, Building2 } from "lucide-react";
+import { CheckCircle, XCircle, Calendar, DollarSign, User, Mail, Phone, Building2, Briefcase, GraduationCap, Award, FileText } from "lucide-react";
 
 interface RegistrationDetailsDialogProps {
   registrationId: string;
@@ -197,6 +197,78 @@ export function RegistrationDetailsDialog({
               <div>
                 <p className="text-muted-foreground text-xs">Experience</p>
                 <p className="font-medium">{registration.experience || "N/A"}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Professional Profile Information */}
+          <Separator />
+          <div className="space-y-3">
+            <h3 className="font-semibold text-lg">Professional Profile</h3>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="flex items-center gap-2">
+                <Briefcase className="text-muted-foreground h-4 w-4" />
+                <div>
+                  <p className="text-muted-foreground text-xs">Position</p>
+                  <p className="font-medium">
+                    {registration.user?.professionalPosition && registration.user.professionalPosition.trim() !== "" ? (
+                      registration.user.professionalPosition
+                    ) : (
+                      <span className="text-muted-foreground italic">No info provided</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Award className="text-muted-foreground h-4 w-4" />
+                <div>
+                  <p className="text-muted-foreground text-xs">Years of Experience</p>
+                  <p className="font-medium">
+                    {registration.user?.professionalYears && registration.user.professionalYears > 0 ? (
+                      `${registration.user.professionalYears} years`
+                    ) : (
+                      <span className="text-muted-foreground italic">No info provided</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <GraduationCap className="text-muted-foreground h-4 w-4" />
+                <div>
+                  <p className="text-muted-foreground text-xs">Qualification</p>
+                  <p className="font-medium">
+                    {registration.user?.professionalQualification && registration.user.professionalQualification.trim() !== "" ? (
+                      registration.user.professionalQualification
+                    ) : (
+                      <span className="text-muted-foreground italic">No info provided</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <FileText className="text-muted-foreground h-4 w-4" />
+                <div>
+                  <p className="text-muted-foreground text-xs">Specialisation</p>
+                  <p className="font-medium">
+                    {registration.user?.professionalSpecialisation && registration.user.professionalSpecialisation.trim() !== "" ? (
+                      registration.user.professionalSpecialisation
+                    ) : (
+                      <span className="text-muted-foreground italic">No info provided</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs mb-2">Professional Bio</p>
+              <div className="rounded-md border bg-muted/50 p-3">
+                <p className="text-sm whitespace-pre-wrap">
+                  {registration.user?.professionalBio && registration.user.professionalBio.trim() !== "" ? (
+                    registration.user.professionalBio
+                  ) : (
+                    <span className="text-muted-foreground italic">No info provided</span>
+                  )}
+                </p>
               </div>
             </div>
           </div>

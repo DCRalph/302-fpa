@@ -72,6 +72,11 @@ export const adminRegistrationsRouter = createTRPCRouter({
               name: true,
               email: true,
               phone: true,
+              professionalPosition: true,
+              professionalYears: true,
+              professionalQualification: true,
+              professionalSpecialisation: true,
+              professionalBio: true,
             },
           },
           payments: {
