@@ -12,7 +12,7 @@ export function LayoutWithSideBarHeader({ children, sidebar, header: header }: L
     <SidebarProvider>
       <div className="bg-page-background flex h-screen w-full">
         {sidebar}
-        <div className="flex flex-1 flex-col w-full overflow-x-hidden relative">
+        <div className="flex flex-1 flex-col w-full overflow-x-hidden">
           {header}
           {children}
         </div>
