@@ -26,7 +26,7 @@ import { MoreVertical, Pencil, Trash2, Check, X } from "lucide-react";
 import { type RouterOutputs } from "~/trpc/react";
 
 // Type for comment with author relation
-type CommentWithAuthor = RouterOutputs["member"]["blog"]["getComments"][number];
+type Comment = RouterOutputs["member"]["blog"]["getComments"][number];
 
 function CommentItem({
   comment,
@@ -34,7 +34,7 @@ function CommentItem({
   onUpdate,
   onDelete,
 }: {
-  comment: any;
+  comment: Comment;
   currentUserId?: string;
   onUpdate: (id: string, content: string) => void;
   onDelete: (id: string) => void;

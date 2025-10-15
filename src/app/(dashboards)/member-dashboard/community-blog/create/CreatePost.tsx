@@ -33,6 +33,7 @@ export default function CreatePostPage() {
     title: "",
     content: "",
     published: true,
+    postType: ""
   });
   const [selectedFilter, setSelectedFilter] = useState("general");
   const [isSubmitting, setIsSubmitting] = useState(false);

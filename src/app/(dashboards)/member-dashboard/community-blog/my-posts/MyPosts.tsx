@@ -325,8 +325,6 @@ function BlogPostCard({
 }
 
 export default function MyPostsPage() {
-  const [openDialog, setOpenDialog] = useState(false);
-
   const { data, isLoading, refetch } = api.member.blog.myPosts.useQuery();
   const deletePostMutation = api.member.blog.deletePost.useMutation({
     onSuccess: async () => {
