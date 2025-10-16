@@ -314,8 +314,11 @@ export const memberBlogRouter = createTRPCRouter({
       if (!post || post.authorId !== ctx.dbUser.id) {
         throw new Error("Not authorized to delete this post");
       }
-      await ctx.db.blogPost.delete({ where: { id: input.id } });
 
+      // Delete associated categories and the post itself
+      await ctx.db.blogPostCategory.deleteMany({ where: { postId: input.id } });
+      await ctx.db.blogPost.delete({ where: { id: input.id } });
+      
       // Log activity
       await Promise.all([
         logUserActivity(ctx.db, {

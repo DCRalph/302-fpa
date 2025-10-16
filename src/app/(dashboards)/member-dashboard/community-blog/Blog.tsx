@@ -12,14 +12,7 @@ import {
 } from "~/components/ui/select";
 import { Badge } from "~/components/ui/badge";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  Search,
-  Heart,
-  Check,
-  X,
-  MessageSquareText,
-  Send,
-} from "lucide-react";
+import { Search, Heart, Check, X, MessageSquareText, Send } from "lucide-react";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Label } from "@radix-ui/react-dropdown-menu";
@@ -183,7 +176,7 @@ function BlogPostCard({ post }: { post: BlogPost }) {
         {/* Post Content */}
         <div className="space-y-4">
           <Link href={`/member-dashboard/community-blog/${post.id}`}>
-            <h3 className="text-foreground font-semibold hover:text-primary cursor-pointer transition-colors">
+            <h3 className="text-foreground hover:text-primary cursor-pointer font-semibold transition-colors">
               {post.title}
             </h3>
           </Link>
@@ -218,16 +211,23 @@ function BlogPostCard({ post }: { post: BlogPost }) {
               </Button>
               <Button
                 variant={"ghost"}
-                onClick={() => setShowComments(!showComments)}
                 className="text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors"
+                asChild
               >
-                <MessageSquareText className="h-4 w-4" />
-                <span className="text-sm">{post._count.comments}</span>
+                <Link href={`/member-dashboard/community-blog/${post.id}`}>
+                  <MessageSquareText className="h-4 w-4" />
+                  <span className="text-sm">{post._count.comments}</span>
+                </Link>
               </Button>
             </div>
-            <p className="text-muted-foreground text-sm">
-              {new Date(post.createdAt).toLocaleDateString()}
-            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <p className="text-muted-foreground text-sm">
+                {new Date(post.createdAt).toLocaleDateString()}
+              </p>
+              {post.updatedAt.getTime() !== post.createdAt.getTime() && (
+                <span className="text-muted-foreground text-sm">(Edited)</span>
+              )}
+            </div>
           </div>
 
           {/* Comments Section */}
@@ -371,7 +371,7 @@ export default function CommunityBlog() {
               <p className="text-foreground/70 text-base">
                 Share your knowledge with the community
               </p>
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 space-y-2 pt-4">
+              <div className="grid grid-cols-1 gap-4 space-y-2 pt-4 xl:grid-cols-2">
                 <Button asChild>
                   <Link href={"/member-dashboard/community-blog/create"}>
                     Create a Post

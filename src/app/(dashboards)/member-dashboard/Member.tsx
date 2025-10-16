@@ -185,7 +185,7 @@ export default function MemberDashboardPage() {
                             {/* Post Content */}
                             <div className="min-w-0 flex-1">
                               <Link
-                                href={`/member-dashboard/community-blog/${post.id}/edit`}
+                                href={`/member-dashboard/community-blog/${post.id}`}
                                 className="text-foreground line-clamp-1 font-semibold hover:underline"
                               >
                                 {post.title}

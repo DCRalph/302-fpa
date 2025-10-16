@@ -9,12 +9,7 @@ import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  Heart,
-  MessageSquareText,
-  Send,
-  ArrowLeft,
-} from "lucide-react";
+import { Heart, MessageSquareText, Send, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
@@ -35,7 +30,9 @@ interface BlogPostProps {
 export default function BlogPost({ post }: BlogPostProps) {
   const { dbUser } = useAuth();
   const [commentText, setCommentText] = useState("");
-  const [localLikeCount, setLocalLikeCount] = useState((post as any)._count?.likes ?? 0);
+  const [localLikeCount, setLocalLikeCount] = useState(
+    (post as any)._count?.likes ?? 0,
+  );
   const [isLiked, setIsLiked] = useState((post as any).isLikedByUser ?? false);
 
   const utils = api.useUtils();
@@ -127,7 +124,10 @@ export default function BlogPost({ post }: BlogPostProps) {
       {/* Back Button */}
       <div className="flex items-center">
         <Button variant="ghost" asChild>
-          <Link href="/member-dashboard/community-blog" className="flex items-center space-x-2">
+          <Link
+            href="/member-dashboard/community-blog"
+            className="flex items-center space-x-2"
+          >
             <ArrowLeft className="h-4 w-4" />
             <span>Back to Blog</span>
           </Link>
@@ -159,7 +159,7 @@ export default function BlogPost({ post }: BlogPostProps) {
               </span>
             </div>
             <div>
-              <p className="text-foreground font-medium text-lg">
+              <p className="text-foreground text-lg font-medium">
                 {(post as any).author?.name ?? "Member"}
               </p>
               <p className="text-muted-foreground text-sm">
@@ -175,7 +175,7 @@ export default function BlogPost({ post }: BlogPostProps) {
 
           {/* Post Content */}
           <div className="space-y-6">
-            <h1 className="text-foreground text-3xl font-bold leading-tight">
+            <h1 className="text-foreground text-3xl leading-tight font-bold">
               {post.title}
             </h1>
 
@@ -197,7 +197,7 @@ export default function BlogPost({ post }: BlogPostProps) {
             )}
 
             {/* Post Footer */}
-            <div className="flex items-center justify-between pt-6 border-t">
+            <div className="flex items-center justify-between border-t pt-6">
               <div className="flex items-center space-x-4">
                 <Button
                   variant={"ghost"}
@@ -205,19 +205,28 @@ export default function BlogPost({ post }: BlogPostProps) {
                   disabled={likePost.isPending || unlikePost.isPending}
                   className={`text-muted-foreground hover:text-foreground flex items-center space-x-2 transition-colors ${isLiked ? "text-red-500 hover:text-red-600" : ""}`}
                 >
-                  <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
+                  <Heart
+                    className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`}
+                  />
                   <span className="text-base">{localLikeCount}</span>
                 </Button>
-                <div className="flex items-center space-x-2 text-muted-foreground">
+                <div className="text-muted-foreground flex items-center space-x-2">
                   <MessageSquareText className="h-5 w-5" />
-                  <span className="text-base">
-                    {(post as any)._count?.comments ?? 0} Comments
+                  <span className="text-base flex gap-2">
+                    {(post as any)._count?.comments ?? 0} <span className="hidden sm:flex">Comments</span>
                   </span>
                 </div>
               </div>
-              <p className="text-muted-foreground text-sm">
-                {new Date(post.createdAt).toLocaleDateString()}
-              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <p className="text-muted-foreground text-sm">
+                  {new Date(post.createdAt).toLocaleDateString()}
+                </p>
+                {post.updatedAt.getTime() !== post.createdAt.getTime() && (
+                  <span className="text-muted-foreground text-sm">
+                    (Edited)
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Comments Section */}
@@ -225,7 +234,7 @@ export default function BlogPost({ post }: BlogPostProps) {
               {/* Comments Header */}
               <div className="border-t pt-8">
                 <div className="mb-6">
-                  <h3 className="text-foreground text-2xl font-bold flex items-center gap-2">
+                  <h3 className="text-foreground flex items-center gap-2 text-2xl font-bold">
                     <MessageSquareText className="h-6 w-6" />
                     Comments ({(post as any)._count?.comments ?? 0})
                   </h3>
@@ -237,19 +246,22 @@ export default function BlogPost({ post }: BlogPostProps) {
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <div>
-                      <h4 className="text-foreground font-semibold mb-2">Share your thoughts</h4>
+                      <h4 className="text-foreground mb-2 font-semibold">
+                        Share your thoughts
+                      </h4>
                       <p className="text-muted-foreground text-sm">
-                        Join the conversation and share your insights with the community.
+                        Join the conversation and share your insights with the
+                        community.
                       </p>
                     </div>
                     <Textarea
                       placeholder="Write a thoughtful comment..."
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
-                      className="resize-none min-h-[120px] text-base"
+                      className="min-h-[120px] resize-none text-base"
                       rows={5}
                     />
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <p className="text-muted-foreground text-xs">
                         {commentText.length}/500 characters
                       </p>
@@ -271,15 +283,16 @@ export default function BlogPost({ post }: BlogPostProps) {
               <div className="space-y-6">
                 {commentsData && commentsData.length > 0 ? (
                   <>
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="h-px bg-border flex-1"></div>
-                      <span className="text-muted-foreground text-sm font-medium px-3">
-                        {commentsData.length} {commentsData.length === 1 ? 'Comment' : 'Comments'}
+                    <div className="mb-4 flex items-center gap-2">
+                      <div className="bg-border h-px flex-1"></div>
+                      <span className="text-muted-foreground px-3 text-sm font-medium">
+                        {commentsData.length}{" "}
+                        {commentsData.length === 1 ? "Comment" : "Comments"}
                       </span>
-                      <div className="h-px bg-border flex-1"></div>
+                      <div className="bg-border h-px flex-1"></div>
                     </div>
                     {commentsData.map((comment) => (
-                      <div key={comment.id} className="bg-card border rounded-lg p-1">
+                      <div key={comment.id} className="bg-card">
                         <CommentItem
                           comment={comment}
                           currentUserId={dbUser?.id}
@@ -294,8 +307,10 @@ export default function BlogPost({ post }: BlogPostProps) {
                 ) : (
                   <Card className="bg-muted/20">
                     <CardContent className="p-8 text-center">
-                      <MessageSquareText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h4 className="text-foreground font-semibold mb-2">No comments yet</h4>
+                      <MessageSquareText className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                      <h4 className="text-foreground mb-2 font-semibold">
+                        No comments yet
+                      </h4>
                       <p className="text-muted-foreground text-sm">
                         Be the first to share your thoughts on this post!
                       </p>

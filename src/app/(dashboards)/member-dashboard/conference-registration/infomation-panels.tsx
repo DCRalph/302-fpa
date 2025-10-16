@@ -51,14 +51,14 @@ export default function InformationPanels({ conference }: { conference: Conferen
                         </CardHeader>
 
                         <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <div className="border-border/60 bg-background/50 rounded-lg border p-3 cursor-pointer">
                                             <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
                                                 Registration Fee
                                             </div>
-                                            <div className="font-medium">
+                                            <div className="font-medium truncate">
                                                 {conference
                                                     ? `${conference.currency} $${(conference.priceCents / 100).toFixed(2)}`
                                                     : "TBD"}
@@ -94,7 +94,7 @@ export default function InformationPanels({ conference }: { conference: Conferen
                                             <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
                                                 Bank & Branch
                                             </div>
-                                            <div className="font-medium">
+                                            <div className="font-medium truncate">
                                                 {conference?.bankTransferBranch ?? "TBD"}
                                             </div>
                                         </div>
@@ -107,10 +107,10 @@ export default function InformationPanels({ conference }: { conference: Conferen
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <div className="border-border/60 bg-background/50 rounded-lg border p-3 cursor-pointer">
-                                            <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
+                                            <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase ">
                                                 Account Number
                                             </div>
-                                            <div className="font-medium">
+                                            <div className="font-medium truncate">
                                                 {conference?.bankTransferAccountNumber ?? "TBD"}
                                             </div>
                                         </div>
@@ -186,7 +186,7 @@ export default function InformationPanels({ conference }: { conference: Conferen
                                     <Link
                                         target="_blank"
                                         href="mailto:fijiprincipalsassociation@gmail.com"
-                                        className="text-blue-800 hover:underline dark:text-blue-400"
+                                        className="text-blue-800 hover:underline dark:text-blue-400 truncate"
                                     >
                                         fijiprincipalsassociation@gmail.com
                                     </Link>

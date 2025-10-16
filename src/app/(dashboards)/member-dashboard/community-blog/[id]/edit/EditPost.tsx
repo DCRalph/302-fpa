@@ -41,20 +41,33 @@ export default function EditPostPage() {
     title: "",
     content: "",
     published: true,
+    postType: "general",
   });
+
+  const [selectedFilter, setSelectedFilter] = useState("general");
 
   // Populate form when post data is loaded
   useEffect(() => {
     if (post) {
+      const slug = post.categories?.[0]?.category?.slug ?? "general";
+      setSelectedFilter(slug);
+
       setFormData({
         title: post.title ?? "",
         content: post.content ?? "",
         published: post.published ?? true,
+        postType: slug,
       });
     }
   }, [post]);
 
-  const [selectedFilter, setSelectedFilter] = useState("general");
+  // Keep selectedFilter in sync if formData.postType changes (e.g. user or post updates)
+  useEffect(() => {
+    if (formData.postType) {
+      setSelectedFilter(formData.postType);
+    }
+  }, [formData.postType]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null); // TODO: Create an S3 bucket to upload images to
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -63,8 +76,17 @@ export default function EditPostPage() {
 
   const updatePostMutation = api.member.blog.updatePost.useMutation({
     onSuccess: async () => {
-      // Invalidate profile and auth.me cache so UI updates
-      await utils.member.blog.invalidate();
+      // Invalidate specific blog queries so refreshed data is fetched
+      try {
+        await Promise.all([
+          utils.member.blog.getById.invalidate({ id: postId }),
+          utils.member.blog.myPosts.invalidate(),
+        ]);
+      } catch (e) {
+        // fallback to broad invalidate
+        toast.error("Failed to update post");
+        await utils.member.blog.invalidate?.();
+      }
 
       toast.success("Post updated successfully");
       router.push("/member-dashboard/community-blog");
@@ -107,10 +129,9 @@ export default function EditPostPage() {
       title: formData.title,
       content: formData.content,
       published: formData.published,
+      categorySlugs: [selectedFilter],
       // image: uploadedImageUrl ?? undefined,
     });
-
-    router.push("/member-dashboard/community-blog");
   };
 
   return (
@@ -140,14 +161,18 @@ export default function EditPostPage() {
                     required
                   />
                 </div>
+
                 {/* Post Type */}
                 <div className="space-y-2">
-                  <Label htmlFor="title">
+                  <Label htmlFor="postType">
                     Post Type<span className="text-red-500">*</span>
                   </Label>
                   <Select
-                    value={selectedFilter}
-                    onValueChange={setSelectedFilter}
+                    value={formData.postType ?? selectedFilter ?? "general"}
+                    onValueChange={(val) => {
+                      setSelectedFilter(val);
+                      handleInputChange("postType", val);
+                    }}
                   >
                     <SelectTrigger className="bg-background w-full">
                       <SelectValue />
