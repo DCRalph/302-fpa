@@ -1,25 +1,35 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Textarea } from "~/components/ui/textarea";
-import { Heart, MessageSquareText, Send, ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Heart, MessageSquareText, Send, ArrowLeft, Pencil, Trash2, Check, X } from "lucide-react";
+import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAuth } from "~/hooks/useAuth";
 import CommentItem from "~/components/community-blog/comment-item";
 import { type RouterOutputs } from "~/trpc/react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
 
 type BlogPost = NonNullable<RouterOutputs["member"]["blog"]["getById"]>;
 
@@ -29,11 +39,33 @@ interface BlogPostProps {
 
 export default function BlogPost({ post }: BlogPostProps) {
   const { dbUser } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [commentText, setCommentText] = useState("");
   const [localLikeCount, setLocalLikeCount] = useState(
-    (post as any)._count?.likes ?? 0,
+    post._count?.likes ?? 0,
   );
-  const [isLiked, setIsLiked] = useState((post as any).isLikedByUser ?? false);
+  const [isLiked, setIsLiked] = useState(post.isLikedByUser ?? false);
+
+  // Editing state - initialize from query params
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(post.title);
+  const [editContent, setEditContent] = useState(post.content);
+  const [editPublished, setEditPublished] = useState(post.published);
+  const [editCategoryIds, setEditCategoryIds] = useState(
+    post.categories.map((category) => category.category.id)
+  );
+
+  // Get categories for the select
+  const { data: categories } = api.member.blog.getCategories.useQuery();
+
+  // Check for edit query parameter on mount
+  useEffect(() => {
+    const editParam = searchParams.get('edit');
+    if (editParam === 'true' && post.authorId === dbUser?.id) {
+      setIsEditing(true);
+    }
+  }, [searchParams, post.authorId, dbUser?.id]);
 
   const utils = api.useUtils();
 
@@ -115,6 +147,34 @@ export default function BlogPost({ post }: BlogPostProps) {
     onError: () => toast.error("Failed to delete comment"),
   });
 
+  // Delete post
+  const deletePost = api.member.blog.deletePost.useMutation({
+    onSuccess: () => {
+      toast.success("Post deleted!");
+      // Redirect to blog list after deletion
+      window.location.href = "/member-dashboard/community-blog";
+    },
+    onError: () => toast.error("Failed to delete post"),
+  });
+
+  // Update post
+  const updatePost = api.member.blog.updatePost.useMutation({
+    onSuccess: () => {
+      toast.success("Post updated!");
+      setIsEditing(false);
+
+      // Remove edit query parameter from URL
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+      newSearchParams.delete('edit');
+      const newUrl = `${window.location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`;
+      router.replace(newUrl);
+
+      void refetchComments();
+      void utils.member.blog.list.invalidate();
+    },
+    onError: () => toast.error("Failed to update post"),
+  });
+
   const handleLikeToggle = () => {
     if (isLiked) {
       unlikePost.mutate({ postId: post.id });
@@ -139,6 +199,57 @@ export default function BlogPost({ post }: BlogPostProps) {
     });
   };
 
+  const handleDeletePost = () => {
+    deletePost.mutate({ id: post.id });
+  };
+
+  const handleEditToggle = () => {
+    const newEditingState = !isEditing;
+
+    if (!newEditingState) {
+      // Cancel editing - reset form data
+      setEditTitle(post.title);
+      setEditContent(post.content);
+      setEditPublished(post.published);
+      setEditCategoryIds(post.categories.map((category) => category.category.id));
+    }
+
+    setIsEditing(newEditingState);
+
+    // Update URL query parameters
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    if (newEditingState) {
+      newSearchParams.set('edit', 'true');
+    } else {
+      newSearchParams.delete('edit');
+    }
+
+    const newUrl = `${window.location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`;
+    router.replace(newUrl);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editTitle.trim()) {
+      toast.error("Please enter a title");
+      return;
+    }
+    if (!editContent.trim()) {
+      toast.error("Please enter content");
+      return;
+    }
+
+    updatePost.mutate({
+      id: post.id,
+      title: editTitle,
+      content: editContent,
+      published: editPublished,
+      categoryIds: editCategoryIds,
+    });
+  };
+
+
+  const isAuthor = post.authorId === dbUser?.id;
+
   return (
     <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6">
       {/* Back Button */}
@@ -159,49 +270,211 @@ export default function BlogPost({ post }: BlogPostProps) {
           {/* Author Info */}
           <div className="mb-6 flex items-center space-x-3">
             <div
-              className={`flex h-12 w-12 items-center justify-center rounded-full ${(post as any).author?.image ? "" : "bg-gray-200"} text-black`}
+              className={`flex h-12 w-12 items-center justify-center rounded-full ${post.author?.image ? "" : "bg-gray-200"} text-black`}
             >
               <span className="text-sm font-medium">
-                {(post as any).author?.image ? (
+                {post.author?.image ? (
                   <Image
-                    src={(post as any).author.image}
+                    src={post.author.image}
                     alt=""
                     className="rounded-full"
                     width={48}
                     height={48}
                   />
                 ) : (
-                  ((post as any).author?.name ?? "?")
+                  (post.author?.name ?? "?")
                     .split(" ")
                     .map((n: string) => n?.[0] ?? "")
                     .join("")
                 )}
               </span>
             </div>
-            <div>
+            <div className="flex-1">
               <p className="text-foreground text-lg font-medium">
-                {(post as any).author?.name ?? "Member"}
+                {post.author?.name ?? "Member"}
               </p>
               <p className="text-muted-foreground text-sm">
-                {(post as any).author?.professionalPosition ?? "Member"}
+                {post.author?.professionalPosition ?? "Member"}
               </p>
             </div>
-            <div className="ml-auto">
+            <div className="flex items-center space-x-2">
               <Badge variant="secondary" className="text-sm">
-                {(post as any).categories?.[0]?.category?.name ?? "General"}
+                {post.categories?.[0]?.category?.name ?? "General"}
               </Badge>
+              {isAuthor && (
+                <div className="flex items-center space-x-1">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    title={isEditing ? "Cancel editing" : "Edit post"}
+                    onClick={handleEditToggle}
+                  >
+                    {isEditing ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+                  </Button>
+                  {isEditing && (
+                    <Button
+                      variant="default"
+                      size="icon"
+                      className="h-8 w-8"
+                      title="Save changes"
+                      onClick={handleSaveEdit}
+                      disabled={updatePost.isPending}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="h-8 w-8"
+                        title="Delete post"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this post?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete
+                          your post and remove it from the community blog.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive hover:bg-destructive/70"
+                          onClick={handleDeletePost}
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Post Content */}
           <div className="space-y-6">
-            <h1 className="text-foreground text-3xl leading-tight font-bold">
-              {post.title}
-            </h1>
+            {isEditing ? (
+              <div className="space-y-4">
+                {/* Edit Title */}
+                <div className="space-y-2">
+                  <Label htmlFor="edit-title">Title</Label>
+                  <Input
+                    id="edit-title"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="text-2xl font-bold"
+                  />
+                </div>
 
-            <div className="prose prose-lg prose-blog dark:prose-invert text-foreground/80 max-w-full">
-              <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
-            </div>
+                {/* Edit Category */}
+                <div className="space-y-3">
+                  <Label htmlFor="edit-category" className="text-sm font-medium">
+                    Categories
+                  </Label>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                    {categories?.map((category) => (
+                      <div
+                        key={category.id}
+                        className={`
+                          relative flex items-center space-x-3 rounded-lg border p-3 transition-all duration-200 cursor-pointer
+                          ${editCategoryIds.includes(category.id)
+                            ? 'border-primary bg-primary/5 shadow-sm'
+                            : 'border-border bg-background hover:border-primary/50 hover:bg-muted/30'
+                          }
+                        `}
+                        onClick={() => {
+                          if (editCategoryIds.includes(category.id)) {
+                            setEditCategoryIds(prev => prev.filter(id => id !== category.id));
+                          } else {
+                            setEditCategoryIds(prev => [...prev, category.id]);
+                          }
+                        }}
+                      >
+                        <Checkbox
+                          id={`category-${category.id}`}
+                          checked={editCategoryIds.includes(category.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setEditCategoryIds(prev => [...prev, category.id]);
+                            } else {
+                              setEditCategoryIds(prev => prev.filter(id => id !== category.id));
+                            }
+                          }}
+                          className="pointer-events-none"
+                        />
+                        <Label
+                          htmlFor={`category-${category.id}`}
+                          className="text-sm font-medium cursor-pointer flex-1 pointer-events-none"
+                        >
+                          {category.name}
+                        </Label>
+                        {editCategoryIds.includes(category.id) && (
+                          <div className="absolute top-2 right-2">
+                            <div className="h-2 w-2 rounded-full bg-primary"></div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {editCategoryIds.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="text-xs text-muted-foreground">Selected:</span>
+                      {editCategoryIds.map((categoryId) => {
+                        const category = categories?.find(c => c.id === categoryId);
+                        return (
+                          <span
+                            key={categoryId}
+                            className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
+                          >
+                            {category?.name}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Edit Content */}
+                <div className="space-y-2">
+                  <Label htmlFor="edit-content">Content</Label>
+                  <Textarea
+                    id="edit-content"
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    rows={15}
+                    className="resize-none"
+                  />
+                </div>
+
+                {/* Edit Published Status */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="edit-published"
+                    checked={editPublished}
+                    onCheckedChange={(checked) => setEditPublished(checked as boolean)}
+                  />
+                  <Label htmlFor="edit-published">Published</Label>
+                </div>
+              </div>
+            ) : (
+              <>
+                <h1 className="text-foreground text-3xl leading-tight font-bold">
+                  {post.title}
+                </h1>
+
+                <div className="prose prose-lg prose-blog dark:prose-invert text-foreground/80 max-w-full">
+                  <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
+                </div>
+              </>
+            )}
 
             {/* Cover Image */}
             {post.coverImageUrl && (
@@ -233,7 +506,7 @@ export default function BlogPost({ post }: BlogPostProps) {
                 <div className="text-muted-foreground flex items-center space-x-2">
                   <MessageSquareText className="h-5 w-5" />
                   <span className="text-base flex gap-2">
-                    {(post as any)._count?.comments ?? 0} <span className="hidden sm:flex">Comments</span>
+                    {post._count?.comments ?? 0} <span className="hidden sm:flex">Comments</span>
                   </span>
                 </div>
               </div>
@@ -256,7 +529,7 @@ export default function BlogPost({ post }: BlogPostProps) {
                 <div className="mb-6">
                   <h3 className="text-foreground flex items-center gap-2 text-2xl font-bold">
                     <MessageSquareText className="h-6 w-6" />
-                    Comments ({(post as any)._count?.comments ?? 0})
+                    Comments ({post._count?.comments ?? 0})
                   </h3>
                 </div>
               </div>

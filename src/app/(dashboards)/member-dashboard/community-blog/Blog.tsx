@@ -12,7 +12,7 @@ import {
 } from "~/components/ui/select";
 import { Badge } from "~/components/ui/badge";
 import { Textarea } from "~/components/ui/textarea";
-import { Search, Heart, Check, X, MessageSquareText, Send } from "lucide-react";
+import { Search, Heart, Check, X, MessageSquareText, Send, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Label } from "@radix-ui/react-dropdown-menu";
@@ -29,6 +29,17 @@ import { type RouterOutputs } from "~/trpc/react";
 import { useAuth } from "~/hooks/useAuth";
 
 import CommentItem from "~/components/community-blog/comment-item";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
 
 type BlogPost = RouterOutputs["member"]["blog"]["list"]["posts"][number];
 
@@ -50,7 +61,6 @@ function BlogPostCard({ post }: { post: BlogPost }) {
         setLocalLikeCount(data.likeCount ?? 0);
         toast.success("Post liked!");
 
-        void utils.member.blog.myPosts.invalidate();
         void utils.member.blog.list.invalidate();
       }
     },
@@ -66,7 +76,6 @@ function BlogPostCard({ post }: { post: BlogPost }) {
         setLocalLikeCount(data.likeCount ?? 0);
         toast.success("Post unliked!");
 
-        void utils.member.blog.myPosts.invalidate();
         void utils.member.blog.list.invalidate();
       }
     },
@@ -88,7 +97,6 @@ function BlogPostCard({ post }: { post: BlogPost }) {
       setCommentText("");
       void refetchComments();
 
-      void utils.member.blog.myPosts.invalidate();
       void utils.member.blog.list.invalidate();
     },
     onError: () => {
@@ -102,7 +110,6 @@ function BlogPostCard({ post }: { post: BlogPost }) {
       toast.success("Reply added!");
       void refetchComments();
 
-      void utils.member.blog.myPosts.invalidate();
       void utils.member.blog.list.invalidate();
     },
     onError: () => {
@@ -125,10 +132,18 @@ function BlogPostCard({ post }: { post: BlogPost }) {
       toast.success("Comment deleted!");
       void refetchComments();
 
-      void utils.member.blog.myPosts.invalidate();
       void utils.member.blog.list.invalidate();
     },
     onError: () => toast.error("Failed to delete comment"),
+  });
+
+  // Delete post
+  const deletePost = api.member.blog.deletePost.useMutation({
+    onSuccess: () => {
+      toast.success("Post deleted!");
+      void utils.member.blog.list.invalidate();
+    },
+    onError: () => toast.error("Failed to delete post"),
   });
 
   const handleLikeToggle = () => {
@@ -155,6 +170,12 @@ function BlogPostCard({ post }: { post: BlogPost }) {
     });
   };
 
+  const handleDeletePost = () => {
+    deletePost.mutate({ id: post.id });
+  };
+
+  const isAuthor = post.authorId === dbUser?.id;
+
   return (
     <Card className="overflow-hidden">
       <CardContent className="">
@@ -180,7 +201,7 @@ function BlogPostCard({ post }: { post: BlogPost }) {
               )}
             </span>
           </div>
-          <div>
+          <div className="flex-1">
             <p className="text-foreground font-medium">
               {post.author?.name ?? "Member"}
             </p>
@@ -188,10 +209,55 @@ function BlogPostCard({ post }: { post: BlogPost }) {
               {post.author?.professionalPosition ?? "Member"}
             </p>
           </div>
-          <div className="ml-auto">
+          <div className="flex items-center space-x-2">
             <Badge variant="secondary" className="text-xs">
               {post.categories[0]?.category?.name ?? "General"}
             </Badge>
+            {isAuthor && (
+              <div className="flex items-center space-x-1">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  title="Edit post"
+                >
+                  <Link href={`/member-dashboard/community-blog/${post.id}?edit=true`}>
+                    <Pencil className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="h-8 w-8"
+                      title="Delete post"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this post?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete
+                        your post and remove it from the community blog.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/70"
+                        onClick={handleDeletePost}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
           </div>
         </div>
 
@@ -401,7 +467,7 @@ export default function CommunityBlog() {
                   </Link>
                 </Button>
                 <Button variant="outline" asChild>
-                  <Link href={"/member-dashboard/community-blog/my-posts"}>
+                  <Link href={"/member-dashboard/community-blog"}>
                     View my Posts
                   </Link>
                 </Button>

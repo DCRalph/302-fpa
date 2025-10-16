@@ -281,7 +281,7 @@ function CommentItem({
           {comment.subComments.map((subComment) => (
             <CommentItem
               key={subComment.id}
-              comment={subComment}
+              comment={{ ...subComment, subComments: [] }}
               currentUserId={currentUserId}
               onUpdate={onUpdate}
               onDelete={onDelete}

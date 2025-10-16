@@ -80,15 +80,12 @@ export default function CreatePostPage() {
 
     setIsSubmitting(true);
 
-    // NOTE: image upload is not wired to the backend yet. If you have an
-    // endpoint for uploads, upload `imageFile` first and include the image URL
-    // in the mutation payload. For now we send the basic post data only.
     createPostMutation.mutate({
       title: formData.title,
       content: formData.content,
       published: formData.published,
-      categorySlugs: [selectedFilter],
-      // image: uploadedImageUrl ?? undefined,
+      // categorySlugs: [selectedFilter], // TODO: Implement this
+      // image: uploadedImageUrl ?? undefined, // TODO: Implement this
     });
 
     router.push("/member-dashboard/community-blog");

@@ -15,11 +15,25 @@ import {
 } from "~/server/api/lib/activity-logger";
 
 export const memberBlogRouter = createTRPCRouter({
+  // Get all blog categories
+  getCategories: protectedProcedure.query(async ({ ctx }) => {
+    const categories = await ctx.db.blogCategory.findMany({
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+    });
+    return categories;
+  }),
+
   // Get a list of all posts that match the search query and are published
   list: protectedProcedure
     .input(
       z
         .object({
+          
           query: z.string().optional(),
           categorySlug: z.string().optional(),
           take: z.number().min(1).max(50).default(10),
@@ -92,12 +106,12 @@ export const memberBlogRouter = createTRPCRouter({
       z.object({
         title: z.string().min(3),
         content: z.string().min(1),
-        categorySlugs: z.array(z.string()).optional(),
+        categoryIds: z.array(z.string()).optional(),
         published: z.boolean().default(true),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { title, content, categorySlugs, published } = input;
+      const { title, content, categoryIds, published } = input;
 
       const post = await ctx.db.blogPost.create({
         data: {
@@ -109,17 +123,11 @@ export const memberBlogRouter = createTRPCRouter({
         },
       });
 
-      if (categorySlugs && categorySlugs.length > 0) {
-        const categories = await ctx.db.blogCategory.findMany({
-          where: { slug: { in: categorySlugs } },
-          select: { id: true },
+      if (categoryIds && categoryIds.length > 0) {
+        await ctx.db.blogPostCategory.createMany({
+          data: categoryIds.map((categoryId) => ({ postId: post.id, categoryId })),
+          skipDuplicates: true,
         });
-        if (categories.length > 0) {
-          await ctx.db.blogPostCategory.createMany({
-            data: categories.map((c) => ({ postId: post.id, categoryId: c.id })),
-            skipDuplicates: true,
-          });
-        }
       }
 
       // Log activity
@@ -159,7 +167,7 @@ export const memberBlogRouter = createTRPCRouter({
             postId: post.id,
             postTitle: title,
             published,
-            categorySlugs,
+            categoryIds,
           },
         }),
       ]);
@@ -167,37 +175,6 @@ export const memberBlogRouter = createTRPCRouter({
       return post;
     }),
 
-  // Get a list of the users current posts regardless if they are published or not
-  myPosts: protectedProcedure
-    .query(async ({ ctx }) => {
-      const posts = await ctx.db.blogPost.findMany({
-        where: { authorId: ctx.dbUser.id },
-        orderBy: { createdAt: "desc" },
-        include: {
-          categories: { include: { category: true } },
-          _count: { select: { comments: true, likes: true } },
-        },
-      });
-
-      // Check which posts are liked by the current user
-      const postIds = posts.map((p) => p.id);
-      const userLikes = await ctx.db.blogPostLike.findMany({
-        where: {
-          userId: ctx.dbUser.id,
-          postId: { in: postIds },
-        },
-        select: { postId: true },
-      });
-
-      const likedPostIds = new Set(userLikes.map((like) => like.postId));
-
-      const postsWithLikeStatus = posts.map((post) => ({
-        ...post,
-        isLikedByUser: likedPostIds.has(post.id),
-      }));
-
-      return postsWithLikeStatus;
-    }),
 
   // Update member details
   updatePost: protectedProcedure
@@ -206,12 +183,12 @@ export const memberBlogRouter = createTRPCRouter({
         id: z.string(),
         title: z.string().min(3),
         content: z.string().min(1),
-        categorySlugs: z.array(z.string()).optional(),
+        categoryIds: z.array(z.string()).optional(),
         published: z.boolean().default(true),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, categorySlugs, ...updateData } = input;
+      const { id, categoryIds, ...updateData } = input;
 
       // Get the current post to check authorization
       const currentPost = await ctx.db.blogPost.findUnique({
@@ -235,24 +212,18 @@ export const memberBlogRouter = createTRPCRouter({
       });
 
       // Update categories if provided
-      if (categorySlugs !== undefined) {
+      if (categoryIds !== undefined) {
         // Remove existing categories
         await ctx.db.blogPostCategory.deleteMany({
           where: { postId: id },
         });
 
         // Add new categories
-        if (categorySlugs.length > 0) {
-          const categories = await ctx.db.blogCategory.findMany({
-            where: { slug: { in: categorySlugs } },
-            select: { id: true },
+        if (categoryIds.length > 0) {
+          await ctx.db.blogPostCategory.createMany({
+            data: categoryIds.map((categoryId) => ({ postId: id, categoryId })),
+            skipDuplicates: true,
           });
-          if (categories.length > 0) {
-            await ctx.db.blogPostCategory.createMany({
-              data: categories.map((c) => ({ postId: post.id, categoryId: c.id })),
-              skipDuplicates: true,
-            });
-          }
         }
       }
 
@@ -294,7 +265,7 @@ export const memberBlogRouter = createTRPCRouter({
             postTitle: input.title,
             published: updateData.published,
             wasPublished: currentPost.published,
-            categorySlugs,
+            categoryIds,
           },
         }),
       ]);
@@ -318,7 +289,7 @@ export const memberBlogRouter = createTRPCRouter({
       // Delete associated categories and the post itself
       await ctx.db.blogPostCategory.deleteMany({ where: { postId: input.id } });
       await ctx.db.blogPost.delete({ where: { id: input.id } });
-      
+
       // Log activity
       await Promise.all([
         logUserActivity(ctx.db, {
@@ -372,6 +343,7 @@ export const memberBlogRouter = createTRPCRouter({
             include: {
               category: {
                 select: {
+                  id: true,
                   name: true,
                   slug: true,
                 },

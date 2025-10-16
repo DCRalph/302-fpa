@@ -36,7 +36,7 @@ export default function MemberDashboardPage() {
 
   const { data: memberDashboard } =
     api.member.dashboard.getMemberDashboard.useQuery();
-  const { data: blogPosts } = api.member.blog.myPosts.useQuery();
+  const { data: blogPosts } = api.member.blog.list.useQuery();
 
   return (
     <main className="text-foreground flex">
@@ -151,13 +151,6 @@ export default function MemberDashboardPage() {
                   <div className="flex w-full items-center justify-between">
                     <span className="text-2xl">Recent Blog Posts</span>
                     <div className="flex items-center space-x-2">
-                      <Button variant={"outline"} asChild>
-                        <Link
-                          href={"/member-dashboard/community-blog/my-posts"}
-                        >
-                          View All
-                        </Link>
-                      </Button>
                       <Button asChild>
                         <Link href={"/member-dashboard/community-blog/create"}>
                           Create Post
@@ -170,12 +163,13 @@ export default function MemberDashboardPage() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="text-muted-foreground space-y-4">
-                    {!blogPosts || blogPosts.length === 0 ? (
+                    {!blogPosts?.posts || blogPosts.posts.filter((post) => post.authorId === dbUser?.id).length === 0 ? (
                       <p className="text-muted-foreground">
                         You haven&apos;t created any posts yet.
                       </p>
                     ) : (
-                      blogPosts
+                      blogPosts?.posts
+                        ?.filter((post) => post.authorId === dbUser?.id)
                         .slice(0, 3) // show 3 most recent posts
                         .map((post) => (
                           <div
