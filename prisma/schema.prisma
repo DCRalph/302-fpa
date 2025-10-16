@@ -405,6 +405,11 @@ model BlogComment {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  subComments BlogComment[] @relation("ParentComment")
+
+  parentCommentId String?
+  parentComment   BlogComment? @relation("ParentComment", fields: [parentCommentId], references: [id])
+
   @@index([postId])
 }
 

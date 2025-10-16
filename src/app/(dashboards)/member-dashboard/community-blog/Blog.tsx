@@ -96,6 +96,20 @@ function BlogPostCard({ post }: { post: BlogPost }) {
     },
   });
 
+  // Add reply to comment
+  const addReply = api.member.blog.addComment.useMutation({
+    onSuccess: () => {
+      toast.success("Reply added!");
+      void refetchComments();
+
+      void utils.member.blog.myPosts.invalidate();
+      void utils.member.blog.list.invalidate();
+    },
+    onError: () => {
+      toast.error("Failed to add reply");
+    },
+  });
+
   // Update comment
   const updateComment = api.member.blog.updateComment.useMutation({
     onSuccess: () => {
@@ -131,6 +145,14 @@ function BlogPostCard({ post }: { post: BlogPost }) {
       return;
     }
     addComment.mutate({ postId: post.id, content: commentText });
+  };
+
+  const handleReply = (parentCommentId: string, content: string) => {
+    addReply.mutate({
+      postId: post.id,
+      content,
+      parentCommentId,
+    });
   };
 
   return (
@@ -266,6 +288,7 @@ function BlogPostCard({ post }: { post: BlogPost }) {
                         updateComment.mutate({ id: id, content })
                       }
                       onDelete={(id) => deleteComment.mutate({ id })}
+                      onReply={handleReply}
                     />
                   ))
                 ) : (

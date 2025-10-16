@@ -485,6 +485,7 @@ export const memberBlogRouter = createTRPCRouter({
       z.object({
         postId: z.string(),
         content: z.string().min(1).max(2000),
+        parentCommentId: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -507,6 +508,7 @@ export const memberBlogRouter = createTRPCRouter({
           content: input.content,
           authorId: ctx.dbUser.id,
           approved: true,
+          parentCommentId: input.parentCommentId,
         },
         include: {
           author: {
@@ -636,6 +638,7 @@ export const memberBlogRouter = createTRPCRouter({
         where: {
           postId: input.postId,
           approved: true,
+          parentCommentId: null, // Only get top-level comments
         },
         orderBy: { createdAt: "desc" },
         include: {
@@ -645,6 +648,22 @@ export const memberBlogRouter = createTRPCRouter({
               name: true,
               image: true,
               professionalPosition: true,
+            },
+          },
+          subComments: {
+            where: {
+              approved: true,
+            },
+            orderBy: { createdAt: "asc" },
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  professionalPosition: true,
+                },
+              },
             },
           },
         },

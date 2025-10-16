@@ -84,6 +84,18 @@ export default function BlogPost({ post }: BlogPostProps) {
     },
   });
 
+  // Add reply to comment
+  const addReply = api.member.blog.addComment.useMutation({
+    onSuccess: () => {
+      toast.success("Reply added!");
+      void refetchComments();
+      void utils.member.blog.list.invalidate();
+    },
+    onError: () => {
+      toast.error("Failed to add reply");
+    },
+  });
+
   // Update comment
   const updateComment = api.member.blog.updateComment.useMutation({
     onSuccess: () => {
@@ -117,6 +129,14 @@ export default function BlogPost({ post }: BlogPostProps) {
       return;
     }
     addComment.mutate({ postId: post.id, content: commentText });
+  };
+
+  const handleReply = (parentCommentId: string, content: string) => {
+    addReply.mutate({
+      postId: post.id,
+      content,
+      parentCommentId,
+    });
   };
 
   return (
@@ -300,6 +320,7 @@ export default function BlogPost({ post }: BlogPostProps) {
                             updateComment.mutate({ id: id, content })
                           }
                           onDelete={(id) => deleteComment.mutate({ id })}
+                          onReply={handleReply}
                         />
                       </div>
                     ))}
