@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Card,
@@ -27,39 +27,89 @@ import {
 
 import Image from "next/image";
 
-export default function CreatePostPage() {
+export default function EditPostPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    title: "",
-    content: "",
-    published: true,
-    postType: ""
-  });
-  const [selectedFilter, setSelectedFilter] = useState("general");
-  // individual form state
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [published, setPublished] = useState(true);
-  const [createCategoryIds, setCreateCategoryIds] = useState<string[]>([]);
+  const params = useParams();
+  const postId = params.id as string;
 
-  // Load categories to populate select and map slug -> id
+  const { data: post } = api.member.blog.getById.useQuery(
+    { id: postId },
+    { enabled: !!postId },
+  );
+
+  // Editing state - initialize from query params
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(post?.title);
+  const [editContent, setEditContent] = useState(post?.content);
+  const [editPublished, setEditPublished] = useState(post?.published);
+  const [editCategoryIds, setEditCategoryIds] = useState(
+    post?.categories.map((category) => category.category.id) ?? [],
+  );
+
+  const [selectedFilter, setSelectedFilter] = useState("general");
+
+  // Load available categories so we can map slug -> id
   const { data: categories } = api.member.blog.getCategories.useQuery();
+
+  // Populate form when post data is loaded
+  useEffect(() => {
+    if (post) {
+      const slug = post.categories?.[0]?.category?.slug ?? "general";
+      setSelectedFilter(slug);
+
+      setIsEditing(true);
+      setEditTitle(post.title);
+      setEditContent(post.content);
+      setEditPublished(post.published);
+      setEditCategoryIds(
+        post.categories.map((category) => category.category.id),
+      );
+    }
+  }, [post]);
+
+  // Keep selectedFilter in sync if formData.postType changes (e.g. user or post updates)
+  // (removed stale formData sync) selectedFilter is initialized from post above
+
+  // When selectedFilter changes, map it to category id(s) so the mutation uses the correct ids
+  useEffect(() => {
+    if (!categories || !selectedFilter) return;
+
+    const match = categories.find((c) => c.slug === selectedFilter);
+    if (match) {
+      // single-select: replace editCategoryIds with the selected category id
+      setEditCategoryIds([match.id]);
+    } else if (selectedFilter === "all-posts") {
+      // no-op: keep existing selection
+    } else {
+      // fallback: if slug not found, do nothing
+    }
+  }, [selectedFilter, categories]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null); // TODO: Create an S3 bucket to upload images to
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const utils = api.useUtils();
 
-  const createPostMutation = api.member.blog.createPost.useMutation({
+  const updatePostMutation = api.member.blog.updatePost.useMutation({
     onSuccess: async () => {
-      // Invalidate profile and auth.me cache so UI updates
-      await utils.member.blog.invalidate()
+      // Invalidate specific blog queries so refreshed data is fetched
+      try {
+        await Promise.all([
+          utils.member.blog.getById.invalidate({ id: postId }),
+          utils.member.blog.list.invalidate(),
+        ]);
+      } catch (e) {
+        // fallback to broad invalidate
+        toast.error("Failed to update post");
+        await utils.member.blog.invalidate?.();
+      }
 
-      toast.success("Post created successfully");
-      router.push("/member-dashboard/community-blog");
+      toast.success("Post updated successfully");
+      router.push(`/member-dashboard/community-blog/${postId}`);
     },
     onError: (err) => {
-      toast.error(err.message ?? "Failed to create post");
+      toast.error(err.message ?? "Failed to update post");
     },
     onSettled: () => {
       setIsSubmitting(false);
@@ -72,13 +122,16 @@ export default function CreatePostPage() {
   ) => {
     switch (field) {
       case "title":
-        setTitle(value as string);
+        setEditTitle(value as string);
         break;
       case "content":
-        setContent(value as string);
+        setEditContent(value as string);
         break;
       case "published":
-        setPublished(value as boolean);
+        setEditPublished(value as boolean);
+        break;
+      case "postType":
+        setSelectedFilter(value as string);
         break;
       default:
         break;
@@ -88,36 +141,30 @@ export default function CreatePostPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) {
+    if (!editTitle || !editTitle.trim()) {
       toast.error("Please enter a title for the post");
       return;
     }
 
-    if (!content.trim()) {
+    if (!editContent || !editContent.trim()) {
       toast.error("Please enter content for the post");
       return;
     }
 
     setIsSubmitting(true);
 
-    createPostMutation.mutate({
-      title,
-      content,
-      published,
-      categoryIds: createCategoryIds,
+    // NOTE: image upload is not wired to the backend yet. If you have an
+    // endpoint for uploads, upload `imageFile` first and include the image URL
+    // in the mutation payload. For now we send the basic post data only.
+    updatePostMutation.mutate({
+      id: postId,
+      title: editTitle ?? "",
+      content: editContent ?? "",
+      published: editPublished ?? true,
+      categoryIds: editCategoryIds,
       // image: uploadedImageUrl ?? undefined,
     });
   };
-
-  // Map selectedFilter (slug) to category id(s)
-  useEffect(() => {
-    if (!categories || !selectedFilter) return;
-
-    const match = categories.find((c) => c.slug === selectedFilter);
-    if (match) {
-      setCreateCategoryIds([match.id]);
-    }
-  }, [selectedFilter, categories]);
 
   return (
     <main className="flex-1 p-3 sm:p-4 md:p-6">
@@ -126,12 +173,9 @@ export default function CreatePostPage() {
           <Card>
             {/* Header */}
             <CardHeader>
-              <CardTitle className="text-2xl font-bold">
-                Create New Post
-              </CardTitle>
+              <CardTitle className="text-2xl font-bold">Edit Post</CardTitle>
               <CardDescription className="text-base">
-                Share something with the community — write a title and some
-                content.
+                Review and modify post details.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -144,32 +188,56 @@ export default function CreatePostPage() {
                   <Input
                     id="title"
                     placeholder="Post title"
-                    value={title}
+                    value={editTitle ?? ""}
                     onChange={(e) => handleInputChange("title", e.target.value)}
                     required
                   />
                 </div>
-                
+
                 {/* Post Type */}
                 <div className="space-y-2">
-                  <Label htmlFor="title">
+                  <Label htmlFor="postType">
                     Post Type<span className="text-red-500">*</span>
                   </Label>
                   <Select
-                    value={selectedFilter}
-                    onValueChange={setSelectedFilter}
+                    value={selectedFilter ?? "general"}
+                    onValueChange={(val) => {
+                      setSelectedFilter(val);
+                      handleInputChange("postType", val);
+                    }}
                   >
                     <SelectTrigger className="bg-background w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="general">General</SelectItem>
-                      <SelectItem value="qualification">
-                        Qualification
-                      </SelectItem>
-                      <SelectItem value="research-paper">
-                        Research Paper
-                      </SelectItem>
+                      {categories && categories.length > 0 ? (
+                        // Render categories fetched from the server
+                        categories.map((c) => (
+                          <SelectItem key={c.id} value={c.slug}>
+                            {c.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        // Fallback static options
+                        <>
+                          <SelectItem value="general">General</SelectItem>
+                          <SelectItem value="qualification">Qualification</SelectItem>
+                          <SelectItem value="research-paper">Research Paper</SelectItem>
+                        </>
+                      )}
+
+                      {/* If post has a category slug not present in categories list yet,
+                          include it so the Select can display the current value */}
+                      {post?.categories?.[0]?.category?.slug &&
+                        categories &&
+                        !categories.find((c) => c.slug === post?.categories?.[0]?.category?.slug) && (
+                          <SelectItem
+                            value={post.categories[0].category.slug}
+                            key={`fallback-${post.categories[0].category.id}`}
+                          >
+                            {post.categories[0].category.name ?? post.categories[0].category.slug}
+                          </SelectItem>
+                        )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -183,7 +251,7 @@ export default function CreatePostPage() {
                 <Textarea
                   id="content"
                   placeholder="Write your post here..."
-                  value={content}
+                  value={editContent ?? ""}
                   onChange={(e) => handleInputChange("content", e.target.value)}
                   rows={10}
                   required
@@ -228,9 +296,9 @@ export default function CreatePostPage() {
                 <div className="mt-4 flex items-center space-x-2">
                   <Checkbox
                     id="published"
-                    checked={!formData.published} // inverse: checked means "draft"
-                    onCheckedChange={(checked) =>
-                      handleInputChange("published", !checked) // invert the value
+                    checked={!editPublished} // inverse: checked means "draft"
+                    onCheckedChange={
+                      (checked) => handleInputChange("published", !checked) // invert the value
                     }
                   />
                   <Label htmlFor="published">Mark as draft</Label>
@@ -244,7 +312,7 @@ export default function CreatePostPage() {
                   className="flex-1"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Creating..." : "Create Post"}
+                  {isSubmitting ? "Updating..." : "Update Post"}
                 </Button>
 
                 <Button
@@ -254,7 +322,7 @@ export default function CreatePostPage() {
                   asChild
                 >
                   <Link
-                    href="/member-dashboard/community-blog"
+                    href={`/member-dashboard/community-blog/${postId}`}
                     className="flex-1"
                   >
                     Cancel

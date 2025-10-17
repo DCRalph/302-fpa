@@ -7,7 +7,17 @@ import { Textarea } from "~/components/ui/textarea";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Checkbox } from "~/components/ui/checkbox";
-import { Heart, MessageSquareText, Send, ArrowLeft, Pencil, Trash2, Check, X } from "lucide-react";
+import {
+  Heart,
+  MessageSquareText,
+  Send,
+  ArrowLeft,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  MoreVertical,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
@@ -30,6 +40,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 
 type BlogPost = NonNullable<RouterOutputs["member"]["blog"]["getById"]>;
 
@@ -42,9 +59,7 @@ export default function BlogPost({ post }: BlogPostProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [commentText, setCommentText] = useState("");
-  const [localLikeCount, setLocalLikeCount] = useState(
-    post._count?.likes ?? 0,
-  );
+  const [localLikeCount, setLocalLikeCount] = useState(post._count?.likes ?? 0);
   const [isLiked, setIsLiked] = useState(post.isLikedByUser ?? false);
 
   // Editing state - initialize from query params
@@ -53,7 +68,7 @@ export default function BlogPost({ post }: BlogPostProps) {
   const [editContent, setEditContent] = useState(post.content);
   const [editPublished, setEditPublished] = useState(post.published);
   const [editCategoryIds, setEditCategoryIds] = useState(
-    post.categories.map((category) => category.category.id)
+    post.categories.map((category) => category.category.id),
   );
 
   // Get categories for the select
@@ -61,8 +76,8 @@ export default function BlogPost({ post }: BlogPostProps) {
 
   // Check for edit query parameter on mount
   useEffect(() => {
-    const editParam = searchParams.get('edit');
-    if (editParam === 'true' && post.authorId === dbUser?.id) {
+    const editParam = searchParams.get("edit");
+    if (editParam === "true" && post.authorId === dbUser?.id) {
       setIsEditing(true);
     }
   }, [searchParams, post.authorId, dbUser?.id]);
@@ -165,8 +180,8 @@ export default function BlogPost({ post }: BlogPostProps) {
 
       // Remove edit query parameter from URL
       const newSearchParams = new URLSearchParams(searchParams.toString());
-      newSearchParams.delete('edit');
-      const newUrl = `${window.location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`;
+      newSearchParams.delete("edit");
+      const newUrl = `${window.location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""}`;
       router.replace(newUrl);
 
       void refetchComments();
@@ -211,7 +226,9 @@ export default function BlogPost({ post }: BlogPostProps) {
       setEditTitle(post.title);
       setEditContent(post.content);
       setEditPublished(post.published);
-      setEditCategoryIds(post.categories.map((category) => category.category.id));
+      setEditCategoryIds(
+        post.categories.map((category) => category.category.id),
+      );
     }
 
     setIsEditing(newEditingState);
@@ -219,12 +236,12 @@ export default function BlogPost({ post }: BlogPostProps) {
     // Update URL query parameters
     const newSearchParams = new URLSearchParams(searchParams.toString());
     if (newEditingState) {
-      newSearchParams.set('edit', 'true');
+      newSearchParams.set("edit", "true");
     } else {
-      newSearchParams.delete('edit');
+      newSearchParams.delete("edit");
     }
 
-    const newUrl = `${window.location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`;
+    const newUrl = `${window.location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""}`;
     router.replace(newUrl);
   };
 
@@ -247,13 +264,13 @@ export default function BlogPost({ post }: BlogPostProps) {
     });
   };
 
-
   const isAuthor = post.authorId === dbUser?.id;
+  const [openDialog, setOpenDialog] = useState(false);
 
   return (
     <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6">
       {/* Back Button */}
-      <div className="flex items-center">
+      <div className="flex items-center max-w-7xl mx-auto">
         <Button variant="ghost" asChild>
           <Link
             href="/member-dashboard/community-blog"
@@ -265,7 +282,7 @@ export default function BlogPost({ post }: BlogPostProps) {
         </Button>
       </div>
 
-      <Card className="overflow-hidden p-0">
+      <Card className="overflow-hidden p-0 max-w-7xl mx-auto">
         <CardContent className="p-6">
           {/* Author Info */}
           <div className="mb-6 flex items-center space-x-3">
@@ -303,51 +320,63 @@ export default function BlogPost({ post }: BlogPostProps) {
               </Badge>
               {isAuthor && (
                 <div className="flex items-center space-x-1">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8"
-                    title={isEditing ? "Cancel editing" : "Edit post"}
-                    onClick={handleEditToggle}
-                  >
-                    {isEditing ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
-                  </Button>
-                  {isEditing && (
-                    <Button
-                      variant="default"
-                      size="icon"
-                      className="h-8 w-8"
-                      title="Save changes"
-                      onClick={handleSaveEdit}
-                      disabled={updatePost.isPending}
-                    >
-                      <Check className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                       <Button
-                        variant="destructive"
+                        variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        title="Delete post"
+                        title="Post actions"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <MoreVertical className="h-4 w-4" />
                       </Button>
-                    </AlertDialogTrigger>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent align="end" className="w-36">
+                      <DropdownMenuItem
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          // navigate to edit view
+                          void router.push(
+                            `/member-dashboard/community-blog/${post.id}/edit`,
+                          );
+                        }}
+                      >
+                        <Pencil className="mr-2 h-4 w-4" /> Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          setOpenDialog(true);
+                        }}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="text-destructive mr-2 h-4 w-4" />{" "}
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete this post?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete
-                          your post and remove it from the community blog.
+                          This action cannot be undone. This will permanently
+                          delete your post and remove it from the community
+                          blog.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={() => setOpenDialog(false)}>
+                          Cancel
+                        </AlertDialogCancel>
                         <AlertDialogAction
                           className="bg-destructive hover:bg-destructive/70"
-                          onClick={handleDeletePost}
+                          onClick={() => {
+                            handleDeletePost();
+                            setOpenDialog(false);
+                          }}
                         >
                           Delete
                         </AlertDialogAction>
@@ -376,25 +405,31 @@ export default function BlogPost({ post }: BlogPostProps) {
 
                 {/* Edit Category */}
                 <div className="space-y-3">
-                  <Label htmlFor="edit-category" className="text-sm font-medium">
+                  <Label
+                    htmlFor="edit-category"
+                    className="text-sm font-medium"
+                  >
                     Categories
                   </Label>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                     {categories?.map((category) => (
                       <div
                         key={category.id}
-                        className={`
-                          relative flex items-center space-x-3 rounded-lg border p-3 transition-all duration-200 cursor-pointer
-                          ${editCategoryIds.includes(category.id)
-                            ? 'border-primary bg-primary/5 shadow-sm'
-                            : 'border-border bg-background hover:border-primary/50 hover:bg-muted/30'
-                          }
-                        `}
+                        className={`relative flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-all duration-200 ${
+                          editCategoryIds.includes(category.id)
+                            ? "border-primary bg-primary/5 shadow-sm"
+                            : "border-border bg-background hover:border-primary/50 hover:bg-muted/30"
+                        } `}
                         onClick={() => {
                           if (editCategoryIds.includes(category.id)) {
-                            setEditCategoryIds(prev => prev.filter(id => id !== category.id));
+                            setEditCategoryIds((prev) =>
+                              prev.filter((id) => id !== category.id),
+                            );
                           } else {
-                            setEditCategoryIds(prev => [...prev, category.id]);
+                            setEditCategoryIds((prev) => [
+                              ...prev,
+                              category.id,
+                            ]);
                           }
                         }}
                       >
@@ -403,22 +438,27 @@ export default function BlogPost({ post }: BlogPostProps) {
                           checked={editCategoryIds.includes(category.id)}
                           onCheckedChange={(checked) => {
                             if (checked) {
-                              setEditCategoryIds(prev => [...prev, category.id]);
+                              setEditCategoryIds((prev) => [
+                                ...prev,
+                                category.id,
+                              ]);
                             } else {
-                              setEditCategoryIds(prev => prev.filter(id => id !== category.id));
+                              setEditCategoryIds((prev) =>
+                                prev.filter((id) => id !== category.id),
+                              );
                             }
                           }}
                           className="pointer-events-none"
                         />
                         <Label
                           htmlFor={`category-${category.id}`}
-                          className="text-sm font-medium cursor-pointer flex-1 pointer-events-none"
+                          className="pointer-events-none flex-1 cursor-pointer text-sm font-medium"
                         >
                           {category.name}
                         </Label>
                         {editCategoryIds.includes(category.id) && (
                           <div className="absolute top-2 right-2">
-                            <div className="h-2 w-2 rounded-full bg-primary"></div>
+                            <div className="bg-primary h-2 w-2 rounded-full"></div>
                           </div>
                         )}
                       </div>
@@ -426,13 +466,17 @@ export default function BlogPost({ post }: BlogPostProps) {
                   </div>
                   {editCategoryIds.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <span className="text-xs text-muted-foreground">Selected:</span>
+                      <span className="text-muted-foreground text-xs">
+                        Selected:
+                      </span>
                       {editCategoryIds.map((categoryId) => {
-                        const category = categories?.find(c => c.id === categoryId);
+                        const category = categories?.find(
+                          (c) => c.id === categoryId,
+                        );
                         return (
                           <span
                             key={categoryId}
-                            className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
+                            className="bg-primary/10 text-primary inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
                           >
                             {category?.name}
                           </span>
@@ -459,7 +503,9 @@ export default function BlogPost({ post }: BlogPostProps) {
                   <Checkbox
                     id="edit-published"
                     checked={editPublished}
-                    onCheckedChange={(checked) => setEditPublished(checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      setEditPublished(checked as boolean)
+                    }
                   />
                   <Label htmlFor="edit-published">Published</Label>
                 </div>
@@ -471,7 +517,9 @@ export default function BlogPost({ post }: BlogPostProps) {
                 </h1>
 
                 <div className="prose prose-lg prose-blog dark:prose-invert text-foreground/80 max-w-full">
-                  <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
+                  <Markdown remarkPlugins={[remarkGfm]}>
+                    {post.content}
+                  </Markdown>
                 </div>
               </>
             )}
@@ -505,8 +553,9 @@ export default function BlogPost({ post }: BlogPostProps) {
                 </Button>
                 <div className="text-muted-foreground flex items-center space-x-2">
                   <MessageSquareText className="h-5 w-5" />
-                  <span className="text-base flex gap-2">
-                    {post._count?.comments ?? 0} <span className="hidden sm:flex">Comments</span>
+                  <span className="flex gap-2 text-base">
+                    {post._count?.comments ?? 0}{" "}
+                    <span className="hidden sm:flex">Comments</span>
                   </span>
                 </div>
               </div>

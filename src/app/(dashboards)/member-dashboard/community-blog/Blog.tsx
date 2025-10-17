@@ -12,10 +12,28 @@ import {
 } from "~/components/ui/select";
 import { Badge } from "~/components/ui/badge";
 import { Textarea } from "~/components/ui/textarea";
-import { Search, Heart, Check, X, MessageSquareText, Send, Pencil, Trash2 } from "lucide-react";
+import {
+  Search,
+  Heart,
+  Check,
+  X,
+  MessageSquareText,
+  Send,
+  Pencil,
+  Trash2,
+  MoreVertical,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Label } from "@radix-ui/react-dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "~/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
 import Image from "next/image";
@@ -46,6 +64,7 @@ type BlogPost = RouterOutputs["member"]["blog"]["list"]["posts"][number];
 // BlogPostCard Component
 function BlogPostCard({ post }: { post: BlogPost }) {
   const { dbUser } = useAuth();
+  const router = useRouter();
 
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
@@ -175,6 +194,7 @@ function BlogPostCard({ post }: { post: BlogPost }) {
   };
 
   const isAuthor = post.authorId === dbUser?.id;
+  const [openDialog, setOpenDialog] = useState(false);
 
   return (
     <Card className="overflow-hidden">
@@ -215,41 +235,62 @@ function BlogPostCard({ post }: { post: BlogPost }) {
             </Badge>
             {isAuthor && (
               <div className="flex items-center space-x-1">
-                <Button
-                  asChild
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  title="Edit post"
-                >
-                  <Link href={`/member-dashboard/community-blog/${post.id}?edit=true`}>
-                    <Pencil className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
                     <Button
-                      variant="destructive"
+                      variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      title="Delete post"
+                      title="Post actions"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <MoreVertical className="h-4 w-4" />
                     </Button>
-                  </AlertDialogTrigger>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent align="end" className="w-36">
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        // navigate to edit view
+                        void router.push(
+                          `/member-dashboard/community-blog/${post.id}/edit`,
+                        );
+                      }}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" /> Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        setOpenDialog(true);
+                      }}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="text-destructive mr-2 h-4 w-4" />{" "}
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete this post?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete
-                        your post and remove it from the community blog.
+                        This action cannot be undone. This will permanently
+                        delete your post and remove it from the community blog.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel onClick={() => setOpenDialog(false)}>
+                        Cancel
+                      </AlertDialogCancel>
                       <AlertDialogAction
                         className="bg-destructive hover:bg-destructive/70"
-                        onClick={handleDeletePost}
+                        onClick={() => {
+                          handleDeletePost();
+                          setOpenDialog(false);
+                        }}
                       >
                         Delete
                       </AlertDialogAction>

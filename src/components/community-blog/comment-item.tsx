@@ -48,6 +48,7 @@ function CommentItem({
   const [openDialog, setOpenDialog] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
+  const [showReplies, setShowReplies] = useState(false);
 
   const isAuthor = comment.authorId === currentUserId;
 
@@ -122,18 +123,7 @@ function CommentItem({
 
               {/* Action Buttons */}
               <div className="flex items-center space-x-2">
-                {/* Reply Button - only show for top-level comments */}
-                {!isNested && onReply && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsReplying(!isReplying)}
-                    className="text-muted-foreground hover:text-foreground h-7 px-2"
-                  >
-                    <Reply className="mr-1 h-3 w-3" />
-                    Reply
-                  </Button>
-                )}
+                {/* Reply Button was moved below the comment content to improve layout */}
 
                 {/* Author Action Menu */}
                 {isAuthor && (
@@ -235,10 +225,40 @@ function CommentItem({
                 </Button>
               </div>
             </div>
-          ) : (
-            <p className="text-foreground/80 text-sm break-words">
-              {comment.content}
-            </p>
+            ) : (
+            <>
+              <p className="text-foreground/80 text-sm break-words">
+                {comment.content}
+              </p>
+
+              {/* Replies counter & toggle */}
+              {comment.subComments && comment.subComments.length > 0 && (
+                <div className="mt-2 flex items-center space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowReplies((s) => !s)}
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    {showReplies ? 'Hide' : 'Show'} replies ({comment.subComments.length})
+                  </button>
+                </div>
+              )}
+
+              {/* Reply Button - only show for top-level comments */}
+              {!isNested && onReply && (
+                <div className="mt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsReplying((s) => !s)}
+                    className="text-muted-foreground hover:text-foreground h-7 px-2"
+                  >
+                    <Reply className="mr-1 h-3 w-3" />
+                    Reply
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -260,6 +280,7 @@ function CommentItem({
               onClick={() => {
                 setReplyText("");
                 setIsReplying(false);
+                setShowReplies(true);
               }}
             >
               Cancel
@@ -275,8 +296,8 @@ function CommentItem({
         </div>
       )}
 
-      {/* Nested Comments */}
-      {comment.subComments && comment.subComments.length > 0 && (
+      {/* Nested Comments (collapsible) */}
+      {showReplies && comment.subComments && comment.subComments.length > 0 && (
         <div className="mt-4 space-y-3">
           {comment.subComments.map((subComment) => (
             <CommentItem
