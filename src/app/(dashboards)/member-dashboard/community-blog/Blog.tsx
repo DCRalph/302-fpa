@@ -58,6 +58,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
+import ReportDialog from "~/components/community-blog/report-dialog";
 
 type BlogPost = RouterOutputs["member"]["blog"]["list"]["posts"][number];
 
@@ -194,7 +195,14 @@ function BlogPostCard({ post }: { post: BlogPost }) {
   };
 
   const isAuthor = post.authorId === dbUser?.id;
-  const [openDialog, setOpenDialog] = useState(false);
+
+  // Dialogs
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openReportDialog, setOpenReportDialog] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{
+    id: string;
+    type: "post" | "comment";
+  } | null>(null);
 
   return (
     <Card className="overflow-hidden">
@@ -248,7 +256,13 @@ function BlogPostCard({ post }: { post: BlogPost }) {
 
                 <DropdownMenuContent align="end" className="w-36">
                   {!isAuthor && (
-                    <DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        setReportTarget({ id: post.id, type: "post" });
+                        setOpenReportDialog(true);
+                      }}
+                    >
                       <Flag className="mr-2 h-4 w-4" /> Report
                     </DropdownMenuItem>
                   )}
@@ -272,7 +286,7 @@ function BlogPostCard({ post }: { post: BlogPost }) {
                       <DropdownMenuItem
                         onSelect={(e) => {
                           e.preventDefault();
-                          setOpenDialog(true);
+                          setOpenDeleteDialog(true);
                         }}
                         className="text-destructive"
                       >
@@ -283,7 +297,19 @@ function BlogPostCard({ post }: { post: BlogPost }) {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
+
+              {/* Report dialog */}
+              <ReportDialog
+                target={reportTarget}
+                open={openReportDialog}
+                onOpenChange={setOpenReportDialog}
+              />
+
+              {/* Delete dialog */}
+              <AlertDialog
+                open={openDeleteDialog}
+                onOpenChange={setOpenDeleteDialog}
+              >
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Delete this post?</AlertDialogTitle>
@@ -293,14 +319,16 @@ function BlogPostCard({ post }: { post: BlogPost }) {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setOpenDialog(false)}>
+                    <AlertDialogCancel
+                      onClick={() => setOpenDeleteDialog(false)}
+                    >
                       Cancel
                     </AlertDialogCancel>
                     <AlertDialogAction
                       className="bg-destructive hover:bg-destructive/70"
                       onClick={() => {
                         handleDeletePost();
-                        setOpenDialog(false);
+                        setOpenDeleteDialog(false);
                       }}
                     >
                       Delete

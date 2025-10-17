@@ -34,6 +34,7 @@ import {
 import { type RouterOutputs } from "~/trpc/react";
 
 import { useAuth } from "~/hooks/useAuth";
+import ReportDialog from "./report-dialog";
 
 // Type for comment with author relation
 type Comment = RouterOutputs["member"]["blog"]["getComments"][number];
@@ -59,10 +60,16 @@ function CommentItem({
 
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(comment.content);
-  const [openDialog, setOpenDialog] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [showReplies, setShowReplies] = useState(false);
+
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openReportDialog, setOpenReportDialog] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{
+    id: string;
+    type: "post" | "comment";
+  } | null>(null);
 
   const isAuthor = comment.authorId === currentUserId;
   const isAdmin = currentUserRole === "ADMIN";
@@ -156,7 +163,13 @@ function CommentItem({
 
                   <DropdownMenuContent align="end" className="w-36">
                     {!isAuthor && (
-                      <DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          setOpenReportDialog(true);
+                          setReportTarget({ id: comment.id, type: "comment" });
+                        }}
+                      >
                         <Flag className="mr-2 h-4 w-4" /> Report
                       </DropdownMenuItem>
                     )}
@@ -168,13 +181,20 @@ function CommentItem({
                           </DropdownMenuItem>
                         )}
 
+                        {/* Report dialog */}
+                        <ReportDialog
+                          target={reportTarget}
+                          open={openReportDialog}
+                          onOpenChange={setOpenReportDialog}
+                        />
+
                         {/* Delete with confirmation */}
                         {(isAuthor || dbUser?.role === "ADMIN") && (
                           <>
                             <DropdownMenuSeparator />
                             <AlertDialog
-                              open={openDialog}
-                              onOpenChange={setOpenDialog}
+                              open={openDeleteDialog}
+                              onOpenChange={setOpenDeleteDialog}
                             >
                               <AlertDialogTrigger asChild>
                                 <DropdownMenuItem
@@ -201,7 +221,7 @@ function CommentItem({
                                     className="bg-destructive hover:bg-destructive/70"
                                     onClick={() => {
                                       onDelete(comment.id);
-                                      setOpenDialog(false);
+                                      setOpenDeleteDialog(false);
                                     }}
                                   >
                                     Delete

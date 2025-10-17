@@ -45,6 +45,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import ReportDialog from "~/components/community-blog/report-dialog";
 
 type BlogPost = NonNullable<RouterOutputs["member"]["blog"]["getById"]>;
 
@@ -263,7 +264,14 @@ export default function BlogPost({ post }: BlogPostProps) {
   };
 
   const isAuthor = post.authorId === dbUser?.id;
-  const [openDialog, setOpenDialog] = useState(false);
+
+  // Dialogs
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openReportDialog, setOpenReportDialog] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{
+    id: string;
+    type: "post" | "comment";
+  } | null>(null);
 
   return (
     <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6">
@@ -331,7 +339,13 @@ export default function BlogPost({ post }: BlogPostProps) {
 
                   <DropdownMenuContent align="end" className="w-36">
                     {!isAuthor && (
-                      <DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          setOpenReportDialog(true);
+                          setReportTarget({ id: post.id, type: "post" });
+                        }}
+                      >
                         <Flag className="mr-2 h-4 w-4" /> Report
                       </DropdownMenuItem>
                     )}
@@ -349,14 +363,14 @@ export default function BlogPost({ post }: BlogPostProps) {
                         <Pencil className="mr-2 h-4 w-4" /> Edit
                       </DropdownMenuItem>
                     )}
-                    
-                    {(isAuthor || dbUser?.role) === "ADMIN" && (
+
+                    {(isAuthor || dbUser?.role === "ADMIN") && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onSelect={(e) => {
                             e.preventDefault();
-                            setOpenDialog(true);
+                            setOpenDeleteDialog(true);
                           }}
                           className="text-destructive"
                         >
@@ -367,7 +381,19 @@ export default function BlogPost({ post }: BlogPostProps) {
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
+
+                {/* Report Dialog */}
+                <ReportDialog
+                  target={reportTarget}
+                  open={openReportDialog}
+                  onOpenChange={setOpenReportDialog}
+                />
+
+                {/* Delete Dialog */}
+                <AlertDialog
+                  open={openDeleteDialog}
+                  onOpenChange={setOpenDeleteDialog}
+                >
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete this post?</AlertDialogTitle>
@@ -377,14 +403,16 @@ export default function BlogPost({ post }: BlogPostProps) {
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setOpenDialog(false)}>
+                      <AlertDialogCancel
+                        onClick={() => setOpenDeleteDialog(false)}
+                      >
                         Cancel
                       </AlertDialogCancel>
                       <AlertDialogAction
                         className="bg-destructive hover:bg-destructive/70"
                         onClick={() => {
                           handleDeletePost();
-                          setOpenDialog(false);
+                          setOpenDeleteDialog(false);
                         }}
                       >
                         Delete
