@@ -33,6 +33,8 @@ import {
 } from "lucide-react";
 import { type RouterOutputs } from "~/trpc/react";
 
+import { useAuth } from "~/hooks/useAuth";
+
 // Type for comment with author relation
 type Comment = RouterOutputs["member"]["blog"]["getComments"][number];
 
@@ -53,6 +55,8 @@ function CommentItem({
   onReply?: (parentCommentId: string, content: string) => void;
   isNested?: boolean;
 }) {
+  const { dbUser } = useAuth();
+
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(comment.content);
   const [openDialog, setOpenDialog] = useState(false);
@@ -115,11 +119,6 @@ function CommentItem({
                 <p className="text-sm font-medium">
                   {comment.author?.name ?? "Member"}
                 </p>
-                {isNested && (
-                  <span className="text-muted-foreground bg-muted/50 rounded-full px-2 py-1 text-xs">
-                    Reply
-                  </span>
-                )}
               </div>
               <p className="text-muted-foreground text-xs">
                 {comment.author?.professionalPosition ?? "Member"}
@@ -156,56 +155,61 @@ function CommentItem({
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent align="end" className="w-36">
-                      <DropdownMenuItem onClick={() => { /* report handler could be added */ }}>
+                    {!isAuthor && (
+                      <DropdownMenuItem>
                         <Flag className="mr-2 h-4 w-4" /> Report
                       </DropdownMenuItem>
-                      {!isEditing && isAuthor && (
+                    )}
+                    {!isEditing && (
                       <>
-                        <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                          <Pencil className="mr-2 h-4 w-4" /> Edit
-                        </DropdownMenuItem>
-
-                        <DropdownMenuSeparator />
+                        {isAuthor && (
+                          <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                            <Pencil className="mr-2 h-4 w-4" /> Edit
+                          </DropdownMenuItem>
+                        )}
 
                         {/* Delete with confirmation */}
-                        { (isAuthor || isAdmin) && (
-                        <AlertDialog
-                          open={openDialog}
-                          onOpenChange={setOpenDialog}
-                        >
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onSelect={(e) => e.preventDefault()} // prevent closing immediately
+                        {(isAuthor || dbUser?.role === "ADMIN") && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <AlertDialog
+                              open={openDialog}
+                              onOpenChange={setOpenDialog}
                             >
-                              <Trash2 className="text-destructive mr-2 h-4 w-4" />{" "}
-                              Delete
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Delete this comment?
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. The comment will
-                                be permanently deleted.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                className="bg-destructive hover:bg-destructive/70"
-                                onClick={() => {
-                                  onDelete(comment.id);
-                                  setOpenDialog(false);
-                                }}
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onSelect={(e) => e.preventDefault()} // prevent closing immediately
+                                >
+                                  <Trash2 className="text-destructive mr-2 h-4 w-4" />{" "}
+                                  Delete
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Delete this comment?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This action cannot be undone. The comment
+                                    will be permanently deleted.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-destructive hover:bg-destructive/70"
+                                    onClick={() => {
+                                      onDelete(comment.id);
+                                      setOpenDialog(false);
+                                    }}
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </>
                         )}
                       </>
                     )}

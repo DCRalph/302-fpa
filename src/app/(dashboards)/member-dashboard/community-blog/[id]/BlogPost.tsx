@@ -15,6 +15,7 @@ import {
   Pencil,
   Trash2,
   MoreVertical,
+  Flag,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
@@ -267,7 +268,7 @@ export default function BlogPost({ post }: BlogPostProps) {
   return (
     <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6">
       {/* Back Button */}
-      <div className="flex items-center max-w-7xl mx-auto">
+      <div className="mx-auto flex max-w-7xl items-center">
         <Button variant="ghost" asChild>
           <Link
             href="/member-dashboard/community-blog"
@@ -279,7 +280,7 @@ export default function BlogPost({ post }: BlogPostProps) {
         </Button>
       </div>
 
-      <Card className="overflow-hidden p-0 max-w-7xl mx-auto">
+      <Card className="mx-auto max-w-7xl overflow-hidden p-0">
         <CardContent className="p-6">
           {/* Author Info */}
           <div className="mb-6 flex items-center space-x-3">
@@ -315,21 +316,27 @@ export default function BlogPost({ post }: BlogPostProps) {
               <Badge variant="secondary" className="text-sm">
                 {post.categories?.[0]?.category?.name ?? "General"}
               </Badge>
-              {isAuthor && (
-                <div className="flex items-center space-x-1">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        title="Post actions"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
+              <div className="flex items-center space-x-1">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      title="Post actions"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
 
-                    <DropdownMenuContent align="end" className="w-36">
+                  <DropdownMenuContent align="end" className="w-36">
+                    {!isAuthor && (
+                      <DropdownMenuItem>
+                        <Flag className="mr-2 h-4 w-4" /> Report
+                      </DropdownMenuItem>
+                    )}
+
+                    {isAuthor && (
                       <DropdownMenuItem
                         onSelect={(e) => {
                           e.preventDefault();
@@ -341,47 +348,51 @@ export default function BlogPost({ post }: BlogPostProps) {
                       >
                         <Pencil className="mr-2 h-4 w-4" /> Edit
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onSelect={(e) => {
-                          e.preventDefault();
-                          setOpenDialog(true);
-                        }}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="text-destructive mr-2 h-4 w-4" />{" "}
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete this post?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently
-                          delete your post and remove it from the community
-                          blog.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setOpenDialog(false)}>
-                          Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-destructive hover:bg-destructive/70"
-                          onClick={() => {
-                            handleDeletePost();
-                            setOpenDialog(false);
+                    )}
+                    
+                    {(isAuthor || dbUser?.role) === "ADMIN" && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            setOpenDialog(true);
                           }}
+                          className="text-destructive"
                         >
+                          <Trash2 className="text-destructive mr-2 h-4 w-4" />{" "}
                           Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              )}
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this post?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently
+                        delete your post and remove it from the community blog.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={() => setOpenDialog(false)}>
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/70"
+                        onClick={() => {
+                          handleDeletePost();
+                          setOpenDialog(false);
+                        }}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </div>
 

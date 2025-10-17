@@ -247,9 +247,11 @@ function BlogPostCard({ post }: { post: BlogPost }) {
                 </DropdownMenuTrigger>
 
                 <DropdownMenuContent align="end" className="w-36">
-                  <DropdownMenuItem>
-                    <Flag className="mr-2 h-4 w-4" /> Report
-                  </DropdownMenuItem>
+                  {!isAuthor && (
+                    <DropdownMenuItem>
+                      <Flag className="mr-2 h-4 w-4" /> Report
+                    </DropdownMenuItem>
+                  )}
                   {isAuthor && (
                     <DropdownMenuItem
                       onSelect={(e) => {
