@@ -22,7 +22,15 @@ import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
 import Image from "next/image";
 import { useState } from "react";
-import { MoreVertical, Pencil, Trash2, Check, X, Reply } from "lucide-react";
+import {
+  MoreVertical,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  Reply,
+  Flag,
+} from "lucide-react";
 import { type RouterOutputs } from "~/trpc/react";
 
 // Type for comment with author relation
@@ -31,6 +39,7 @@ type Comment = RouterOutputs["member"]["blog"]["getComments"][number];
 function CommentItem({
   comment,
   currentUserId,
+  currentUserRole,
   onUpdate,
   onDelete,
   onReply,
@@ -38,6 +47,7 @@ function CommentItem({
 }: {
   comment: Comment;
   currentUserId?: string;
+  currentUserRole?: string | null;
   onUpdate: (id: string, content: string) => void;
   onDelete: (id: string) => void;
   onReply?: (parentCommentId: string, content: string) => void;
@@ -51,6 +61,7 @@ function CommentItem({
   const [showReplies, setShowReplies] = useState(false);
 
   const isAuthor = comment.authorId === currentUserId;
+  const isAdmin = currentUserRole === "ADMIN";
 
   const handleSave = () => {
     if (!editText.trim()) return;
@@ -66,12 +77,17 @@ function CommentItem({
   };
 
   return (
-    <div className={`${isNested ? 'ml-6 border-l-2 border-muted pl-4' : ''} space-y-3`}>
-      <div className={`${isNested ? 'bg-muted/30' : 'bg-muted/50'} flex space-x-3 rounded-lg p-3 sm:flex-row`}>
+    <div
+      className={`${isNested ? "border-muted ml-6 border-l-2 pl-4" : ""} space-y-3`}
+    >
+      <div
+        className={`${isNested ? "bg-muted/30" : "bg-muted/50"} flex space-x-3 rounded-lg p-3 sm:flex-row`}
+      >
         {/* Avatar */}
         <div
-          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${comment.author?.image ? "" : "bg-gray-300"
-            } text-black`}
+          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
+            comment.author?.image ? "" : "bg-gray-300"
+          } text-black`}
         >
           {comment.author?.image ? (
             <Image
@@ -100,7 +116,7 @@ function CommentItem({
                   {comment.author?.name ?? "Member"}
                 </p>
                 {isNested && (
-                  <span className="text-muted-foreground text-xs bg-muted/50 px-2 py-1 rounded-full">
+                  <span className="text-muted-foreground bg-muted/50 rounded-full px-2 py-1 text-xs">
                     Reply
                   </span>
                 )}
@@ -111,14 +127,16 @@ function CommentItem({
             </div>
 
             <div className="flex items-center justify-between space-x-2 sm:justify-end">
-              <div className="lg:flex space-x-2">
+              <div className="space-x-2 lg:flex">
                 <p className="text-muted-foreground text-xs">
                   {comment.createdAt.toLocaleDateString()}
                 </p>
-                {
-                  comment.updatedAt.getTime() !== comment.createdAt.getTime() && (
-                    <span className="text-muted-foreground text-xs">(Edited)</span>
-                  )}
+                {comment.updatedAt.getTime() !==
+                  comment.createdAt.getTime() && (
+                  <span className="text-muted-foreground text-xs">
+                    (Edited)
+                  </span>
+                )}
               </div>
 
               {/* Action Buttons */}
@@ -126,70 +144,73 @@ function CommentItem({
                 {/* Reply Button was moved below the comment content to improve layout */}
 
                 {/* Author Action Menu */}
-                {isAuthor && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-foreground h-7 w-7 md:flex"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-foreground h-7 w-7 md:flex"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
 
-                    <DropdownMenuContent align="end" className="w-36">
-                      {!isEditing && (
-                        <>
-                          <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                            <Pencil className="mr-2 h-4 w-4" /> Edit
-                          </DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="w-36">
+                      <DropdownMenuItem onClick={() => { /* report handler could be added */ }}>
+                        <Flag className="mr-2 h-4 w-4" /> Report
+                      </DropdownMenuItem>
+                      {!isEditing && isAuthor && (
+                      <>
+                        <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                          <Pencil className="mr-2 h-4 w-4" /> Edit
+                        </DropdownMenuItem>
 
-                          <DropdownMenuSeparator />
+                        <DropdownMenuSeparator />
 
-                          {/* Delete with confirmation */}
-                          <AlertDialog
-                            open={openDialog}
-                            onOpenChange={setOpenDialog}
-                          >
-                            <AlertDialogTrigger asChild>
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onSelect={(e) => e.preventDefault()} // prevent closing immediately
+                        {/* Delete with confirmation */}
+                        { (isAuthor || isAdmin) && (
+                        <AlertDialog
+                          open={openDialog}
+                          onOpenChange={setOpenDialog}
+                        >
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onSelect={(e) => e.preventDefault()} // prevent closing immediately
+                            >
+                              <Trash2 className="text-destructive mr-2 h-4 w-4" />{" "}
+                              Delete
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Delete this comment?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. The comment will
+                                be permanently deleted.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive hover:bg-destructive/70"
+                                onClick={() => {
+                                  onDelete(comment.id);
+                                  setOpenDialog(false);
+                                }}
                               >
-                                <Trash2 className="text-destructive mr-2 h-4 w-4" />{" "}
                                 Delete
-                              </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Delete this comment?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This action cannot be undone. The comment will be
-                                  permanently deleted.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  className="bg-destructive hover:bg-destructive/70"
-                                  onClick={() => {
-                                    onDelete(comment.id);
-                                    setOpenDialog(false);
-                                  }}
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                        )}
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </div>
@@ -225,7 +246,7 @@ function CommentItem({
                 </Button>
               </div>
             </div>
-            ) : (
+          ) : (
             <>
               <p className="text-foreground/80 text-sm break-words">
                 {comment.content}
@@ -237,9 +258,10 @@ function CommentItem({
                   <button
                     type="button"
                     onClick={() => setShowReplies((s) => !s)}
-                    className="text-sm text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground text-sm"
                   >
-                    {showReplies ? 'Hide' : 'Show'} replies ({comment.subComments.length})
+                    {showReplies ? "Hide" : "Show"} replies (
+                    {comment.subComments.length})
                   </button>
                 </div>
               )}
@@ -265,7 +287,7 @@ function CommentItem({
 
       {/* Reply Form */}
       {isReplying && (
-        <div className="ml-11 space-y-2 border-l-2 border-muted pl-4">
+        <div className="border-muted ml-11 space-y-2 border-l-2 pl-4">
           <Textarea
             placeholder={`Reply to ${comment.author?.name ?? "this comment"}...`}
             value={replyText}

@@ -141,7 +141,7 @@ export const memberBlogRouter = createTRPCRouter({
           actions: [
             {
               label: "View Post",
-              href: `/member-dashboard/community-blog/${post.id}/edit`,
+              href: `/member-dashboard/community-blog/${post.id}`,
               variant: "outline",
             },
           ],
@@ -238,7 +238,7 @@ export const memberBlogRouter = createTRPCRouter({
           actions: [
             {
               label: "View Post",
-              href: `/member-dashboard/community-blog/${post.id}/edit`,
+              href: `/member-dashboard/community-blog/${post.id}`,
               variant: "outline",
             },
           ],
@@ -505,7 +505,7 @@ export const memberBlogRouter = createTRPCRouter({
           actions: [
             {
               label: "View Comment",
-              href: `/member-dashboard/community-blog/${input.postId}/edit`,
+              href: `/member-dashboard/community-blog/${input.postId}`,
               variant: "outline",
             },
           ],
