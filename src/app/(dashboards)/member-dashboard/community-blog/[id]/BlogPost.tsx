@@ -14,8 +14,6 @@ import {
   ArrowLeft,
   Pencil,
   Trash2,
-  Check,
-  X,
   MoreVertical,
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -38,7 +36,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import {
   DropdownMenu,

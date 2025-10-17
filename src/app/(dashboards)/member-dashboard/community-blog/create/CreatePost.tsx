@@ -29,12 +29,7 @@ import Image from "next/image";
 
 export default function CreatePostPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    title: "",
-    content: "",
-    published: true,
-    postType: ""
-  });
+  
   const [selectedFilter, setSelectedFilter] = useState("general");
   // individual form state
   const [title, setTitle] = useState("");
@@ -228,7 +223,7 @@ export default function CreatePostPage() {
                 <div className="mt-4 flex items-center space-x-2">
                   <Checkbox
                     id="published"
-                    checked={!formData.published} // inverse: checked means "draft"
+                    checked={!published} // inverse: checked means "draft"
                     onCheckedChange={(checked) =>
                       handleInputChange("published", !checked) // invert the value
                     }

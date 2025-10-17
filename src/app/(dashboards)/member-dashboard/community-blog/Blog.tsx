@@ -57,7 +57,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 
 type BlogPost = RouterOutputs["member"]["blog"]["list"]["posts"][number];

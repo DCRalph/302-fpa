@@ -26,19 +26,25 @@ import {
 } from "~/components/ui/select";
 
 import Image from "next/image";
+import { type RouterOutputs } from "~/trpc/react";
 
-export default function EditPostPage() {
+type BlogPost = NonNullable<RouterOutputs["member"]["blog"]["getById"]>;
+
+interface BlogPostProps {
+  post: BlogPost;
+}
+
+export default function EditPostPage({ post }: BlogPostProps) {
   const router = useRouter();
   const params = useParams();
   const postId = params.id as string;
 
-  const { data: post } = api.member.blog.getById.useQuery(
-    { id: postId },
-    { enabled: !!postId },
-  );
+  // const { data: post } = api.member.blog.getById.useQuery(
+  //   { id: postId },
+  //   { enabled: !!postId },
+  // );
 
   // Editing state - initialize from query params
-  const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(post?.title);
   const [editContent, setEditContent] = useState(post?.content);
   const [editPublished, setEditPublished] = useState(post?.published);
@@ -57,7 +63,6 @@ export default function EditPostPage() {
       const slug = post.categories?.[0]?.category?.slug ?? "general";
       setSelectedFilter(slug);
 
-      setIsEditing(true);
       setEditTitle(post.title);
       setEditContent(post.content);
       setEditPublished(post.published);
@@ -85,6 +90,23 @@ export default function EditPostPage() {
     }
   }, [selectedFilter, categories]);
 
+  // If categories load after we initialize editCategoryIds, ensure selectedFilter
+  // points to a slug that actually exists in categories. This covers cases where
+  // the Select renders before categories are available and would otherwise show blank.
+  useEffect(() => {
+    if (!categories || categories.length === 0) return;
+
+    // If the currently selectedFilter doesn't match any loaded category slug,
+    // but we have an editCategoryIds value from the post, map that id -> slug.
+    const hasSlugMatch = categories.some((c) => c.slug === selectedFilter);
+    if (!hasSlugMatch && editCategoryIds && editCategoryIds.length > 0) {
+      const matchById = categories.find((c) => c.id === editCategoryIds[0]);
+      if (matchById) {
+        setSelectedFilter(matchById.slug);
+      }
+    }
+  }, [categories, editCategoryIds, selectedFilter]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null); // TODO: Create an S3 bucket to upload images to
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -96,12 +118,12 @@ export default function EditPostPage() {
       // Invalidate specific blog queries so refreshed data is fetched
       try {
         await Promise.all([
-          utils.member.blog.getById.invalidate({ id: postId }),
+          // utils.member.blog.getById.invalidate({ id: postId }),
           utils.member.blog.list.invalidate(),
         ]);
       } catch (e) {
         // fallback to broad invalidate
-        toast.error("Failed to update post");
+        toast.error(`Failed to update post: ${e as string}`);
         await utils.member.blog.invalidate?.();
       }
 
@@ -141,12 +163,12 @@ export default function EditPostPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!editTitle || !editTitle.trim()) {
+    if (!editTitle?.trim()) {
       toast.error("Please enter a title for the post");
       return;
     }
 
-    if (!editContent || !editContent.trim()) {
+    if (!editContent?.trim()) {
       toast.error("Please enter content for the post");
       return;
     }
