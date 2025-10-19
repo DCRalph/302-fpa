@@ -106,7 +106,7 @@ export const memberBlogRouter = createTRPCRouter({
       z.object({
         title: z.string().min(3),
         content: z.string().min(1),
-        categoryId: z.string().optional(),
+        categoryId: z.string(),
         published: z.boolean().default(true),
       }),
     )
@@ -177,7 +177,7 @@ export const memberBlogRouter = createTRPCRouter({
         id: z.string(),
         title: z.string().min(3),
         content: z.string().min(1),
-        categoryId: z.string().nullable(),
+        categoryId: z.string(),
         published: z.boolean().default(true),
       })
     )
@@ -357,7 +357,7 @@ export const memberBlogRouter = createTRPCRouter({
       }
 
       if (!post.categoryId || !post.category) {
-        
+
       }
 
       return {
