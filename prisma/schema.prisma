@@ -66,6 +66,7 @@ model User {
   updatedAt DateTime  @default(now()) @updatedAt
   sessions  Session[]
   accounts  Account[]
+  passwordResetTokens PasswordResetToken[]
 
   phone         String?
   school        String?
@@ -88,6 +89,8 @@ model User {
 
   blogPostLikes BlogPostLike[]
   blogPostComments BlogComment[]
+  blogPostReports BlogReport[] @relation("UserBlogReports")
+  blogPostReportsClosed BlogReport[] @relation("UserBlogReportsClosed")
 
 }
 
@@ -205,6 +208,8 @@ model BlogPost {
   categories BlogPostCategory[]
   likes      BlogPostLike[]
   comments   BlogComment[]
+
+  reports BlogReport[]
 }
 
 // Ticket types (e.g., early-bird, standard, student) used for pricing/management
@@ -410,6 +415,8 @@ model BlogComment {
   parentCommentId String?
   parentComment   BlogComment? @relation("ParentComment", fields: [parentCommentId], references: [id])
 
+  reports BlogReport[]
+
   @@index([postId])
 }
 
@@ -442,4 +449,45 @@ model SiteSettings {
   key         String   @unique
   value       String
   description String?
+}
+
+model BlogReport {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  postId    String?
+  post      BlogPost? @relation(fields: [postId], references: [id])
+
+  commentId    String?
+  comment      BlogComment? @relation(fields: [commentId], references: [id])
+
+  userId    String
+  user      User     @relation("UserBlogReports", fields: [userId], references: [id])
+
+  reason      String
+  details     String?
+
+  closedAt    DateTime?
+  closedBy    String?
+  closedByUser User?     @relation("UserBlogReportsClosed", fields: [closedBy], references: [id])
+
+
+  @@index([userId])
+  @@index([postId])
+  @@index([commentId])
+
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([token])
 }
