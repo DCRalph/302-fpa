@@ -66,9 +66,7 @@ export default function BlogPost({ post }: BlogPostProps) {
   const [editTitle, setEditTitle] = useState(post.title);
   const [editContent, setEditContent] = useState(post.content);
   const [editPublished, setEditPublished] = useState(post.published);
-  const [editCategoryIds, setEditCategoryIds] = useState(
-    post.categories.map((category) => category.category.id),
-  );
+  const [editCategoryId, setEditCategoryId] = useState(post.categoryId);
 
   // Get categories for the select
   const { data: categories } = api.member.blog.getCategories.useQuery();
