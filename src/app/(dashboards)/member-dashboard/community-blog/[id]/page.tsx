@@ -10,6 +10,8 @@ interface BlogPostPageProps {
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
+
+
   try {
     const post = await api.member.blog.getById({ id: (await params).id });
 

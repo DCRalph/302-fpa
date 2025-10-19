@@ -44,11 +44,28 @@ export const memberProfileRouter = createTRPCRouter({
 
     const accounts = await ctx.db.account.findMany({
       where: { userId },
-      select: { id: true, providerId: true, accountId: true, createdAt: true },
+      select: { id: true, providerId: true, accountId: true, createdAt: true, password: true },
       orderBy: { createdAt: "desc" },
     });
 
-    return { user, accounts };
+    // Check if user has a password set by looking for an account with a password
+    const hasPassword = accounts.some(account => account.providerId === "credential" && account.password !== null);
+
+    const filteredAccounts = accounts.map(account => ({
+      id: account.id,
+      providerId: account.providerId,
+      accountId: account.accountId,
+      createdAt: account.createdAt,
+      password: "REDACTED",
+    }));
+
+    // Get OAuth connections (exclude credential provider)
+
+    return {
+      user,
+      accounts: filteredAccounts,
+      hasPassword,
+    };
   }),
 
   // Update profile fields on the User model
@@ -190,6 +207,73 @@ export const memberProfileRouter = createTRPCRouter({
         return res;
       } catch (err) {
         throw new TRPCError({ code: "BAD_REQUEST", message: (err as { message?: string })?.message ?? "Failed to change password" });
+      }
+    }),
+
+  // Set password for OAuth users who don't have a password
+  setPassword: protectedProcedure
+    .input(
+      z.object({
+        password: z.string().min(8),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Check if user already has a password
+        const existingAccount = await ctx.db.account.findFirst({
+          where: {
+            userId: ctx.dbUser.id,
+            providerId: "credential",
+            password: { not: null }
+          },
+        });
+
+        if (existingAccount) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "User already has a password set"
+          });
+        }
+
+        // Use Better Auth API to set password
+        const res = await auth.api.setPassword({
+          headers: ctx.headers,
+          body: {
+            newPassword: input.password,
+          },
+        });
+
+        // Log activity
+        await Promise.all([
+          logUserActivity(ctx.db, {
+            userId: ctx.dbUser.id,
+            title: "Password set",
+            description: "You set a password for your account",
+            icon: getActivityIcon(UserActivityType.PASSWORD_CHANGED),
+            type: UserActivityType.PASSWORD_CHANGED,
+            metadata: {},
+          }),
+          logAppActivity(ctx.db, {
+            userId: ctx.dbUser.id,
+            userName: ctx.dbUser.name ?? undefined,
+            userEmail: ctx.dbUser.email ?? undefined,
+            type: AppActivityType.PASSWORD_CHANGED,
+            action: ActivityActionEnum.CREATED,
+            entity: ActivityEntity.USER,
+            entityId: ctx.dbUser.id,
+            title: "Password set",
+            category: ActivityCategory.AUTH,
+            severity: ActivitySeverity.INFO,
+            metadata: {},
+          }),
+        ]);
+
+        return res;
+      } catch (err) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: (err as { message?: string })?.message ?? "Failed to set password"
+        });
       }
     }),
 

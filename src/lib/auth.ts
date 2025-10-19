@@ -35,12 +35,26 @@ export const auth = betterAuth({
   // },
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url, token: _token }, _request) => {
+      const { sendPasswordResetEmail } = await import('./email-resend');
+      await sendPasswordResetEmail({
+        name: user.name ?? 'User',
+        email: user.email,
+        resetUrl: url,
+        expiresIn: '24 hours',
+      });
+    },
   },
   socialProviders: {
     google: {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
+  },
+  account: {
+    accountLinking: {
+      allowDifferentEmails: true
+    }
   },
   // hooks: {
   //   after: [

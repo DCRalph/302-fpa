@@ -8,6 +8,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from 'nextjs-toploader/app';
 import { useAuth } from "~/hooks/useAuth";
+import { SignOut } from "~/components/sign-out";
 
 export default function SignInForm() {
   const [email, setEmail] = useState("");
@@ -44,6 +45,7 @@ export default function SignInForm() {
             <Link href="/member-dashboard" className="w-full">
               <Button className="w-full">Go to Dashboard</Button>
             </Link>
+            <SignOut variant="outline" className="w-full" />
           </div>
         </div>
       </div>
@@ -148,7 +150,15 @@ export default function SignInForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Link
+                href="/forgot-password"
+                className="text-sm text-primary hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"
