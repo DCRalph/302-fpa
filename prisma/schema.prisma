@@ -205,7 +205,9 @@ model BlogPost {
   updatedAt     DateTime  @updatedAt
 
 
-  categories BlogPostCategory[]
+  category   BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  categoryId String?
+
   likes      BlogPostLike[]
   comments   BlogComment[]
 
@@ -373,18 +375,18 @@ model BlogCategory {
   slug      String             @unique
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
-  posts     BlogPostCategory[]
+  posts     BlogPost[]
 }
 
 
-model BlogPostCategory {
-  post       BlogPost     @relation(fields: [postId], references: [id])
-  postId     String
-  category   BlogCategory @relation(fields: [categoryId], references: [id])
-  categoryId String
+// model BlogPostCategory {
+//   post       BlogPost[]
 
-  @@id([postId, categoryId])
-}
+//   category   BlogCategory @relation(fields: [categoryId], references: [id])
+//   categoryId String
+
+//   @@id([postId, categoryId])
+// }
 
 model BlogPostLike {
   id        String   @id @default(cuid())
