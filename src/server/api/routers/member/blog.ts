@@ -176,7 +176,7 @@ export const memberBlogRouter = createTRPCRouter({
     }),
 
 
-  // Update member details
+  // Update post
   updatePost: protectedProcedure
     .input(
       z.object({
