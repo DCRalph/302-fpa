@@ -505,8 +505,8 @@ export default function CommunityBlog() {
     <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6">
       {/* Search and Filter Bar */}
       <div className="space-y-4">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+          <div className="lg:col-span-3">
             <Label className="py-1 text-sm font-medium">Search Posts</Label>
             <div className="relative">
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
@@ -549,14 +549,11 @@ export default function CommunityBlog() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-end gap-2">
+          {/* <div className="flex items-end gap-2">
             <Button onClick={handleSearch} className="flex-1">
               Search
             </Button>
-            <Button variant="outline" onClick={handleYourPosts} className="flex-1">
-              Your Posts
-            </Button>
-          </div>
+          </div> */}
         </div>
 
         {/* Active Filters Display */}
@@ -634,11 +631,14 @@ export default function CommunityBlog() {
               <p className="text-foreground/70 text-base">
                 Share your knowledge with the community
               </p>
-              <div className="pt-4">
+              <div className="pt-4 flex flex-col gap-4">
                 <Button asChild className="w-full">
                   <Link href={"/member-dashboard/community-blog/create"}>
                     Create a Post
                   </Link>
+                </Button>
+                <Button variant={"outline"} onClick={handleYourPosts} className="flex-1">
+                  Your Posts
                 </Button>
               </div>
             </CardContent>
