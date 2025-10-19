@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from 'nextjs-toploader/app';
+// import { useRouter } from 'next/navigation';
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { api } from "~/trpc/react";
@@ -10,7 +10,7 @@ import { handleTRPCMutation } from "~/lib/toast";
 import { useAuth } from "~/hooks/useAuth";
 
 export default function OnboardingComponent() {
-  const router = useRouter();
+  // const router = useRouter();
   const { dbUser } = useAuth();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -25,16 +25,15 @@ export default function OnboardingComponent() {
   }, [dbUser]);
 
   const { mutateAsync: completeOnboarding, isPending } = api.onboarding.completeOnboarding.useMutation({
-    onSuccess: () => {
-      router.push("/member-dashboard");
-      router.refresh();
+    onSuccess: async () => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      window.location.reload();
+
     },
-    onError: (error) => {
-      setError(error.message);
-    },
+    onError: (error) => setError(error.message),
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -53,7 +52,7 @@ export default function OnboardingComponent() {
       return;
     }
 
-    void handleTRPCMutation(() => completeOnboarding({ name, phone, school }), "Onboarding completed successfully", "Failed to complete onboarding");
+    await handleTRPCMutation(() => completeOnboarding({ name, phone, school }), "Onboarding completed successfully", "Failed to complete onboarding");
   };
 
   return (
@@ -62,7 +61,7 @@ export default function OnboardingComponent() {
         <div className="bg-card rounded-2xl shadow-xl border p-8">
           <div className="text-center mb-8">
             <h1 className={`${montserrat.className} text-3xl font-bold tracking-tight mb-2`}>
-              Welcome! 🎉
+              Welcome!
             </h1>
             <p className="text-muted-foreground">
               {`Let's complete your profile to get started`}
