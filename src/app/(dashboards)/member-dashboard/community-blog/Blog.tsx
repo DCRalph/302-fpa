@@ -453,13 +453,30 @@ function BlogPostCard({ post }: { post: BlogPost }) {
 
 export default function CommunityBlog() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("all-posts");
+  const [selectedCategory, setSelectedCategory] = useState("all-posts");
+  // const [isSearching, setIsSearching] = useState(false);
 
   const { data } = api.member.blog.list.useQuery({
     query: searchQuery || undefined,
-    categorySlug: selectedFilter !== "all-posts" ? selectedFilter : undefined,
+    categorySlug: selectedCategory !== "all-posts" ? selectedCategory : undefined,
     take: 10,
   });
+
+  const { data: categories } = api.member.blog.getCategories.useQuery();
+
+  const handleYourPosts = () => {
+    setSearchQuery("Your posts");
+    setSelectedCategory("all-posts");
+  };
+
+  const handleSearch = () => {
+    // Search is handled automatically by the query
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setSelectedCategory("all-posts");
+  };
 
   const guidelines = [
     {
@@ -487,46 +504,123 @@ export default function CommunityBlog() {
   return (
     <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6">
       {/* Search and Filter Bar */}
-      <div className="grid grid-cols-1 items-end gap-4 lg:grid-cols-6">
-        <div className="lg:col-span-3">
-          <Label className="py-1 text-sm">Search Posts</Label>
-          <div className="relative">
-            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
-            <Input
-              placeholder="Search by title, content, or author..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-background py-5 pl-10"
-            />
-          </div>
-        </div>
-        <div className="lg:col-span-2">
-          <Label className="py-1 text-sm">Filter by Type</Label>
-          <div className="flex items-center space-x-4">
-            <div className="flex w-full items-center space-x-2">
-              <Select value={selectedFilter} onValueChange={setSelectedFilter}>
-                <SelectTrigger className="bg-background w-full py-5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all-posts">All Posts</SelectItem>
-                  <SelectItem value="general">General</SelectItem>
-                  <SelectItem value="qualification">Qualification</SelectItem>
-                  <SelectItem value="research-paper">Research Paper</SelectItem>
-                </SelectContent>
-              </Select>
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+          <div className="lg:col-span-2">
+            <Label className="py-1 text-sm font-medium">Search Posts</Label>
+            <div className="relative">
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+              <Input
+                placeholder="Search by title, content, or author..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-background py-3 pl-10 pr-10"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 transform p-0"
+                  onClick={handleClearSearch}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
+          <div className="lg:col-span-1">
+            <Label className="py-1 text-sm font-medium">Filter by Category</Label>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="bg-background w-full py-3">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all-posts">All Categories</SelectItem>
+                {categories?.map((category) => (
+                  <SelectItem key={category.id} value={category.slug}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-end gap-2">
+            <Button onClick={handleSearch} className="flex-1">
+              Search
+            </Button>
+            <Button variant="outline" onClick={handleYourPosts} className="flex-1">
+              Your Posts
+            </Button>
+          </div>
         </div>
-        <Button>Search</Button>
+
+        {/* Active Filters Display */}
+        {(searchQuery || selectedCategory !== "all-posts") && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm text-muted-foreground">Active filters:</span>
+            {searchQuery && (
+              <Badge variant="secondary" className="gap-1">
+                Search: &quot;{searchQuery}&quot;
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-4 w-4 p-0"
+                  onClick={() => setSearchQuery("")}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+            {selectedCategory !== "all-posts" && (
+              <Badge variant="secondary" className="gap-1">
+                Category: {categories?.find(c => c.slug === selectedCategory)?.name}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-4 w-4 p-0"
+                  onClick={() => setSelectedCategory("all-posts")}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Main Content - Blog Posts */}
         <div className="space-y-6 lg:col-span-3">
-          {data?.posts.map((post) => (
-            <BlogPostCard key={post.id} post={post} />
-          ))}
+          {data?.posts && data.posts.length > 0 ? (
+            data.posts.map((post) => (
+              <BlogPostCard key={post.id} post={post} />
+            ))
+          ) : (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <div className="mx-auto max-w-md">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    No posts found
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    {searchQuery || selectedCategory !== "all-posts"
+                      ? "Try adjusting your search or filter criteria."
+                      : "Be the first to share something with the community!"}
+                  </p>
+                  <Button asChild>
+                    <Link href="/member-dashboard/community-blog/create">
+                      Create a Post
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -540,15 +634,10 @@ export default function CommunityBlog() {
               <p className="text-foreground/70 text-base">
                 Share your knowledge with the community
               </p>
-              <div className="grid grid-cols-1 gap-4 space-y-2 pt-4 xl:grid-cols-2">
-                <Button asChild>
+              <div className="pt-4">
+                <Button asChild className="w-full">
                   <Link href={"/member-dashboard/community-blog/create"}>
                     Create a Post
-                  </Link>
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link href={"/member-dashboard/community-blog"}>
-                    View my Posts
                   </Link>
                 </Button>
               </div>

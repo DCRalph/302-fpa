@@ -66,7 +66,7 @@ export default function EditPostPage({ post }: BlogPostProps) {
     }
   }, [post]);
 
-  
+
 
   // Keep selectedFilter in sync if formData.postType changes (e.g. user or post updates)
   // (removed stale formData sync) selectedFilter is initialized from post above
@@ -149,6 +149,11 @@ export default function EditPostPage({ post }: BlogPostProps) {
       return;
     }
 
+    if (!editCategoryId) {
+      toast.error("Please select a category for the post");
+      return;
+    }
+
     setIsSubmitting(true);
 
     // NOTE: image upload is not wired to the backend yet. If you have an
@@ -192,10 +197,10 @@ export default function EditPostPage({ post }: BlogPostProps) {
                   />
                 </div>
 
-                {/* Post Type */}
+                {/* Category */}
                 <div className="space-y-2">
-                  <Label htmlFor="postType">
-                    Post Type<span className="text-red-500">*</span>
+                  <Label htmlFor="category">
+                    Category<span className="text-red-500">*</span>
                   </Label>
                   <Select
                     value={editCategoryId ?? ""}

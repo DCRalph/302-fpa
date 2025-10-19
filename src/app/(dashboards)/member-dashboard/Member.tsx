@@ -189,8 +189,7 @@ export default function MemberDashboardPage() {
                               </p>
                               <div className="text-muted-foreground mt-2 flex items-center gap-3 text-xs">
                                 <Badge variant="outline" className="text-xs">
-                                  {post.categories?.[0]?.category?.name ??
-                                    "General"}
+                                  {post.category.name}
                                 </Badge>
                                 {post.published ? (
                                   <>

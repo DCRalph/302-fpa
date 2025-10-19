@@ -29,18 +29,17 @@ import Image from "next/image";
 
 export default function CreatePostPage() {
   const router = useRouter();
-  
-  const [selectedFilter, setSelectedFilter] = useState("general");
+
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   // individual form state
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [published, setPublished] = useState(true);
-  const [createCategoryIds, setCreateCategoryIds] = useState<string[]>([]);
 
   // Load categories to populate select and map slug -> id
   const { data: categories } = api.member.blog.getCategories.useQuery();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null); // TODO: Create an S3 bucket to upload images to
+  // const [imageFile, setImageFile] = useState<File | null>(null); // TODO: Create an S3 bucket to upload images to
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const utils = api.useUtils();
@@ -93,26 +92,28 @@ export default function CreatePostPage() {
       return;
     }
 
+    if (!selectedCategory) {
+      toast.error("Please select a category for the post");
+      return;
+    }
+
     setIsSubmitting(true);
 
     createPostMutation.mutate({
       title,
       content,
       published,
-      categoryIds: createCategoryIds,
+      categoryId: selectedCategory,
       // image: uploadedImageUrl ?? undefined,
     });
   };
 
-  // Map selectedFilter (slug) to category id(s)
+  // Set default category when categories load
   useEffect(() => {
-    if (!categories || !selectedFilter) return;
-
-    const match = categories.find((c) => c.slug === selectedFilter);
-    if (match) {
-      setCreateCategoryIds([match.id]);
+    if (categories && categories.length > 0 && !selectedCategory) {
+      setSelectedCategory(categories[0]?.id ?? "");
     }
-  }, [selectedFilter, categories]);
+  }, [categories, selectedCategory]);
 
   return (
     <main className="flex-1 p-3 sm:p-4 md:p-6">
@@ -144,27 +145,25 @@ export default function CreatePostPage() {
                     required
                   />
                 </div>
-                
+
                 {/* Post Type */}
                 <div className="space-y-2">
-                  <Label htmlFor="title">
-                    Post Type<span className="text-red-500">*</span>
+                  <Label htmlFor="category">
+                    Category<span className="text-red-500">*</span>
                   </Label>
                   <Select
-                    value={selectedFilter}
-                    onValueChange={setSelectedFilter}
+                    value={selectedCategory}
+                    onValueChange={setSelectedCategory}
                   >
                     <SelectTrigger className="bg-background w-full">
-                      <SelectValue />
+                      <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="general">General</SelectItem>
-                      <SelectItem value="qualification">
-                        Qualification
-                      </SelectItem>
-                      <SelectItem value="research-paper">
-                        Research Paper
-                      </SelectItem>
+                      {categories?.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -195,7 +194,7 @@ export default function CreatePostPage() {
                   className="file:bg-muted file:text-foreground hover:file:bg-muted/80 cursor-pointer rounded-md file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-1 file:font-semibold"
                   onChange={(e) => {
                     const file = e.target.files?.[0] ?? null;
-                    setImageFile(file);
+                    // setImageFile(file);
                     if (file) {
                       const url = URL.createObjectURL(file);
                       setPreviewUrl(url);

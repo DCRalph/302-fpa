@@ -47,13 +47,15 @@ export const memberBlogRouter = createTRPCRouter({
       const where: Prisma.BlogPostWhereInput = {
         AND: [
           query
-            ? {
-              OR: [
-                { title: { contains: query, mode: "insensitive" } },
-                { content: { contains: query, mode: "insensitive" } },
-                { author: { name: { contains: query, mode: "insensitive" } } },
-              ],
-            }
+            ? query === "Your posts"
+              ? { authorId: ctx.dbUser.id } // Filter by current user when "Your posts" is searched
+              : {
+                OR: [
+                  { title: { contains: query, mode: "insensitive" } },
+                  { content: { contains: query, mode: "insensitive" } },
+                  { author: { name: { contains: query, mode: "insensitive" } } },
+                ],
+              }
             : {},
           categorySlug
             ? { category: { slug: categorySlug } }
