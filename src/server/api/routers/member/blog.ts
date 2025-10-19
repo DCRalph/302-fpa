@@ -33,7 +33,7 @@ export const memberBlogRouter = createTRPCRouter({
     .input(
       z
         .object({
-          
+
           query: z.string().optional(),
           categorySlug: z.string().optional(),
           take: z.number().min(1).max(50).default(10),
@@ -56,7 +56,7 @@ export const memberBlogRouter = createTRPCRouter({
             }
             : {},
           categorySlug
-            ? { categories: { some: { category: { slug: categorySlug } } } }
+            ? { category: { slug: categorySlug } }
             : {},
           { published: true },
         ],
@@ -69,7 +69,7 @@ export const memberBlogRouter = createTRPCRouter({
         orderBy: { createdAt: "desc" },
         include: {
           author: { select: { id: true, name: true, professionalPosition: true, image: true } },
-          categories: { include: { category: true } },
+          category: { select: { id: true, name: true, slug: true } },
           _count: { select: { comments: true, likes: true } },
         },
       });
@@ -106,12 +106,12 @@ export const memberBlogRouter = createTRPCRouter({
       z.object({
         title: z.string().min(3),
         content: z.string().min(1),
-        categoryIds: z.array(z.string()).optional(),
+        categoryId: z.string().optional(),
         published: z.boolean().default(true),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { title, content, categoryIds, published } = input;
+      const { title, content, categoryId, published } = input;
 
       const post = await ctx.db.blogPost.create({
         data: {
@@ -120,15 +120,9 @@ export const memberBlogRouter = createTRPCRouter({
           authorId: ctx.dbUser.id,
           published,
           publishedAt: published ? new Date() : null,
+          categoryId,
         },
       });
-
-      if (categoryIds && categoryIds.length > 0) {
-        await ctx.db.blogPostCategory.createMany({
-          data: categoryIds.map((categoryId) => ({ postId: post.id, categoryId })),
-          skipDuplicates: true,
-        });
-      }
 
       // Log activity
       await Promise.all([
@@ -167,7 +161,7 @@ export const memberBlogRouter = createTRPCRouter({
             postId: post.id,
             postTitle: title,
             published,
-            categoryIds,
+            categoryId,
           },
         }),
       ]);
@@ -183,17 +177,24 @@ export const memberBlogRouter = createTRPCRouter({
         id: z.string(),
         title: z.string().min(3),
         content: z.string().min(1),
-        categoryIds: z.array(z.string()).optional(),
+        categoryId: z.string().nullable(),
         published: z.boolean().default(true),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, categoryIds, ...updateData } = input;
+      const { id, ...updateData } = input;
 
       // Get the current post to check authorization
       const currentPost = await ctx.db.blogPost.findUnique({
-        where: { id },
-        select: { authorId: true, title: true, published: true },
+        where: {
+          id
+        },
+        select: {
+          authorId: true,
+          title: true,
+          published: true,
+          categoryId: true
+        },
       });
 
       if (!currentPost || currentPost.authorId !== ctx.dbUser.id) {
@@ -211,21 +212,6 @@ export const memberBlogRouter = createTRPCRouter({
         },
       });
 
-      // Update categories if provided
-      if (categoryIds !== undefined) {
-        // Remove existing categories
-        await ctx.db.blogPostCategory.deleteMany({
-          where: { postId: id },
-        });
-
-        // Add new categories
-        if (categoryIds.length > 0) {
-          await ctx.db.blogPostCategory.createMany({
-            data: categoryIds.map((categoryId) => ({ postId: id, categoryId })),
-            skipDuplicates: true,
-          });
-        }
-      }
 
       // Log activity
       await Promise.all([
@@ -265,7 +251,7 @@ export const memberBlogRouter = createTRPCRouter({
             postTitle: input.title,
             published: updateData.published,
             wasPublished: currentPost.published,
-            categoryIds,
+            categoryId: currentPost.categoryId,
           },
         }),
       ]);
@@ -287,7 +273,7 @@ export const memberBlogRouter = createTRPCRouter({
       }
 
       // Delete associated categories and the post itself
-      await ctx.db.blogPostCategory.deleteMany({ where: { postId: input.id } });
+      // await ctx.db.blogPostCategory.deleteMany({ where: { postId: input.id } });
       await ctx.db.blogPost.delete({ where: { id: input.id } });
 
       // Log activity
@@ -339,15 +325,11 @@ export const memberBlogRouter = createTRPCRouter({
               professionalPosition: true,
             },
           },
-          categories: {
-            include: {
-              category: {
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                },
-              },
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
             },
           },
           _count: {
@@ -372,6 +354,10 @@ export const memberBlogRouter = createTRPCRouter({
           code: "NOT_FOUND",
           message: "Post not found",
         });
+      }
+
+      if (!post.categoryId || !post.category) {
+        
       }
 
       return {
