@@ -34,7 +34,7 @@ import { useAuth } from "~/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { authClient } from "~/lib/auth-client";
-import {  useRouter } from "next/navigation";
+import { useRouter } from 'nextjs-toploader/app';
 import { toast } from "sonner";
 import { api } from "~/trpc/react";
 

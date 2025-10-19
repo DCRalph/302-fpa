@@ -23,7 +23,8 @@ import {
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from 'nextjs-toploader/app';
 import { ArrowLeft, Calendar, FileText, User2, Shield } from "lucide-react";
 import Link from "next/link";
 import { Spinner } from "~/components/ui/spinner";
