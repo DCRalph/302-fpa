@@ -644,6 +644,76 @@ export const memberBlogRouter = createTRPCRouter({
 
       return { count };
     }),
+
+  // Get reports created by current user
+  getReports: protectedProcedure
+    .input(
+      z
+        .object({
+          take: z.number().min(1).max(50).default(20),
+          cursor: z.string().nullish(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const { take = 20, cursor } = input ?? {};
+
+      const reports = await ctx.db.blogReport.findMany({
+        where: { userId: ctx.dbUser.id },
+        take: take + 1,
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: { createdAt: "desc" },
+        include: {
+          post: { select: { id: true, title: true } },
+          comment: { select: { id: true, content: true } },
+          user: { select: { id: true, name: true } },
+        },
+      });
+
+      let nextCursor: string | undefined = undefined;
+      if (reports.length > take) {
+        const next = reports.pop();
+        nextCursor = next?.id;
+      }
+
+      return { reports, nextCursor };
+    }),
+
+  // Add a report
+  addReport: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        type: z.enum(["post", "comment"]),
+        reason: z.string().min(5).max(100),
+        details: z.string().max(500).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+
+      await ctx.db.blogReport.create({
+        data: {
+          userId: ctx.dbUser.id,
+          reason: input.reason,
+          details: input.details,
+        },
+      });
+
+      return { success: true };
+    }),
+
+  // Delete a report created by the current user
+  deleteReport: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const report = await ctx.db.blogReport.findUnique({ where: { id: input.id } });
+      if (!report) throw new TRPCError({ code: "NOT_FOUND", message: "Report not found" });
+      if (report.userId !== ctx.dbUser.id) throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized" });
+
+      await ctx.db.blogReport.delete({ where: { id: input.id } });
+
+      return { success: true };
+    }),
 });
 
 

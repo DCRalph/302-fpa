@@ -24,7 +24,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <MemberAuth />
         <BlogPost post={post} />
       </>
-    );
+    )
   } catch {
     notFound();
   }
