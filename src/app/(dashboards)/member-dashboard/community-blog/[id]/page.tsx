@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { api } from "~/trpc/server";
 import BlogPost from "./BlogPost";
+import { MemberAuth } from "../../member-auth";
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -16,7 +17,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       notFound();
     }
 
-    return <BlogPost post={post} />;
+    return (
+      <>
+        <MemberAuth />
+        <BlogPost post={post} />
+      </>
+    )
   } catch {
     notFound();
   }

@@ -25,7 +25,7 @@ import {
   Flag,
 } from "lucide-react";
 import { useRouter } from 'nextjs-toploader/app';
-import { useState } from "react";
+import React, { useState } from "react";
 import { api } from "~/trpc/react";
 import { Label } from "@radix-ui/react-dropdown-menu";
 import {
@@ -166,288 +166,316 @@ function BlogPostCard({ post }: { post: BlogPost }) {
     onError: () => toast.error("Failed to delete post"),
   });
 
+  const addReport = api.member.blog.addReport.useMutation({
+    onSuccess: () => {
+      toast.success("Report submitted!");
+    },
+    onError: () => toast.error("Failed to submit report"),
+  });
+
   const handleLikeToggle = () => {
-    if (isLiked) {
-      unlikePost.mutate({ postId: post.id });
-    } else {
-      likePost.mutate({ postId: post.id });
-    }
-  };
+      if (isLiked) {
+        unlikePost.mutate({ postId: post.id });
+      } else {
+        likePost.mutate({ postId: post.id });
+      }
+    };
 
-  const handleAddComment = () => {
-    if (!commentText.trim()) {
-      toast.error("Please enter a comment");
-      return;
-    }
-    addComment.mutate({ postId: post.id, content: commentText });
-  };
+    const handleAddComment = () => {
+      if (!commentText.trim()) {
+        toast.error("Please enter a comment");
+        return;
+      }
+      addComment.mutate({ postId: post.id, content: commentText });
+    };
 
-  const handleReply = (parentCommentId: string, content: string) => {
-    addReply.mutate({
-      postId: post.id,
-      content,
-      parentCommentId,
-    });
-  };
+    const handleReply = (parentCommentId: string, content: string) => {
+      addReply.mutate({
+        postId: post.id,
+        content,
+        parentCommentId,
+      });
+    };
 
-  const handleDeletePost = () => {
-    deletePost.mutate({ id: post.id });
-  };
+    const handleDeletePost = () => {
+      deletePost.mutate({ id: post.id });
+    };
 
-  const isAuthor = post.authorId === dbUser?.id;
+    const isAuthor = post.authorId === dbUser?.id;
 
-  // Dialogs
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [openReportDialog, setOpenReportDialog] = useState(false);
-  const [reportTarget, setReportTarget] = useState<{
-    id: string;
-    type: "post" | "comment";
-  } | null>(null);
+    // Dialogs
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [openReportDialog, setOpenReportDialog] = useState(false);
+    const [reportTarget, setReportTarget] = useState<{
+      id: string;
+      type: "post" | "comment";
+    } | null>(null);
 
-  return (
-    <Card className="overflow-hidden">
-      <CardContent className="">
-        {/* Author Info */}
-        <div className="mb-4 flex items-center space-x-3">
-          <div
-            className={`flex h-10 w-10 items-center justify-center rounded-full ${post.author?.image ? "" : "bg-gray-200"} text-black`}
-          >
-            <span className="text-sm font-medium">
-              {post.author?.image ? (
-                <Image
-                  src={post.author.image}
-                  alt=""
-                  className="rounded-full"
-                  width={40}
-                  height={40}
-                />
-              ) : (
-                (post.author?.name ?? "?")
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-              )}
-            </span>
-          </div>
-          <div className="flex-1">
-            <p className="text-foreground font-medium">
-              {post.author?.name ?? "Member"}
-            </p>
-            <p className="text-muted-foreground text-sm">
-              {post.author?.professionalPosition ?? "Member"}
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Badge variant="secondary" className="text-xs">
-              {post.category?.name ?? "General"}
-            </Badge>
-            <div className="flex items-center space-x-1">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    title="Post actions"
-                  >
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
+    // Submit a report
+    const handleReportSubmit = async (payload: { reason: string, details?: string }) => {
 
-                <DropdownMenuContent align="end" className="w-36">
-                  {!isAuthor && (
-                    <DropdownMenuItem
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        setReportTarget({ id: post.id, type: "post" });
-                        setOpenReportDialog(true);
-                      }}
+      if (!reportTarget) return;
+
+      const { id, type } = reportTarget;
+
+      try {
+        await addReport.mutateAsync({
+          id,
+          type,
+          reason: payload.reason,
+          details: payload.details,
+        });
+        toast.success("Report submitted successfully");
+      } catch (e) {
+        toast.error(`Failed to submit report: ${e as string}`);
+      }
+    };
+
+    return(
+    <Card className = "overflow-hidden" >
+        <CardContent className="">
+          {/* Author Info */}
+          <div className="mb-4 flex items-center space-x-3">
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-full ${post.author?.image ? "" : "bg-gray-200"} text-black`}
+            >
+              <span className="text-sm font-medium">
+                {post.author?.image ? (
+                  <Image
+                    src={post.author.image}
+                    alt=""
+                    className="rounded-full"
+                    width={40}
+                    height={40}
+                  />
+                ) : (
+                  (post.author?.name ?? "?")
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                )}
+              </span>
+            </div>
+            <div className="flex-1">
+              <p className="text-foreground font-medium">
+                {post.author?.name ?? "Member"}
+              </p>
+              <p className="text-muted-foreground text-sm">
+                {post.author?.professionalPosition ?? "Member"}
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Badge variant="secondary" className="text-xs">
+                {post.category?.name ?? "General"}
+              </Badge>
+              <div className="flex items-center space-x-1">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      title="Post actions"
                     >
-                      <Flag className="mr-2 h-4 w-4" /> Report
-                    </DropdownMenuItem>
-                  )}
-                  {isAuthor && (
-                    <DropdownMenuItem
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        // navigate to edit view
-                        void router.push(
-                          `/member-dashboard/community-blog/${post.id}/edit`,
-                        );
-                      }}
-                    >
-                      <Pencil className="mr-2 h-4 w-4" /> Edit
-                    </DropdownMenuItem>
-                  )}
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
 
-                  {(isAuthor || dbUser?.role === "ADMIN") && (
-                    <>
-                      <DropdownMenuSeparator />
+                  <DropdownMenuContent align="end" className="w-36">
+                    {!isAuthor && (
                       <DropdownMenuItem
                         onSelect={(e) => {
                           e.preventDefault();
-                          setOpenDeleteDialog(true);
+                          setReportTarget({ id: post.id, type: "post" });
+                          setOpenReportDialog(true);
                         }}
-                        className="text-destructive"
                       >
-                        <Trash2 className="text-destructive mr-2 h-4 w-4" />{" "}
-                        Delete
+                        <Flag className="mr-2 h-4 w-4" /> Report
                       </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    )}
+                    {isAuthor && (
+                      <DropdownMenuItem
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          // navigate to edit view
+                          void router.push(
+                            `/member-dashboard/community-blog/${post.id}/edit`,
+                          );
+                        }}
+                      >
+                        <Pencil className="mr-2 h-4 w-4" /> Edit
+                      </DropdownMenuItem>
+                    )}
 
-              {/* Report dialog */}
-              <ReportDialog
-                target={reportTarget}
-                open={openReportDialog}
-                onOpenChange={setOpenReportDialog}
-              />
+                    {(isAuthor || dbUser?.role === "ADMIN") && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            setOpenDeleteDialog(true);
+                          }}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="text-destructive mr-2 h-4 w-4" />{" "}
+                          Delete
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-              {/* Delete dialog */}
-              <AlertDialog
-                open={openDeleteDialog}
-                onOpenChange={setOpenDeleteDialog}
-              >
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete this post?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete
-                      your post and remove it from the community blog.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel
-                      onClick={() => setOpenDeleteDialog(false)}
-                    >
-                      Cancel
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      className="bg-destructive hover:bg-destructive/70"
-                      onClick={() => {
-                        handleDeletePost();
-                        setOpenDeleteDialog(false);
-                      }}
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-        </div>
-
-        {/* Post Content */}
-        <div className="space-y-4">
-          <Link href={`/member-dashboard/community-blog/${post.id}`}>
-            <h3 className="text-foreground hover:text-primary cursor-pointer font-semibold transition-colors">
-              {post.title}
-            </h3>
-          </Link>
-          <div className="prose prose-blog dark:prose-invert text-foreground/70 max-w-full">
-            <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
-          </div>
-
-          {/* Cover Image */}
-          {post.coverImageUrl && (
-            <div className="mt-6 overflow-hidden rounded-lg">
-              <Image
-                src={post.coverImageUrl}
-                alt="Post cover"
-                className="h-64 w-full object-cover"
-                width={100}
-                height={100}
-              />
-            </div>
-          )}
-
-          {/* Post Footer */}
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant={"ghost"}
-                onClick={handleLikeToggle}
-                disabled={likePost.isPending || unlikePost.isPending}
-                className={`text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors ${isLiked ? "text-red-500 hover:text-red-600" : ""}`}
-              >
-                <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-                <span className="text-sm">{localLikeCount}</span>
-              </Button>
-              <Button
-                variant={"ghost"}
-                className="text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors"
-                asChild
-              >
-                <Link href={`/member-dashboard/community-blog/${post.id}`}>
-                  <MessageSquareText className="h-4 w-4" />
-                  <span className="text-sm">{post._count.comments}</span>
-                </Link>
-              </Button>
-            </div>
-            <div className="mt-2 flex items-center gap-2">
-              <p className="text-muted-foreground text-sm">
-                {new Date(post.createdAt).toLocaleDateString()}
-              </p>
-              {post.updatedAt.getTime() !== post.createdAt.getTime() && (
-                <span className="text-muted-foreground text-sm">(Edited)</span>
-              )}
-            </div>
-          </div>
-
-          {/* Comments Section */}
-          {showComments && (
-            <div className="mt-4 space-y-4 border-t pt-4">
-              {/* Add Comment Form */}
-              <div className="space-y-2">
-                <Textarea
-                  placeholder="Write a comment..."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  className="resize-none"
-                  rows={3}
+                {/* Report dialog */}
+                <ReportDialog
+                  target={reportTarget}
+                  open={openReportDialog}
+                  onOpenChange={setOpenReportDialog}
+                  onSubmit={handleReportSubmit}
                 />
-                <div className="flex justify-end">
-                  <Button
-                    onClick={handleAddComment}
-                    disabled={addComment.isPending || !commentText.trim()}
-                    size="sm"
-                  >
-                    <Send className="mr-2 h-4 w-4" />
-                    Post Comment
-                  </Button>
-                </div>
-              </div>
 
-              {/* Comments List */}
-              <div className="space-y-3">
-                {commentsData && commentsData.length > 0 ? (
-                  commentsData.map((comment) => (
-                    <CommentItem
-                      key={comment.id}
-                      comment={comment}
-                      currentUserId={dbUser?.id}
-                      currentUserRole={dbUser?.role}
-                      onUpdate={(id, content) =>
-                        updateComment.mutate({ id: id, content })
-                      }
-                      onDelete={(id) => deleteComment.mutate({ id })}
-                      onReply={handleReply}
-                    />
-                  ))
-                ) : (
-                  <p className="text-muted-foreground text-center text-sm">
-                    No comments yet. Be the first to comment!
-                  </p>
+                {/* Delete dialog */}
+                <AlertDialog
+                  open={openDeleteDialog}
+                  onOpenChange={setOpenDeleteDialog}
+                >
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this post?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete
+                        your post and remove it from the community blog.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel
+                        onClick={() => setOpenDeleteDialog(false)}
+                      >
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/70"
+                        onClick={() => {
+                          handleDeletePost();
+                          setOpenDeleteDialog(false);
+                        }}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          </div>
+
+          {/* Post Content */}
+          <div className="space-y-4">
+            <Link href={`/member-dashboard/community-blog/${post.id}`}>
+              <h3 className="text-foreground hover:text-primary cursor-pointer font-semibold transition-colors">
+                {post.title}
+              </h3>
+            </Link>
+            <div className="prose prose-blog dark:prose-invert text-foreground/70 max-w-full">
+              <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
+            </div>
+
+            {/* Cover Image */}
+            {post.coverImageUrl && (
+              <div className="mt-6 overflow-hidden rounded-lg">
+                <Image
+                  src={post.coverImageUrl}
+                  alt="Post cover"
+                  className="h-64 w-full object-cover"
+                  width={100}
+                  height={100}
+                />
+              </div>
+            )}
+
+            {/* Post Footer */}
+            <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant={"ghost"}
+                  onClick={handleLikeToggle}
+                  disabled={likePost.isPending || unlikePost.isPending}
+                  className={`text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors ${isLiked ? "text-red-500 hover:text-red-600" : ""}`}
+                >
+                  <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+                  <span className="text-sm">{localLikeCount}</span>
+                </Button>
+                <Button
+                  variant={"ghost"}
+                  className="text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors"
+                  asChild
+                >
+                  <Link href={`/member-dashboard/community-blog/${post.id}`}>
+                    <MessageSquareText className="h-4 w-4" />
+                    <span className="text-sm">{post._count.comments}</span>
+                  </Link>
+                </Button>
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <p className="text-muted-foreground text-sm">
+                  {new Date(post.createdAt).toLocaleDateString()}
+                </p>
+                {post.updatedAt.getTime() !== post.createdAt.getTime() && (
+                  <span className="text-muted-foreground text-sm">(Edited)</span>
                 )}
               </div>
             </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+
+            {/* Comments Section */}
+            {showComments && (
+              <div className="mt-4 space-y-4 border-t pt-4">
+                {/* Add Comment Form */}
+                <div className="space-y-2">
+                  <Textarea
+                    placeholder="Write a comment..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    className="resize-none"
+                    rows={3}
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={handleAddComment}
+                      disabled={addComment.isPending || !commentText.trim()}
+                      size="sm"
+                    >
+                      <Send className="mr-2 h-4 w-4" />
+                      Post Comment
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Comments List */}
+                <div className="space-y-3">
+                  {commentsData && commentsData.length > 0 ? (
+                    commentsData.map((comment) => (
+                      <CommentItem
+                        key={comment.id}
+                        comment={comment}
+                        currentUserId={dbUser?.id}
+                        currentUserRole={dbUser?.role}
+                        onUpdate={(id, content) =>
+                          updateComment.mutate({ id: id, content })
+                        }
+                        onDelete={(id) => deleteComment.mutate({ id })}
+                        onReply={handleReply}
+                      />
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground text-center text-sm">
+                      No comments yet. Be the first to comment!
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+    </Card >
   );
 }
 

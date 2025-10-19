@@ -77,6 +77,11 @@ const adminMenuItems = [
     title: "Activity",
     url: "/admin-dashboard/activity",
     icon: Activity,
+  },
+  {
+    title: "Reports",
+    url: "/admin-dashboard/reports",
+    icon: FileText,
   }
 ];
 
