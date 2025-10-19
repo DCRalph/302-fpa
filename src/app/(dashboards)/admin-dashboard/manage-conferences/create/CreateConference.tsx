@@ -9,7 +9,7 @@ import { Checkbox } from "~/components/ui/checkbox";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from 'nextjs-toploader/app';
 import { Plus, Trash2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 

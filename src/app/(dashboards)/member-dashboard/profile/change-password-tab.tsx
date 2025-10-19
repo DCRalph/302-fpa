@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter } from 'nextjs-toploader/app';
 import { useState } from "react";
 
 export function ChangePasswordTab() {
@@ -27,7 +27,7 @@ export function ChangePasswordTab() {
       toast.error(err.message ?? "Failed to update password");
     },
     onSettled: () => {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   });
 
@@ -54,7 +54,7 @@ export function ChangePasswordTab() {
         currentPassword: formData?.currentPassword,
       });
     } else {
-        toast.error("Confirm Password must match New Password");
+      toast.error("Confirm Password must match New Password");
     }
   };
   return (

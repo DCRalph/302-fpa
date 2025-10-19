@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter } from 'nextjs-toploader/app';
 import { Copy } from "lucide-react";
 
 export function BasicInfoTab() {
