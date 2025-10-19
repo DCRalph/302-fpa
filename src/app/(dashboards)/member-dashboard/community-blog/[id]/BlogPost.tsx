@@ -7,6 +7,7 @@ import { Textarea } from "~/components/ui/textarea";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Checkbox } from "~/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import {
   Heart,
   MessageSquareText,
@@ -223,9 +224,7 @@ export default function BlogPost({ post }: BlogPostProps) {
       setEditTitle(post.title);
       setEditContent(post.content);
       setEditPublished(post.published);
-      setEditCategoryIds(
-        post.categories.map((category) => category.category.id),
-      );
+      setEditCategoryId(post.categoryId);
     }
 
     setIsEditing(newEditingState);
@@ -257,7 +256,7 @@ export default function BlogPost({ post }: BlogPostProps) {
       title: editTitle,
       content: editContent,
       published: editPublished,
-      categoryIds: editCategoryIds,
+      categoryId: editCategoryId,
     });
   };
 
@@ -320,7 +319,7 @@ export default function BlogPost({ post }: BlogPostProps) {
             </div>
             <div className="flex items-center space-x-2">
               <Badge variant="secondary" className="text-sm">
-                {post.categories?.[0]?.category?.name ?? "General"}
+                {post.category?.name ?? "General"}
               </Badge>
               <div className="flex items-center space-x-1">
                 <DropdownMenu>
@@ -439,49 +438,25 @@ export default function BlogPost({ post }: BlogPostProps) {
 
                 {/* Edit Category */}
                 <div className="space-y-3">
-                  <Label
-                    htmlFor="edit-category"
-                    className="text-sm font-medium"
-                  >
-                    Categories
+                  <Label className="text-sm font-medium">
+                    Category
                   </Label>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                  <RadioGroup
+                    value={editCategoryId ?? ""}
+                    onValueChange={setEditCategoryId}
+                    className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                  >
                     {categories?.map((category) => (
                       <div
                         key={category.id}
-                        className={`relative flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-all duration-200 ${
-                          editCategoryIds.includes(category.id)
-                            ? "border-primary bg-primary/5 shadow-sm"
-                            : "border-border bg-background hover:border-primary/50 hover:bg-muted/30"
-                        } `}
-                        onClick={() => {
-                          if (editCategoryIds.includes(category.id)) {
-                            setEditCategoryIds((prev) =>
-                              prev.filter((id) => id !== category.id),
-                            );
-                          } else {
-                            setEditCategoryIds((prev) => [
-                              ...prev,
-                              category.id,
-                            ]);
-                          }
-                        }}
+                        className={`relative flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-all duration-200 ${editCategoryId === category.id
+                          ? "border-primary bg-primary/5 shadow-sm"
+                          : "border-border bg-background hover:border-primary/50 hover:bg-muted/30"
+                          }`}
                       >
-                        <Checkbox
+                        <RadioGroupItem
+                          value={category.id}
                           id={`category-${category.id}`}
-                          checked={editCategoryIds.includes(category.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setEditCategoryIds((prev) => [
-                                ...prev,
-                                category.id,
-                              ]);
-                            } else {
-                              setEditCategoryIds((prev) =>
-                                prev.filter((id) => id !== category.id),
-                              );
-                            }
-                          }}
                           className="pointer-events-none"
                         />
                         <Label
@@ -490,32 +465,22 @@ export default function BlogPost({ post }: BlogPostProps) {
                         >
                           {category.name}
                         </Label>
-                        {editCategoryIds.includes(category.id) && (
+                        {editCategoryId === category.id && (
                           <div className="absolute top-2 right-2">
                             <div className="bg-primary h-2 w-2 rounded-full"></div>
                           </div>
                         )}
                       </div>
                     ))}
-                  </div>
-                  {editCategoryIds.length > 0 && (
+                  </RadioGroup>
+                  {editCategoryId && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       <span className="text-muted-foreground text-xs">
                         Selected:
                       </span>
-                      {editCategoryIds.map((categoryId) => {
-                        const category = categories?.find(
-                          (c) => c.id === categoryId,
-                        );
-                        return (
-                          <span
-                            key={categoryId}
-                            className="bg-primary/10 text-primary inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                          >
-                            {category?.name}
-                          </span>
-                        );
-                      })}
+                      <span className="bg-primary/10 text-primary inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                        {categories?.find((c) => c.id === editCategoryId)?.name}
+                      </span>
                     </div>
                   )}
                 </div>

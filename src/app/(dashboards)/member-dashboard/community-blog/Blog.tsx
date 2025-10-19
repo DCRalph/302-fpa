@@ -239,7 +239,7 @@ function BlogPostCard({ post }: { post: BlogPost }) {
           </div>
           <div className="flex items-center space-x-2">
             <Badge variant="secondary" className="text-xs">
-              {post.categories[0]?.category?.name ?? "General"}
+              {post.category?.name ?? "General"}
             </Badge>
             <div className="flex items-center space-x-1">
               <DropdownMenu>

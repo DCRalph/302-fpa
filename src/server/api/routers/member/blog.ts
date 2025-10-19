@@ -177,17 +177,24 @@ export const memberBlogRouter = createTRPCRouter({
         id: z.string(),
         title: z.string().min(3),
         content: z.string().min(1),
-        categoryId: z.string().optional(),
+        categoryId: z.string().nullable(),
         published: z.boolean().default(true),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, categoryId, ...updateData } = input;
+      const { id, ...updateData } = input;
 
       // Get the current post to check authorization
       const currentPost = await ctx.db.blogPost.findUnique({
-        where: { id },
-        select: { authorId: true, title: true, published: true },
+        where: {
+          id
+        },
+        select: {
+          authorId: true,
+          title: true,
+          published: true,
+          categoryId: true
+        },
       });
 
       if (!currentPost || currentPost.authorId !== ctx.dbUser.id) {
@@ -204,6 +211,7 @@ export const memberBlogRouter = createTRPCRouter({
           publishedAt: updateData.published && !currentPost.published ? new Date() : undefined,
         },
       });
+
 
       // Log activity
       await Promise.all([
@@ -243,7 +251,7 @@ export const memberBlogRouter = createTRPCRouter({
             postTitle: input.title,
             published: updateData.published,
             wasPublished: currentPost.published,
-            categoryId,
+            categoryId: currentPost.categoryId,
           },
         }),
       ]);
@@ -346,6 +354,10 @@ export const memberBlogRouter = createTRPCRouter({
           code: "NOT_FOUND",
           message: "Post not found",
         });
+      }
+
+      if (!post.categoryId || !post.category) {
+        
       }
 
       return {

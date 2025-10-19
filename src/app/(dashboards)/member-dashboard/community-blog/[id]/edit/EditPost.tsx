@@ -39,20 +39,16 @@ export default function EditPostPage({ post }: BlogPostProps) {
   const params = useParams();
   const postId = params.id as string;
 
-  // const { data: post } = api.member.blog.getById.useQuery(
-  //   { id: postId },
-  //   { enabled: !!postId },
-  // );
 
   // Editing state - initialize from query params
   const [editTitle, setEditTitle] = useState(post?.title);
   const [editContent, setEditContent] = useState(post?.content);
   const [editPublished, setEditPublished] = useState(post?.published);
-  const [editCategoryIds, setEditCategoryIds] = useState(
-    post?.categories.map((category) => category.category.id) ?? [],
+  const [editCategoryId, setEditCategoryId] = useState(
+    post?.categoryId ?? null,
   );
 
-  const [selectedFilter, setSelectedFilter] = useState("general");
+  // const [selectedFilter, setSelectedFilter] = useState("general");
 
   // Load available categories so we can map slug -> id
   const { data: categories } = api.member.blog.getCategories.useQuery();
@@ -60,55 +56,55 @@ export default function EditPostPage({ post }: BlogPostProps) {
   // Populate form when post data is loaded
   useEffect(() => {
     if (post) {
-      const slug = post.categories?.[0]?.category?.slug ?? "general";
-      setSelectedFilter(slug);
+      // const slug = post.category?.slug ?? "general";
+      // setSelectedFilter(slug);
 
       setEditTitle(post.title);
       setEditContent(post.content);
       setEditPublished(post.published);
-      setEditCategoryIds(
-        post.categories.map((category) => category.category.id),
-      );
+      setEditCategoryId(post.categoryId ?? null);
     }
   }, [post]);
+
+  
 
   // Keep selectedFilter in sync if formData.postType changes (e.g. user or post updates)
   // (removed stale formData sync) selectedFilter is initialized from post above
 
-  // When selectedFilter changes, map it to category id(s) so the mutation uses the correct ids
-  useEffect(() => {
-    if (!categories || !selectedFilter) return;
+  // When selectedFilter changes, map it to category id so the mutation uses the correct id
+  // useEffect(() => {
+  //   if (!categories || !selectedFilter) return;
 
-    const match = categories.find((c) => c.slug === selectedFilter);
-    if (match) {
-      // single-select: replace editCategoryIds with the selected category id
-      setEditCategoryIds([match.id]);
-    } else if (selectedFilter === "all-posts") {
-      // no-op: keep existing selection
-    } else {
-      // fallback: if slug not found, do nothing
-    }
-  }, [selectedFilter, categories]);
+  //   const match = categories.find((c) => c.slug === selectedFilter);
+  //   if (match) {
+  //     // single-select: set editCategoryId to the selected category id
+  //     setEditCategoryId(match.id);
+  //   } else if (selectedFilter === "all-posts") {
+  //     // no-op: keep existing selection
+  //   } else {
+  //     // fallback: if slug not found, do nothing
+  //   }
+  // }, [selectedFilter, categories]);
 
   // If categories load after we initialize editCategoryIds, ensure selectedFilter
   // points to a slug that actually exists in categories. This covers cases where
   // the Select renders before categories are available and would otherwise show blank.
-  useEffect(() => {
-    if (!categories || categories.length === 0) return;
+  // useEffect(() => {
+  //   if (!categories || categories.length === 0) return;
 
-    // If the currently selectedFilter doesn't match any loaded category slug,
-    // but we have an editCategoryIds value from the post, map that id -> slug.
-    const hasSlugMatch = categories.some((c) => c.slug === selectedFilter);
-    if (!hasSlugMatch && editCategoryIds && editCategoryIds.length > 0) {
-      const matchById = categories.find((c) => c.id === editCategoryIds[0]);
-      if (matchById) {
-        setSelectedFilter(matchById.slug);
-      }
-    }
-  }, [categories, editCategoryIds, selectedFilter]);
+  //   // If the currently selectedFilter doesn't match any loaded category slug,
+  //   // but we have an editCategoryId value from the post, map that id -> slug.
+  //   const hasSlugMatch = categories.some((c) => c.slug === selectedFilter);
+  //   if (!hasSlugMatch && editCategoryId) {
+  //     const matchById = categories.find((c) => c.id === editCategoryId);
+  //     if (matchById) {
+  //       setSelectedFilter(matchById.slug);
+  //     }
+  //   }
+  // }, [categories, editCategoryId, selectedFilter]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null); // TODO: Create an S3 bucket to upload images to
+  // const [imageFile, setImageFile] = useState<File | null>(null); // TODO: Create an S3 bucket to upload images to
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const utils = api.useUtils();
@@ -138,27 +134,7 @@ export default function EditPostPage({ post }: BlogPostProps) {
     },
   });
 
-  const handleInputChange = (
-    field: string,
-    value: string | boolean | number,
-  ) => {
-    switch (field) {
-      case "title":
-        setEditTitle(value as string);
-        break;
-      case "content":
-        setEditContent(value as string);
-        break;
-      case "published":
-        setEditPublished(value as boolean);
-        break;
-      case "postType":
-        setSelectedFilter(value as string);
-        break;
-      default:
-        break;
-    }
-  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,7 +159,7 @@ export default function EditPostPage({ post }: BlogPostProps) {
       title: editTitle ?? "",
       content: editContent ?? "",
       published: editPublished ?? true,
-      categoryIds: editCategoryIds,
+      categoryId: editCategoryId,
       // image: uploadedImageUrl ?? undefined,
     });
   };
@@ -211,7 +187,7 @@ export default function EditPostPage({ post }: BlogPostProps) {
                     id="title"
                     placeholder="Post title"
                     value={editTitle ?? ""}
-                    onChange={(e) => handleInputChange("title", e.target.value)}
+                    onChange={(e) => setEditTitle(e.target.value)}
                     required
                   />
                 </div>
@@ -222,44 +198,20 @@ export default function EditPostPage({ post }: BlogPostProps) {
                     Post Type<span className="text-red-500">*</span>
                   </Label>
                   <Select
-                    value={selectedFilter ?? "general"}
+                    value={editCategoryId ?? ""}
                     onValueChange={(val) => {
-                      setSelectedFilter(val);
-                      handleInputChange("postType", val);
+                      setEditCategoryId(val);
                     }}
                   >
                     <SelectTrigger className="bg-background w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories && categories.length > 0 ? (
-                        // Render categories fetched from the server
-                        categories.map((c) => (
-                          <SelectItem key={c.id} value={c.slug}>
-                            {c.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        // Fallback static options
-                        <>
-                          <SelectItem value="general">General</SelectItem>
-                          <SelectItem value="qualification">Qualification</SelectItem>
-                          <SelectItem value="research-paper">Research Paper</SelectItem>
-                        </>
-                      )}
-
-                      {/* If post has a category slug not present in categories list yet,
-                          include it so the Select can display the current value */}
-                      {post?.categories?.[0]?.category?.slug &&
-                        categories &&
-                        !categories.find((c) => c.slug === post?.categories?.[0]?.category?.slug) && (
-                          <SelectItem
-                            value={post.categories[0].category.slug}
-                            key={`fallback-${post.categories[0].category.id}`}
-                          >
-                            {post.categories[0].category.name ?? post.categories[0].category.slug}
-                          </SelectItem>
-                        )}
+                      {categories?.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -274,7 +226,7 @@ export default function EditPostPage({ post }: BlogPostProps) {
                   id="content"
                   placeholder="Write your post here..."
                   value={editContent ?? ""}
-                  onChange={(e) => handleInputChange("content", e.target.value)}
+                  onChange={(e) => setEditContent(e.target.value)}
                   rows={10}
                   required
                 />
@@ -290,7 +242,7 @@ export default function EditPostPage({ post }: BlogPostProps) {
                   className="file:bg-muted file:text-foreground hover:file:bg-muted/80 cursor-pointer rounded-md file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-1 file:font-semibold"
                   onChange={(e) => {
                     const file = e.target.files?.[0] ?? null;
-                    setImageFile(file);
+                    // setImageFile(file);
                     if (file) {
                       const url = URL.createObjectURL(file);
                       setPreviewUrl(url);
@@ -320,7 +272,7 @@ export default function EditPostPage({ post }: BlogPostProps) {
                     id="published"
                     checked={!editPublished} // inverse: checked means "draft"
                     onCheckedChange={
-                      (checked) => handleInputChange("published", !checked) // invert the value
+                      (checked) => setEditPublished(!checked) // invert the value
                     }
                   />
                   <Label htmlFor="published">Mark as draft</Label>
