@@ -205,8 +205,8 @@ model BlogPost {
   updatedAt     DateTime  @updatedAt
 
 
-  category   BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  categoryId String?
+  category   BlogCategory @relation(fields: [categoryId], references: [id])
+  categoryId String
 
   likes      BlogPostLike[]
   comments   BlogComment[]
