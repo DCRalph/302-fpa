@@ -33,10 +33,7 @@ import Image from "next/image";
 import { useAuth } from "~/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { authClient } from "~/lib/auth-client";
-import { useRouter } from 'nextjs-toploader/app';
-import { toast } from "sonner";
-import { api } from "~/trpc/react";
+import { SignOut } from "~/components/sign-out";
 
 export function UserDropdown({ detailed = false }) {
   const { dbUser, isPending: authLoading } = useAuth();
@@ -44,23 +41,7 @@ export function UserDropdown({ detailed = false }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  const router = useRouter();
-  const utils = api.useUtils();
-
   useEffect(() => setMounted(true), []);
-
-  const handleSignOut = async () => {
-    try {
-      await authClient.signOut();
-      toast.success("Signed out successfully");
-      // redirect("/");
-      await utils.auth.me.invalidate();
-      router.push("/");
-    } catch (error) {
-      console.error("Sign out error:", error);
-      toast.error("Failed to sign out");
-    }
-  };
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -231,14 +212,12 @@ export function UserDropdown({ detailed = false }) {
               </DropdownMenuSubContent>
             </DropdownMenuSub>
 
-            <DropdownMenuItem
-              onClick={handleSignOut}
-              className="cursor-pointer"
-              variant="destructive"
-            >
-              <LogOut className="mr-2 size-4" />
-              Sign Out
-            </DropdownMenuItem>
+            <SignOut asChild>
+              <DropdownMenuItem variant="destructive">
+                <LogOut className="size-4 text-muted-foreground" />
+                <span>Sign Out</span>
+              </DropdownMenuItem>
+            </SignOut>
           </>
         ) : (
           <>

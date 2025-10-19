@@ -1,14 +1,14 @@
+"use client";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
-import { getServerSession } from "~/lib/getServerSession";
+import { useAuth } from "~/hooks/useAuth";
 
 
-export async function AuthButtons() {
+export function AuthButtons() {
 
-  const session = await getServerSession()
+  const { dbUser } = useAuth();
 
-
-  if (session) {
+  if (dbUser) {
     return (
       <>
         {/* Desktop view */}

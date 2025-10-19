@@ -8,6 +8,7 @@ import { Label } from "~/components/ui/label";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useAuth } from "~/hooks/useAuth";
+import { SignOut } from "~/components/sign-out";
 
 export default function SignUpForm() {
   const [name, setName] = useState("");
@@ -48,6 +49,7 @@ export default function SignUpForm() {
                 Go to Dashboard
               </Button>
             </Link>
+            <SignOut variant="outline" className="w-full" />
           </div>
         </div>
       </div>
