@@ -15,6 +15,12 @@ enum UserRole {
   USER
 }
 
+enum ReportAction {
+  CONTENT_DELETED
+  REPORT_DISMISSED
+  OTHER
+}
+
 model Session {
   id        String   @id
   expiresAt DateTime
@@ -475,6 +481,7 @@ model BlogReport {
   resolvedAt  DateTime? 
   resolvedById  String?
   resolvedByUser User?     @relation("UserBlogReportsResolved", fields: [resolvedById], references: [id])
+  action ReportAction? @default(OTHER)
   adminNote   String?
 
 

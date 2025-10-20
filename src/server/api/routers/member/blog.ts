@@ -14,6 +14,16 @@ import {
   getActivityIcon,
 } from "~/server/api/lib/activity-logger";
 
+import { getReports } from "./reports/get";
+import { createReport } from "./reports/create";
+import { resolveReport } from "./reports/resolve";
+
+import { addComment } from "./comments/add";
+import { updateComment } from "./comments/update";
+import { deleteComment } from "./comments/delete";
+import { getComments } from "./comments/get";
+import { getCommentCount } from "./comments/count";
+
 export const memberBlogRouter = createTRPCRouter({
   // Get all blog categories
   getCategories: protectedProcedure.query(async ({ ctx }) => {
@@ -439,313 +449,31 @@ export const memberBlogRouter = createTRPCRouter({
       return { isLiked: !!like };
     }),
 
+  // COMMENTS
+
   // Add comment
-  addComment: protectedProcedure
-    .input(
-      z.object({
-        postId: z.string(),
-        content: z.string().min(1).max(2000),
-        parentCommentId: z.string().optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      // Get the post and its author
-      const post = await ctx.db.blogPost.findUnique({
-        where: { id: input.postId },
-        select: { authorId: true, title: true },
-      });
-
-      if (!post) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Post not found",
-        });
-      }
-
-      const comment = await ctx.db.blogComment.create({
-        data: {
-          postId: input.postId,
-          content: input.content,
-          authorId: ctx.dbUser.id,
-          approved: true,
-          parentCommentId: input.parentCommentId,
-        },
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              professionalPosition: true,
-            },
-          },
-        },
-      });
-
-      // Notify post author if someone else commented
-      if (post.authorId !== ctx.dbUser.id) {
-        await logUserActivity(ctx.db, {
-          userId: post.authorId,
-          title: "New comment on your post",
-          description: `${ctx.dbUser.name ?? "Someone"} commented on "${post.title}"`,
-          icon: getActivityIcon(UserActivityType.BLOG_COMMENT_RECEIVED),
-          type: UserActivityType.BLOG_COMMENT_RECEIVED,
-          actions: [
-            {
-              label: "View Comment",
-              href: `/member-dashboard/community-blog/${input.postId}`,
-              variant: "outline",
-            },
-          ],
-          metadata: {
-            postId: input.postId,
-            postTitle: post.title,
-            commentId: comment.id,
-            commenterName: ctx.dbUser.name,
-          },
-        });
-      }
-
-      // Log app activity
-      await logAppActivity(ctx.db, {
-        userId: ctx.dbUser.id,
-        userName: ctx.dbUser.name ?? undefined,
-        userEmail: ctx.dbUser.email ?? undefined,
-        type: AppActivityType.BLOG_COMMENT_CREATED,
-        action: ActivityActionEnum.CREATED,
-        entity: ActivityEntity.COMMENT,
-        entityId: comment.id,
-        title: `Comment added on post: ${post.title}`,
-        category: ActivityCategory.CONTENT,
-        severity: ActivitySeverity.INFO,
-        metadata: {
-          postId: input.postId,
-          postTitle: post.title,
-          commentId: comment.id,
-          commentLength: input.content.length,
-        },
-      });
-
-      return comment;
-    }),
+  addComment,
 
   // Update comment
-  updateComment: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        content: z.string().min(1).max(2000),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-
-      // Get the post and its author
-      const currentComment = await ctx.db.blogComment.findUnique({
-        where: { id: input.id },
-        select: { authorId: true, content: true },
-      });
-
-      if (!currentComment) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Comment not found",
-        });
-      }
-
-      const comment = await ctx.db.blogComment.update({
-        where: { id: input.id },
-        data: {
-          ...input,
-        },
-      });
-
-      return comment;
-    }),
+  updateComment,
 
   // Delete comment
-  deleteComment: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-
-      // Get the comment
-      const comment = await ctx.db.blogComment.findUnique({
-        where: { id: input.id },
-        select: { authorId: true, content: true },
-      });
-
-      if (!comment) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Comment not found",
-        });
-      }
-
-      await ctx.db.blogComment.delete({
-        where: { id: input.id },
-      });
-
-      return { success: true };
-    }),
+  deleteComment,
 
   // Get a list of comments for a post
-  getComments: protectedProcedure
-    .input(z.object({ postId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const comments = await ctx.db.blogComment.findMany({
-        where: {
-          postId: input.postId,
-          approved: true,
-          parentCommentId: null, // Only get top-level comments
-        },
-        orderBy: { createdAt: "desc" },
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              professionalPosition: true,
-            },
-          },
-          subComments: {
-            where: {
-              approved: true,
-            },
-            orderBy: { createdAt: "asc" },
-            include: {
-              author: {
-                select: {
-                  id: true,
-                  name: true,
-                  image: true,
-                  professionalPosition: true,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      return comments;
-    }),
+  getComments,
 
   // Get approved comment count for a post
-  getCommentCount: protectedProcedure
-    .input(z.object({ postId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const count = await ctx.db.blogComment.count({
-        where: {
-          postId: input.postId,
-          approved: true,
-        },
-      });
+  getCommentCount,
 
-      return { count };
-    }),
+  // REPORTS
 
   // Get reports created by current user
-  getReports: protectedProcedure
-    .input(
-      z
-        .object({
-          take: z.number().min(1).max(50).default(20),
-          cursor: z.string().nullish(),
-        })
-        .optional(),
-    )
-    .query(async ({ ctx, input }) => {
-      const { take = 20, cursor } = input ?? {};
-
-      const reports = await ctx.db.blogReport.findMany({
-        take: take + 1,
-        cursor: cursor ? { id: cursor } : undefined,
-        orderBy: { createdAt: "desc" },
-        include: {
-          post: { select: { id: true, title: true, author: true } },
-          comment: { select: { id: true, content: true, author: true } },
-          user: { select: { id: true, name: true } },
-        },
-      });
-
-      let nextCursor: string | undefined = undefined;
-      if (reports.length > take) {
-        const next = reports.pop();
-        nextCursor = next?.id;
-      }
-
-      return { reports, nextCursor };
-    }),
+  getReports,
 
   // Create a report
-  createReport: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        type: z.enum(["post", "comment"]),
-        reason: z.string(),
-        details: z.string().max(500).optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
+  createReport,
 
-      const report = await ctx.db.blogReport.create({
-        data: {
-          userId: ctx.dbUser.id,
-          postId: input.type === "post" ? input.id : undefined,
-          commentId: input.type === "comment" ? input.id : undefined,
-          reason: input.reason,
-          details: input.details,
-        },
-        include: {
-          post: { select: { id: true, title: true, author: true } },
-          comment: { select: { id: true, content: true, author: true } },
-        },
-      });
-
-      // Get a friendly label for the target (post title or short comment preview)
-      const targetLabel =
-        report.post?.title ??
-        (report.comment?.content ? `${report.comment.content.slice(0, 120)}${report.comment.content.length > 120 ? "…" : ""}` : `(${input.type})`);
-
-      // Log app activity
-      await logAppActivity(ctx.db, {
-        userId: ctx.dbUser.id,
-        userName: ctx.dbUser.name ?? undefined,
-        userEmail: ctx.dbUser.email ?? undefined,
-        type: AppActivityType.REPORT_SUBMITTED,
-        action: ActivityActionEnum.CREATED,
-        entity: ActivityEntity.REPORT,
-        entityId: report.postId ?? report.commentId as string | undefined,
-        title: `Report submitted for ${input.type}: ${targetLabel}`,
-        description: `A report has been submitted by ${ctx.dbUser.name ?? "a user"}`,
-        category: ActivityCategory.CONTENT,
-        severity: ActivitySeverity.WARNING,
-        metadata: {
-          reportId: input.id,
-          postId: report.postId,
-          commentId: report.commentId,
-        },
-      });
-
-      return report;
-    }),
-
-  // Delete a report created by the current user
-  deleteReport: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const report = await ctx.db.blogReport.findUnique({ where: { id: input.id } });
-      if (!report) throw new TRPCError({ code: "NOT_FOUND", message: "Report not found" });
-      if (report.userId !== ctx.dbUser.id) throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized" });
-
-      await ctx.db.blogReport.delete({ where: { id: input.id } });
-
-      return { success: true };
-    }),
+  // Resolve a pending report
+  resolveReport,
 });
-
-
