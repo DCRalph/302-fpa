@@ -13,6 +13,7 @@ const pageNamesMap: Record<string, string> = {
   "/admin-dashboard/manage-members": "Manage Members",
   "/admin-dashboard/activity": "Activity",
   "/admin-dashboard/emails": "Emails",
+  "/admin-dashboard/files": "Files",
   "/admin-dashboard/reports": "Reports",
   "/admin-dashboard": "Admin Dashboard",
 
