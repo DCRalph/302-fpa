@@ -5,16 +5,6 @@ import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Badge } from "~/components/ui/badge";
-import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogCancel,
-    AlertDialogAction,
-} from "~/components/ui/alert-dialog";
 import { api } from "~/trpc/react";
 import { Check } from "lucide-react";
 import Markdown from "react-markdown";
@@ -38,21 +28,28 @@ import {
     SelectItem,
 } from "~/components/ui/select";
 
+import type { ReportAction } from "@prisma/client";
+import { handleTRPCMutation } from "~/lib/toast";
+
 export default function ReportPage() {
     const [take] = useState(20);
     const [filter, setFilter] = useState<"all" | "post" | "comment">("all");
-    const [selectedReport, setSelectedReport] = useState<string | null>(null);
-    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
     const utils = api.useUtils();
 
     const { data } = api.member.blog.getReports.useQuery({ take });
 
+    const resolveReport = api.member.blog.resolveReport.useMutation({
+        onSuccess: () => {
+            void utils.member.blog.getReports.invalidate();
+        },
+    });
+
     // Resolve/close dialog state
     const [openResolveDialog, setOpenResolveDialog] = useState(false);
     const [selectedResolveReport, setSelectedResolveReport] = useState<string | null>(null);
     const [resolveNote, setResolveNote] = useState("");
-    const [resolveAction, setResolveAction] = useState<string | null>(null);
+    const [resolveAction, setResolveAction] = useState<ReportAction | null>(null);
 
     const handleResolve = (id: string) => {
         setSelectedResolveReport(id);
@@ -60,23 +57,19 @@ export default function ReportPage() {
         setOpenResolveDialog(true);
     };
 
-    const confirmResolve = () => {
+    const confirmResolve = async () => {
         // TODO: wire up to backend mutation to mark report closed/resolved and save admin note
         // For now this is UI-only: close dialog and reset state
         // Example: resolveReport.mutate({ id: selectedResolveReport, note: resolveNote })
         // reference selectedResolveReport so the compiler doesn't warn about it being unused
-        void selectedResolveReport;
+        // resolveReport.mutate({ id: selectedResolveReport!, action: resolveAction!, adminNote: resolveNote });
+
+        await handleTRPCMutation(() => resolveReport.mutateAsync({ id: selectedResolveReport!, action: resolveAction!, adminNote: resolveNote }), "Report resolved successfully.", "Error resolving report.");
         setOpenResolveDialog(false);
         setSelectedResolveReport(null);
         setResolveNote("");
     };
-
-    const confirmDelete = () => {
-        if (!selectedReport) return;
-        setOpenDeleteDialog(false);
-        setSelectedReport(null);
-    };
-
+    
     return (
         <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
@@ -141,15 +134,6 @@ export default function ReportPage() {
                                                     <Badge variant="secondary" className="text-xs">
                                                         {r.post ? "Post" : r.comment ? "Comment" : "Other"}
                                                     </Badge>
-                                                    {/* <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8"
-                                                        onClick={() => handleDelete(r.id)}
-                                                        title="Delete report"
-                                                    >
-                                                        <Trash2 className="text-destructive h-4 w-4" />
-                                                    </Button> */}
                                                 </div>
                                             </div>
 
@@ -191,7 +175,7 @@ export default function ReportPage() {
             </div>
 
             {/* Delete confirmation dialog */}
-            <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
+            {/* <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete report?</AlertDialogTitle>
@@ -212,7 +196,7 @@ export default function ReportPage() {
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
-            </AlertDialog>
+            </AlertDialog> */}
 
             {/* Resolve dialog (admin note) */}
             <Dialog open={openResolveDialog} onOpenChange={setOpenResolveDialog}>
@@ -232,15 +216,15 @@ export default function ReportPage() {
                             </Label>
                             <Select
                                 value={resolveAction ?? undefined}
-                                onValueChange={(v) => setResolveAction(v)}
+                                onValueChange={(v) => setResolveAction(v as ReportAction)}
                             >
                                 <SelectTrigger className="w-full mt-1">
                                     <SelectValue placeholder="Select an action" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="delete">Delete content</SelectItem>
-                                    <SelectItem value="dismiss">Dismiss Report</SelectItem>
-                                    <SelectItem value="other">Other</SelectItem>
+                                    <SelectItem value="CONTENT_DELETED">Delete content</SelectItem>
+                                    <SelectItem value="REPORT_DISMISSED">Dismiss Report</SelectItem>
+                                    <SelectItem value="OTHER">Other</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
