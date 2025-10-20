@@ -16,7 +16,8 @@ import { Label } from "~/components/ui/label";
 import { api } from "~/trpc/react";
 import { Spinner } from "~/components/ui/spinner";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Calendar, DollarSign, User, Mail, Phone, Building2, Briefcase, GraduationCap, Award, FileText } from "lucide-react";
+import { CheckCircle, XCircle, Calendar, DollarSign, User, Mail, Phone, Building2, Briefcase, GraduationCap, Award, FileText, Download } from "lucide-react";
+import Image from "next/image";
 
 interface RegistrationDetailsDialogProps {
   registrationId: string;
@@ -369,6 +370,74 @@ export function RegistrationDetailsDialog({
                     </div>
                   </div>
                 )}
+              </div>
+            </>
+          )}
+
+          {/* Supporting Documents */}
+          {registration.attachments.length > 0 && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg">
+                  Supporting Documents ({registration.attachments.length})
+                </h3>
+                <div className="space-y-4">
+                  {registration.attachments.map((attachment) => (
+                    <div key={attachment.id} className="rounded-lg border bg-muted/50 p-4">
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-8 w-8 text-muted-foreground" />
+                        <div className="flex-1">
+                          <p className="font-medium">{attachment.filename}</p>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span>
+                              {attachment.mimeType && (
+                                <span className="capitalize">
+                                  {attachment.mimeType.split('/')[1]} file
+                                </span>
+                              )}
+                            </span>
+                            <span>
+                              {Math.round(attachment.sizeBytes / 1024)} KB
+                            </span>
+                            <span>
+                              Uploaded {new Date(attachment.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // Download the file
+                            window.open(`/api/files/${attachment.id}/download`, '_blank');
+                          }}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Download
+                        </Button>
+                      </div>
+
+                      {/* File Preview for Images */}
+                      {attachment.mimeType?.startsWith('image/') && (
+                        <div className="mt-4">
+                          <p className="text-sm text-muted-foreground mb-2">Preview:</p>
+                          <div className="rounded-md border bg-white p-2 max-w-md">
+                            <Image
+                              src={`/api/files/${attachment.id}/download`}
+                              alt={attachment.filename}
+                              width={400}
+                              height={300}
+                              className="max-w-full h-auto rounded object-contain"
+                              style={{ maxHeight: '300px' }}
+                              unoptimized
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </>
           )}

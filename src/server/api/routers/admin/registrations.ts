@@ -46,6 +46,14 @@ export const adminRegistrationsRouter = createTRPCRouter({
               currency: true,
             },
           },
+          attachments: {
+            select: {
+              id: true,
+              filename: true,
+              mimeType: true,
+              sizeBytes: true,
+            },
+          },
         },
       });
 
@@ -112,6 +120,15 @@ export const adminRegistrationsRouter = createTRPCRouter({
               },
             },
             orderBy: { createdAt: "desc" },
+          },
+          attachments: {
+            select: {
+              id: true,
+              filename: true,
+              mimeType: true,
+              sizeBytes: true,
+              createdAt: true,
+            },
           },
         },
       });

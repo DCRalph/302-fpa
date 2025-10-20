@@ -67,7 +67,7 @@ function BlogPostCard({ post }: { post: BlogPost }) {
   const { dbUser } = useAuth();
   const router = useRouter();
 
-  const [showComments, setShowComments] = useState(false);
+  const [showComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [localLikeCount, setLocalLikeCount] = useState(post._count.likes);
   const [isLiked, setIsLiked] = useState(post.isLikedByUser);

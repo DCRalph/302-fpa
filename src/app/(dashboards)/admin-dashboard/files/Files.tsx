@@ -130,6 +130,7 @@ function FileModal({ fileId, open, onOpenChange }: FileModalProps) {
 
   const getFileIcon = (mimeType: string | null) => {
     if (!mimeType) return <File className="h-4 w-4" />;
+    // eslint-disable-next-line 
     if (mimeType.startsWith('image/')) return <Image className="h-4 w-4" />;
     if (mimeType.startsWith('video/')) return <Video className="h-4 w-4" />;
     if (mimeType.startsWith('audio/')) return <Music className="h-4 w-4" />;
@@ -396,6 +397,7 @@ export default function FilesPage() {
 
   const getFileIcon = (mimeType: string | null) => {
     if (!mimeType) return <File className="h-4 w-4" />;
+    // eslint-disable-next-line 
     if (mimeType.startsWith('image/')) return <Image className="h-4 w-4" />;
     if (mimeType.startsWith('video/')) return <Video className="h-4 w-4" />;
     if (mimeType.startsWith('audio/')) return <Music className="h-4 w-4" />;

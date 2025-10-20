@@ -172,22 +172,22 @@ export default function BlogPost({ post }: BlogPostProps) {
   });
 
   // Update post
-  const updatePost = api.member.blog.updatePost.useMutation({
-    onSuccess: () => {
-      toast.success("Post updated!");
-      setIsEditing(false);
+  // const updatePost = api.member.blog.updatePost.useMutation({
+  //   onSuccess: () => {
+  //     toast.success("Post updated!");
+  //     setIsEditing(false);
 
-      // Remove edit query parameter from URL
-      const newSearchParams = new URLSearchParams(searchParams.toString());
-      newSearchParams.delete("edit");
-      const newUrl = `${window.location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""}`;
-      router.replace(newUrl);
+  //     // Remove edit query parameter from URL
+  //     const newSearchParams = new URLSearchParams(searchParams.toString());
+  //     newSearchParams.delete("edit");
+  //     const newUrl = `${window.location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""}`;
+  //     router.replace(newUrl);
 
-      void refetchComments();
-      void utils.member.blog.list.invalidate();
-    },
-    onError: () => toast.error("Failed to update post"),
-  });
+  //     void refetchComments();
+  //     void utils.member.blog.list.invalidate();
+  //   },
+  //   onError: () => toast.error("Failed to update post"),
+  // });
 
   // Create a report
   const createReport = api.member.blog.createReport.useMutation({
@@ -228,49 +228,49 @@ export default function BlogPost({ post }: BlogPostProps) {
     deletePost.mutate({ id: post.id });
   };
 
-  const handleEditToggle = () => {
-    const newEditingState = !isEditing;
+  // const handleEditToggle = () => {
+  //   const newEditingState = !isEditing;
 
-    if (!newEditingState) {
-      // Cancel editing - reset form data
-      setEditTitle(post.title);
-      setEditContent(post.content);
-      setEditPublished(post.published);
-      setEditCategoryId(post.categoryId);
-    }
+  //   if (!newEditingState) {
+  //     // Cancel editing - reset form data
+  //     setEditTitle(post.title);
+  //     setEditContent(post.content);
+  //     setEditPublished(post.published);
+  //     setEditCategoryId(post.categoryId);
+  //   }
 
-    setIsEditing(newEditingState);
+  //   setIsEditing(newEditingState);
 
-    // Update URL query parameters
-    const newSearchParams = new URLSearchParams(searchParams.toString());
-    if (newEditingState) {
-      newSearchParams.set("edit", "true");
-    } else {
-      newSearchParams.delete("edit");
-    }
+  //   // Update URL query parameters
+  //   const newSearchParams = new URLSearchParams(searchParams.toString());
+  //   if (newEditingState) {
+  //     newSearchParams.set("edit", "true");
+  //   } else {
+  //     newSearchParams.delete("edit");
+  //   }
 
-    const newUrl = `${window.location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""}`;
-    router.replace(newUrl);
-  };
+  //   const newUrl = `${window.location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""}`;
+  //   router.replace(newUrl);
+  // };
 
-  const handleSaveEdit = () => {
-    if (!editTitle.trim()) {
-      toast.error("Please enter a title");
-      return;
-    }
-    if (!editContent.trim()) {
-      toast.error("Please enter content");
-      return;
-    }
+  // const handleSaveEdit = () => {
+  //   if (!editTitle.trim()) {
+  //     toast.error("Please enter a title");
+  //     return;
+  //   }
+  //   if (!editContent.trim()) {
+  //     toast.error("Please enter content");
+  //     return;
+  //   }
 
-    updatePost.mutate({
-      id: post.id,
-      title: editTitle,
-      content: editContent,
-      published: editPublished,
-      categoryId: editCategoryId,
-    });
-  };
+  //   updatePost.mutate({
+  //     id: post.id,
+  //     title: editTitle,
+  //     content: editContent,
+  //     published: editPublished,
+  //     categoryId: editCategoryId,
+  //   });
+  // };
 
   const isAuthor = post.authorId === dbUser?.id;
 

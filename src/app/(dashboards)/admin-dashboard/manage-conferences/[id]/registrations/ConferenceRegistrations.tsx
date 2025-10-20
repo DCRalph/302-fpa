@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { api } from "~/trpc/react";
 import { Spinner } from "~/components/ui/spinner";
-import { ArrowLeft, Eye } from "lucide-react";
+import { ArrowLeft, Eye, FileText } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -191,6 +191,12 @@ export default function ConferenceRegistrationsPage() {
                                 <Badge variant={getPaymentStatusBadgeVariant(registration.paymentStatus)}>
                                   {registration.paymentStatus}
                                 </Badge>
+                                {registration.attachments && registration.attachments.length > 0 && (
+                                  <Badge variant="outline" className="flex items-center gap-1">
+                                    <FileText className="h-3 w-3" />
+                                    {registration.attachments.length} Document{registration.attachments.length > 1 ? 's' : ''}
+                                  </Badge>
+                                )}
                               </div>
                               <div className="text-muted-foreground mt-1 space-y-1 text-sm">
                                 <p>
