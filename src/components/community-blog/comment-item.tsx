@@ -76,7 +76,7 @@ function CommentItem({
   } | null>(null);
 
   const isAuthor = comment.authorId === currentUserId;
-  const isAdmin = currentUserRole === "ADMIN";
+  // const isAdmin = currentUserRole === "ADMIN";
 
   // Create a report
   const createReport = api.member.blog.createReport.useMutation({
