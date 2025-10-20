@@ -28,10 +28,10 @@ export type ReportDialogProps = {
 }
 
 const DEFAULT_REASONS = [
-  { value: "spam", label: "Spam or advertising" },
-  { value: "harassment", label: "Harassment or hate" },
-  { value: "misinformation", label: "Misinformation" },
-  { value: "other", label: "Other (explain below)" },
+  { value: "Spam or advertising" },
+  { value: "Harassment or hate" },
+  { value: "Misinformation" },
+  { value: "Other (explain below)" },
 ]
 
 export function ReportDialog({ target, open, onOpenChange, onSubmit }: ReportDialogProps) {
@@ -57,6 +57,7 @@ export function ReportDialog({ target, open, onOpenChange, onSubmit }: ReportDia
       console.error(e)
     } finally {
       setIsSubmitting(false)
+      onOpenChange?.(false)
       reset()
     }
   }
@@ -83,7 +84,7 @@ export function ReportDialog({ target, open, onOpenChange, onSubmit }: ReportDia
               <SelectContent>
                 {DEFAULT_REASONS.map((r) => (
                   <SelectItem key={r.value} value={r.value}>
-                    {r.label}
+                    {r.value}
                   </SelectItem>
                 ))}
               </SelectContent>

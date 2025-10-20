@@ -36,6 +36,9 @@ import { type RouterOutputs } from "~/trpc/react";
 import { useAuth } from "~/hooks/useAuth";
 import ReportDialog from "./report-dialog";
 
+import { api } from "~/trpc/react";
+import { toast } from "sonner";
+
 // Type for comment with author relation
 type Comment = RouterOutputs["member"]["blog"]["getComments"][number];
 
@@ -57,6 +60,7 @@ function CommentItem({
   isNested?: boolean;
 }) {
   const { dbUser } = useAuth();
+  const utils = api.useUtils();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(comment.content);
@@ -74,6 +78,17 @@ function CommentItem({
   const isAuthor = comment.authorId === currentUserId;
   const isAdmin = currentUserRole === "ADMIN";
 
+  // Create a report
+  const createReport = api.member.blog.createReport.useMutation({
+    onSuccess: () => {
+      toast.success("Report submitted successfully!");
+
+      void utils.member.blog.list.invalidate();
+      void utils.member.blog.getReports.invalidate();
+    },
+    onError: () => toast.error("Failed to submit report"),
+  });
+
   const handleSave = () => {
     if (!editText.trim()) return;
     onUpdate(comment.id, editText);
@@ -85,6 +100,27 @@ function CommentItem({
     onReply(comment.id, replyText);
     setReplyText("");
     setIsReplying(false);
+  };
+
+  // Submit a report
+  const handleReportSubmit = async (payload: {
+    reason: string;
+    details?: string;
+  }) => {
+    if (!reportTarget) return;
+
+    const { id, type } = reportTarget;
+
+    try {
+      await createReport.mutateAsync({
+        id,
+        type,
+        reason: payload.reason,
+        details: payload.details,
+      });
+    } catch (e) {
+      toast.error(`Failed to submit report: ${e as string}`);
+    }
   };
 
   return (
@@ -186,6 +222,7 @@ function CommentItem({
                           target={reportTarget}
                           open={openReportDialog}
                           onOpenChange={setOpenReportDialog}
+                          onSubmit={handleReportSubmit}
                         />
 
                         {/* Delete with confirmation */}

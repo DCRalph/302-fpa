@@ -1,17 +1,13 @@
-
 import { NavBar } from "~/components/nav-bar";
 import Auth from "./Auth";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function TempPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-
+    <div className="bg-background text-foreground min-h-screen">
       <NavBar />
-
       <Auth />
-
     </div>
   );
 }

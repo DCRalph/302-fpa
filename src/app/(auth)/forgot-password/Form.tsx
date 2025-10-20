@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { api } from '~/trpc/react';
-import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import { Label } from '~/components/ui/label';
-import { Alert, AlertDescription } from '~/components/ui/alert';
-import { Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
-import Link from 'next/link';
+import { useState } from "react";
+import { api } from "~/trpc/react";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Alert, AlertDescription } from "~/components/ui/alert";
+import { Loader2, ArrowLeft, CheckCircle } from "lucide-react";
+import Link from "next/link";
 
 export default function ForgotPasswordForm() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const requestPasswordReset = api.auth.requestPasswordReset.useMutation({
@@ -18,7 +18,7 @@ export default function ForgotPasswordForm() {
       setIsSubmitted(true);
     },
     onError: (error) => {
-      console.error('Password reset request failed:', error);
+      console.error("Password reset request failed:", error);
     },
   });
 
@@ -33,7 +33,7 @@ export default function ForgotPasswordForm() {
     return (
       <div className="bg-background z-20 w-full max-w-md rounded-lg p-8 shadow-lg">
         <div className="space-y-6">
-          <div className="text-center space-y-4">
+          <div className="space-y-4 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
@@ -45,7 +45,8 @@ export default function ForgotPasswordForm() {
           <div className="space-y-4">
             <Alert>
               <AlertDescription>
-                You&apos;ll receive a password reset link shortly. If this is your first time, we&apos;ll create an account for you.
+                You&apos;ll receive a password reset link shortly. If this is
+                your first time, we&apos;ll create an account for you.
               </AlertDescription>
             </Alert>
             <div className="flex flex-col space-y-2">
@@ -53,7 +54,7 @@ export default function ForgotPasswordForm() {
                 variant="outline"
                 onClick={() => {
                   setIsSubmitted(false);
-                  setEmail('');
+                  setEmail("");
                 }}
                 className="w-full"
               >
@@ -78,7 +79,8 @@ export default function ForgotPasswordForm() {
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">Forgot your password?</h1>
           <p className="text-muted-foreground">
-            Enter your email address and we&apos;ll send you a link to set your password.
+            Enter your email address and we&apos;ll send you a link to set your
+            password.
           </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -104,6 +106,7 @@ export default function ForgotPasswordForm() {
           )}
 
           <Button
+            variant={"primary"}
             type="submit"
             className="w-full"
             disabled={requestPasswordReset.isPending || !email}
@@ -114,7 +117,7 @@ export default function ForgotPasswordForm() {
                 Sending reset link...
               </>
             ) : (
-              'Send reset link'
+              "Send reset link"
             )}
           </Button>
 

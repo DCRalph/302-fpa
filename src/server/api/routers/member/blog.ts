@@ -659,7 +659,6 @@ export const memberBlogRouter = createTRPCRouter({
       const { take = 20, cursor } = input ?? {};
 
       const reports = await ctx.db.blogReport.findMany({
-        where: { userId: ctx.dbUser.id },
         take: take + 1,
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: { createdAt: "desc" },
@@ -679,13 +678,13 @@ export const memberBlogRouter = createTRPCRouter({
       return { reports, nextCursor };
     }),
 
-  // Add a report
-  addReport: protectedProcedure
+  // Create a report
+  createReport: protectedProcedure
     .input(
       z.object({
         id: z.string(),
         type: z.enum(["post", "comment"]),
-        reason: z.string().min(5).max(100),
+        reason: z.string(),
         details: z.string().max(500).optional(),
       }),
     )
@@ -694,6 +693,8 @@ export const memberBlogRouter = createTRPCRouter({
       await ctx.db.blogReport.create({
         data: {
           userId: ctx.dbUser.id,
+          postId: input.type === "post" ? input.id : undefined,
+          commentId: input.type === "comment" ? input.id : undefined,
           reason: input.reason,
           details: input.details,
         },

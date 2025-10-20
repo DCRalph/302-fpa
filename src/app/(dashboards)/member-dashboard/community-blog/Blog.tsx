@@ -151,7 +151,6 @@ function BlogPostCard({ post }: { post: BlogPost }) {
     onSuccess: () => {
       toast.success("Comment deleted!");
       void refetchComments();
-
       void utils.member.blog.list.invalidate();
     },
     onError: () => toast.error("Failed to delete comment"),
@@ -166,9 +165,13 @@ function BlogPostCard({ post }: { post: BlogPost }) {
     onError: () => toast.error("Failed to delete post"),
   });
 
-  const addReport = api.member.blog.addReport.useMutation({
+  // Create a report
+  const createReport = api.member.blog.createReport.useMutation({
     onSuccess: () => {
-      toast.success("Report submitted!");
+      toast.success("Report submitted successfully!");
+
+      void utils.member.blog.list.invalidate();
+      void utils.member.blog.getReports.invalidate();
     },
     onError: () => toast.error("Failed to submit report"),
   });
@@ -219,13 +222,12 @@ function BlogPostCard({ post }: { post: BlogPost }) {
       const { id, type } = reportTarget;
 
       try {
-        await addReport.mutateAsync({
+        await createReport.mutateAsync({
           id,
           type,
           reason: payload.reason,
           details: payload.details,
         });
-        toast.success("Report submitted successfully");
       } catch (e) {
         toast.error(`Failed to submit report: ${e as string}`);
       }

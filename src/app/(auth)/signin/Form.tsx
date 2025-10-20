@@ -6,7 +6,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useRouter } from 'nextjs-toploader/app';
+import { useRouter } from "nextjs-toploader/app";
 import { useAuth } from "~/hooks/useAuth";
 import { SignOut } from "~/components/sign-out";
 
@@ -152,12 +152,6 @@ export default function SignInForm() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Password</Label>
-              <Link
-                href="/forgot-password"
-                className="text-sm text-primary hover:underline"
-              >
-                Forgot password?
-              </Link>
             </div>
             <Input
               id="password"
@@ -168,12 +162,20 @@ export default function SignInForm() {
               required
               disabled={isLoading}
             />
+            <div className="flex justify-end mt-1 mb-6">
+              <Link
+                href="/forgot-password"
+                className="text-primary text-sm hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
           </div>
 
           <Button
             variant={"primary"}
             type="submit"
-            className="w-full cursor-pointer "
+            className="w-full cursor-pointer"
             disabled={isLoading}
           >
             {isLoading ? "Signing in..." : "Sign In"}
@@ -181,9 +183,7 @@ export default function SignInForm() {
         </form>
 
         <div className="text-center text-sm">
-          <span className="text-foreground">
-            Don&apos;t have an account?{" "}
-          </span>
+          <span className="text-foreground">Don&apos;t have an account? </span>
           <Link
             href="/signup"
             className="text-primary font-medium hover:underline"

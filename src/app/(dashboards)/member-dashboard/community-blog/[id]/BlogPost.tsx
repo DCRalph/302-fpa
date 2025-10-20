@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from 'nextjs-toploader/app';
+import { useRouter } from "nextjs-toploader/app";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAuth } from "~/hooks/useAuth";
@@ -189,6 +189,17 @@ export default function BlogPost({ post }: BlogPostProps) {
     onError: () => toast.error("Failed to update post"),
   });
 
+  // Create a report
+  const createReport = api.member.blog.createReport.useMutation({
+    onSuccess: () => {
+      toast.success("Report submitted successfully!");
+
+      void utils.member.blog.list.invalidate();
+      void utils.member.blog.getReports.invalidate();
+    },
+    onError: () => toast.error("Failed to submit report"),
+  });
+
   const handleLikeToggle = () => {
     if (isLiked) {
       unlikePost.mutate({ postId: post.id });
@@ -270,6 +281,27 @@ export default function BlogPost({ post }: BlogPostProps) {
     id: string;
     type: "post" | "comment";
   } | null>(null);
+
+  // Submit a report
+  const handleReportSubmit = async (payload: {
+    reason: string;
+    details?: string;
+  }) => {
+    if (!reportTarget) return;
+
+    const { id, type } = reportTarget;
+
+    try {
+      await createReport.mutateAsync({
+        id,
+        type,
+        reason: payload.reason,
+        details: payload.details,
+      });
+    } catch (e) {
+      toast.error(`Failed to submit report: ${e as string}`);
+    }
+  };
 
   return (
     <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6">
@@ -385,6 +417,7 @@ export default function BlogPost({ post }: BlogPostProps) {
                   target={reportTarget}
                   open={openReportDialog}
                   onOpenChange={setOpenReportDialog}
+                  onSubmit={handleReportSubmit}
                 />
 
                 {/* Delete Dialog */}
@@ -439,9 +472,7 @@ export default function BlogPost({ post }: BlogPostProps) {
 
                 {/* Edit Category */}
                 <div className="space-y-3">
-                  <Label className="text-sm font-medium">
-                    Category
-                  </Label>
+                  <Label className="text-sm font-medium">Category</Label>
                   <RadioGroup
                     value={editCategoryId ?? ""}
                     onValueChange={setEditCategoryId}
@@ -450,10 +481,11 @@ export default function BlogPost({ post }: BlogPostProps) {
                     {categories?.map((category) => (
                       <div
                         key={category.id}
-                        className={`relative flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-all duration-200 ${editCategoryId === category.id
-                          ? "border-primary bg-primary/5 shadow-sm"
-                          : "border-border bg-background hover:border-primary/50 hover:bg-muted/30"
-                          }`}
+                        className={`relative flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-all duration-200 ${
+                          editCategoryId === category.id
+                            ? "border-primary bg-primary/5 shadow-sm"
+                            : "border-border bg-background hover:border-primary/50 hover:bg-muted/30"
+                        }`}
                       >
                         <RadioGroupItem
                           value={category.id}
