@@ -40,7 +40,7 @@ export default function MyFilesPage() {
         <CardContent className="space-y-2">
           {(data ?? []).map((f) => (
             <div key={f.id} className="flex items-center justify-between rounded border p-2">
-              <a href={f.url} target="_blank" rel="noreferrer" className="truncate">{f.filename}</a>
+              <a href={`/api/files/${f.id}/download`} target="_blank" rel="noreferrer" className="truncate">{f.filename}</a>
               <Button variant="outline" size="sm" onClick={() => del.mutate({ id: f.id })}>
                 Delete
               </Button>

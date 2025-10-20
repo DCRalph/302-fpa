@@ -360,7 +360,7 @@ export const memberDashboardRouter = createTRPCRouter({
           },
         },
         documents: {
-          value: String(await ctx.db.attachment.count({ where: { registration: { userId } } })),
+          value: String(await ctx.db.file.count({ where: { registration: { userId } } })),
           subtitle: "Files Uploaded",
           icon: {
             type: "lucide",

@@ -77,6 +77,7 @@ export const memberRegistrationRouter = createTRPCRouter({
         }).optional(),
         remits: z.array(z.string().min(1)).max(2).optional(),
         finalConfirmation: z.boolean(),
+        fileId: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -158,6 +159,14 @@ export const memberRegistrationRouter = createTRPCRouter({
           },
         },
       });
+
+      // Link uploaded file to registration if provided
+      if (input.fileId) {
+        await ctx.db.file.update({
+          where: { id: input.fileId },
+          data: { registrationId: registration.id },
+        });
+      }
 
       // Send registration success email
       try {

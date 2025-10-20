@@ -5,7 +5,7 @@ import { auth } from "~/lib/auth";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication using Better Auth
@@ -27,7 +27,7 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const fileId = params.id;
+    const fileId = (await params).id;
     if (!fileId) {
       return NextResponse.json({ error: "File ID is required" }, { status: 400 });
     }

@@ -20,7 +20,7 @@ export const memberFilesRouter = createTRPCRouter({
       orderBy: { createdAt: "desc" },
       select: { id: true },
     });
-    const attachments = await ctx.db.attachment.findMany({
+    const files = await ctx.db.file.findMany({
       where: {
         OR: [
           { registrationId: latestReg?.id ?? undefined },
@@ -29,7 +29,7 @@ export const memberFilesRouter = createTRPCRouter({
       },
       orderBy: { createdAt: "desc" },
     });
-    return attachments;
+    return files;
   }),
 
   addByUrl: protectedProcedure
@@ -41,13 +41,13 @@ export const memberFilesRouter = createTRPCRouter({
         select: { id: true },
       });
 
-      const attachment = await ctx.db.attachment.create({
+      const file = await ctx.db.file.create({
         data: {
           registrationId: latestReg?.id ?? null,
-          url: input.url,
           filename: input.filename,
           mimeType: null,
-          sizeBytes: null,
+          data: Buffer.from(''), // Empty buffer for URL-based files
+          sizeBytes: 0,
         },
       });
 
@@ -60,7 +60,7 @@ export const memberFilesRouter = createTRPCRouter({
           icon: getActivityIcon(UserActivityType.FILE_UPLOADED),
           type: UserActivityType.FILE_UPLOADED,
           metadata: {
-            attachmentId: attachment.id,
+            fileId: file.id,
             filename: input.filename,
             registrationId: latestReg?.id,
           },
@@ -72,43 +72,43 @@ export const memberFilesRouter = createTRPCRouter({
           type: AppActivityType.FILE_UPLOADED,
           action: ActivityActionEnum.CREATED,
           entity: ActivityEntity.ATTACHMENT,
-          entityId: attachment.id,
+          entityId: file.id,
           title: `File uploaded: ${input.filename}`,
           category: ActivityCategory.CONTENT,
           severity: ActivitySeverity.INFO,
           metadata: {
-            attachmentId: attachment.id,
+            fileId: file.id,
             filename: input.filename,
             registrationId: latestReg?.id,
           },
         }),
       ]);
 
-      return attachment;
+      return file;
     }),
 
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const attachment = await ctx.db.attachment.findUnique({
+      const file = await ctx.db.file.findUnique({
         where: { id: input.id },
         select: { filename: true },
       });
 
-      await ctx.db.attachment.delete({ where: { id: input.id } });
+      await ctx.db.file.delete({ where: { id: input.id } });
 
       // Log activity
-      if (attachment) {
+      if (file) {
         await Promise.all([
           logUserActivity(ctx.db, {
             userId: ctx.dbUser.id,
-            title: `File deleted: ${attachment.filename}`,
+            title: `File deleted: ${file.filename}`,
             description: "Your file has been removed",
             icon: getActivityIcon(UserActivityType.FILE_DELETED),
             type: UserActivityType.FILE_DELETED,
             metadata: {
               attachmentId: input.id,
-              filename: attachment.filename,
+              filename: file.filename,
             },
           }),
           logAppActivity(ctx.db, {
@@ -119,18 +119,87 @@ export const memberFilesRouter = createTRPCRouter({
             action: ActivityActionEnum.DELETED,
             entity: ActivityEntity.ATTACHMENT,
             entityId: input.id,
-            title: `File deleted: ${attachment.filename}`,
+            title: `File deleted: ${file.filename}`,
             category: ActivityCategory.CONTENT,
             severity: ActivitySeverity.INFO,
             metadata: {
               attachmentId: input.id,
-              filename: attachment.filename,
+              filename: file.filename,
             },
           }),
         ]);
       }
 
       return { success: true };
+    }),
+
+  upload: protectedProcedure
+    .input(
+      z.object({
+        filename: z.string().min(1),
+        mimeType: z.string().optional(),
+        data: z.string(), // Base64 encoded data
+        sizeBytes: z.number().max(5 * 1024 * 1024), // 5MB limit
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check file size limit
+      if (input.sizeBytes > 5 * 1024 * 1024) {
+        throw new Error("File size exceeds 5MB limit");
+      }
+
+      // Convert base64 to buffer
+      const buffer = Buffer.from(input.data, 'base64');
+
+      // Create file record
+      const file = await ctx.db.file.create({
+        data: {
+          filename: input.filename,
+          mimeType: input.mimeType,
+          data: buffer,
+          sizeBytes: input.sizeBytes,
+          registrationId: null, // Will be linked later during registration
+        },
+      });
+
+      // Log activity
+      await Promise.all([
+        logUserActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          title: `File uploaded: ${input.filename}`,
+          description: "Your file has been saved and will be attached to your registration",
+          icon: getActivityIcon(UserActivityType.FILE_UPLOADED),
+          type: UserActivityType.FILE_UPLOADED,
+          metadata: {
+            fileId: file.id,
+            filename: input.filename,
+            sizeBytes: input.sizeBytes,
+          },
+        }),
+        logAppActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          userName: ctx.dbUser.name ?? undefined,
+          userEmail: ctx.dbUser.email ?? undefined,
+          type: AppActivityType.FILE_UPLOADED,
+          action: ActivityActionEnum.CREATED,
+          entity: ActivityEntity.ATTACHMENT,
+          entityId: file.id,
+          title: `File uploaded: ${input.filename}`,
+          category: ActivityCategory.CONTENT,
+          severity: ActivitySeverity.INFO,
+          metadata: {
+            fileId: file.id,
+            filename: input.filename,
+            sizeBytes: input.sizeBytes,
+          },
+        }),
+      ]);
+
+      return {
+        fileId: file.id,
+        filename: file.filename,
+        size: file.sizeBytes,
+      };
     }),
 });
 
