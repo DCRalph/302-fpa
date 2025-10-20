@@ -12,6 +12,8 @@ import {
   ActivitySeverity,
   getActivityIcon,
 } from "~/server/api/lib/activity-logger";
+import { sendOnboardingWelcomeEmail } from "~/lib/email-resend";
+
 
 export const onboardingRouter = createTRPCRouter({
   completeOnboarding: protectedProcedure
@@ -35,6 +37,19 @@ export const onboardingRouter = createTRPCRouter({
           onboardedAt: new Date(),
         },
       });
+
+      // Send welcome email
+      try {
+        await sendOnboardingWelcomeEmail({
+          name: input.name,
+          email: ctx.dbUser.email ?? "",
+          school: input.school,
+          dashboardUrl: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/member-dashboard`,
+        });
+      } catch (error: unknown) {
+        console.error("Failed to send onboarding welcome email:", error instanceof Error ? error.message : String(error));
+        // Don't throw error to prevent onboarding failure due to email issues
+      }
 
       // Log activity
       await Promise.all([

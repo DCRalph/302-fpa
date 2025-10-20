@@ -12,6 +12,7 @@ import {
   ActivitySeverity,
   getActivityIcon,
 } from "~/server/api/lib/activity-logger";
+import { sendRegistrationStatusUpdateEmail } from "~/lib/email-resend";
 
 export const adminRegistrationsRouter = createTRPCRouter({
   // Get all registrations for a conference
@@ -189,6 +190,25 @@ export const adminRegistrationsRouter = createTRPCRouter({
         },
       });
 
+      // Send status update email
+      try {
+        await sendRegistrationStatusUpdateEmail({
+          name: registration.user?.name ?? registration.name,
+          email: registration.user?.email ?? registration.email,
+          conferenceName: registration.conference?.name ?? "Conference",
+          registrationId: registration.id,
+          previousStatus: currentReg.status,
+          newStatus: "confirmed",
+          previousPaymentStatus: currentReg.paymentStatus,
+          newPaymentStatus: "unpaid",
+          reason: input.note,
+          dashboardUrl: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/member-dashboard/conference-registration`,
+        });
+      } catch (error: unknown) {
+        console.error("Failed to send registration status update email:", error instanceof Error ? error.message : String(error));
+        // Don't throw error to prevent approval failure due to email issues
+      }
+
       // Log activity for the user whose registration was approved
       if (registration.userId) {
         await logUserActivity(ctx.db, {
@@ -301,6 +321,23 @@ export const adminRegistrationsRouter = createTRPCRouter({
           },
         },
       });
+
+      // Send status update email
+      try {
+        await sendRegistrationStatusUpdateEmail({
+          name: registration.user?.name ?? registration.name,
+          email: registration.user?.email ?? registration.email,
+          conferenceName: registration.conference?.name ?? "Conference",
+          registrationId: registration.id,
+          previousStatus: currentReg.status,
+          newStatus: "cancelled",
+          reason: input.reason,
+          dashboardUrl: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/member-dashboard/conference-registration`,
+        });
+      } catch (error: unknown) {
+        console.error("Failed to send registration status update email:", error instanceof Error ? error.message : String(error));
+        // Don't throw error to prevent denial failure due to email issues
+      }
 
       // Log activity for the user whose registration was denied
       if (registration.userId) {
@@ -416,6 +453,25 @@ export const adminRegistrationsRouter = createTRPCRouter({
       );
 
       if (registration.userId && (statusChanged || paymentStatusChanged)) {
+        // Send status update email
+        try {
+          await sendRegistrationStatusUpdateEmail({
+            name: registration.user?.name ?? registration.name,
+            email: registration.user?.email ?? registration.email,
+            conferenceName: registration.conference?.name ?? "Conference",
+            registrationId: registration.id,
+            previousStatus: currentReg.status,
+            newStatus: input.status,
+            previousPaymentStatus: currentReg.paymentStatus,
+            newPaymentStatus: input.paymentStatus ?? currentReg.paymentStatus,
+            reason: input.reason,
+            dashboardUrl: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/member-dashboard/conference-registration`,
+          });
+        } catch (error: unknown) {
+          console.error("Failed to send registration status update email:", error instanceof Error ? error.message : String(error));
+          // Don't throw error to prevent status update failure due to email issues
+        }
+
         const changes: string[] = [];
         if (statusChanged) {
           changes.push(`status: ${currentReg.status} → ${input.status}`);

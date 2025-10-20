@@ -16,7 +16,7 @@ import {
     AlertDialogAction,
 } from "~/components/ui/alert-dialog";
 import { api } from "~/trpc/react";
-import { Check, Trash2 } from "lucide-react";
+import { Check } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -53,11 +53,6 @@ export default function ReportPage() {
             void utils.member.blog.getReports.invalidate();
         },
     });
-
-    const handleDelete = (id: string) => {
-        setSelectedReport(id);
-        setOpenDeleteDialog(true);
-    };
 
     // Resolve/close dialog state
     const [openResolveDialog, setOpenResolveDialog] = useState(false);

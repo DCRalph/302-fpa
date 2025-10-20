@@ -20,6 +20,7 @@ import {
   Users,
   CalendarCog,
   Activity,
+  Mail,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -77,6 +78,11 @@ const adminMenuItems = [
     title: "Activity",
     url: "/admin-dashboard/activity",
     icon: Activity,
+  },
+  {
+    title: "Emails",
+    url: "/admin-dashboard/emails",
+    icon: Mail,
   },
   {
     title: "Reports",
