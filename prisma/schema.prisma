@@ -183,7 +183,7 @@ model Registration {
   notes         AdminNote[]
   statusHistory RegistrationStatusHistory[]
   payments      Payment[]
-  attachments   Attachment[]
+  attachments   File[]
 
   conferenceId String?
   conference   Conference? @relation(fields: [conferenceId], references: [id])
@@ -288,15 +288,16 @@ model RegistrationStatusHistory {
 
 // File attachments (e.g., invoices, receipts) that can be linked to registrations
 
-model Attachment {
+model File {
   id             String        @id @default(cuid())
-  registrationId String?
-  registration   Registration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
-  url            String
+  data           Bytes
+  sizeBytes      Int
   filename       String
   mimeType       String?
-  sizeBytes      Int?
   createdAt      DateTime      @default(now())
+  
+  registrationId String?
+  registration   Registration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
 
   @@index([registrationId])
 }

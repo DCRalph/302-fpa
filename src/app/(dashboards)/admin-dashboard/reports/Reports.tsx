@@ -69,14 +69,7 @@ export default function ReportPage() {
         setSelectedResolveReport(null);
         setResolveNote("");
     };
-
-    // const confirmDelete = () => {
-    //     if (!selectedReport) return;
-
-    //     setOpenDeleteDialog(false);
-    //     setSelectedReport(null);
-    // };
-
+    
     return (
         <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
