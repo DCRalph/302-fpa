@@ -33,7 +33,7 @@ export const resolveReport = protectedProcedure.input(
     title: `Report resolved with action ${input.action} and message: ${input.adminNote ?? "No note provided"}`,
     description: `A report has been resolved by Admin ${ctx.dbUser.name ?? "a user"}`,
     category: ActivityCategory.CONTENT,
-    severity: ActivitySeverity.WARNING,
+    severity: ActivitySeverity.INFO,
     metadata: {
       reportId: input.id,
       postId: report.postId,
