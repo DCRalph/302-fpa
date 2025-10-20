@@ -115,123 +115,103 @@ export default function ReportPage() {
                 </div>
 
                 <div className="grid gap-4">
-                    {data?.reports && data.reports.length > 0 ? (
-                        data.reports
-                            .filter((r) => {
-                                // type filter
-                                if (filter !== "all") {
-                                    if (filter === "post" && !r.post) return false;
-                                    if (filter === "comment" && !r.comment) return false;
-                                }
+                    {(() => {
+                        const filteredReports = (data?.reports ?? []).filter((r) => {
+                            // type filter
+                            if (filter !== "all") {
+                                if (filter === "post" && !r.post) return false;
+                                if (filter === "comment" && !r.comment) return false;
+                            }
 
-                                // status filter
-                                if (statusFilter === "pending" && r.resolvedAt) return false;
-                                if (statusFilter === "resolved" && !r.resolvedAt) return false;
+                            // status filter
+                            if (statusFilter === "pending" && r.resolvedAt) return false;
+                            if (statusFilter === "resolved" && !r.resolvedAt) return false;
 
-                                return true;
-                            })
-                            .map((r) => (
-                                <Card key={r.id} className="overflow-hidden">
-                                    <CardContent className="flex gap-4 items-start">
-                                        {/* Left: icon / avatar placeholder */}
-                                        <div className="flex-shrink-0">
-                                            <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center text-muted-foreground">
-                                                {r.post ? "P" : r.comment ? "C" : "?"}
-                                            </div>
-                                        </div>
+                            return true;
+                        });
 
-                                        {/* Main content */}
-                                        <div className="flex-1">
-                                            <div className="flex items-start justify-between">
-                                                <div>
-                                                    <div className="text-foreground font-semibold">
-                                                        {r.post?.title ?? (r.comment ? `${r.comment.content.slice(0, 80)}${r.comment.content.length > 80 ? "..." : ""}` : "(no title)")}
-                                                    </div>
-                                                    <div className="text-muted-foreground text-sm mt-1">
-                                                        Reported by <span className="text-foreground font-medium">{r.user?.name ?? "Unknown"}</span>
-                                                        {" • "}
-                                                        <span>Author: </span>
-                                                        <span className="text-foreground font-medium">{r.post?.author?.name ?? r.comment?.author?.name ?? "Unknown"}</span>
-                                                    </div>
-                                                    <div className="mt-1 text-sm text-muted-foreground">{new Date(r.createdAt).toLocaleString()}</div>
-
-                                                </div>
-
-                                                <div className="flex items-center gap-2">
-                                                    <Badge variant="secondary" className="text-xs">
-                                                        {r.post ? "Post" : r.comment ? "Comment" : "Other"}
-                                                    </Badge>
-                                                    {/* status badge next to type */}
-                                                    {r.resolvedAt ? (
-                                                        <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Resolved</Badge>
-                                                    ) : (
-                                                        <Badge className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Pending</Badge>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div className="mt-3 flex items-center gap-3">
-                                                <div className="text-sm text-muted-foreground">Reason:</div>
-                                                <div className="text-foreground font-medium text-sm">{r.reason}</div>
-                                            </div>
-                                            <div className="mt-3 flex items-center gap-3 justify-between">
-                                                <div className="prose prose-blog dark:prose-invert text-foreground/80 mt-3 max-w-full">
-                                                    <Markdown remarkPlugins={[remarkGfm]}>{r.details ?? "No additional details provided."}</Markdown>
-                                                </div>
-
-                                                {!r.resolvedAt && (
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleResolve(r.id)}
-                                                        className="ml-2"
-                                                    >
-                                                        <Check className="h-4 w-4" /> Resolve
-                                                    </Button>
-                                                )}
-                                            </div>
+                        if (filteredReports.length === 0) {
+                            return (
+                                <Card>
+                                    <CardContent className="py-12 text-center">
+                                        <div className="mx-auto max-w-md">
+                                            <h3 className="text-foreground mb-2 text-lg font-semibold">
+                                                No reports found
+                                            </h3>
+                                            <p className="text-muted-foreground mb-4">There are no reports matching the selected filter.</p>
                                         </div>
                                     </CardContent>
                                 </Card>
-                            ))
-                    ) : (
-                        <Card>
-                            <CardContent className="py-12 text-center">
-                                <div className="mx-auto max-w-md">
-                                    <h3 className="text-foreground mb-2 text-lg font-semibold">
-                                        No reports found
-                                    </h3>
-                                    <p className="text-muted-foreground mb-4">There are no reports matching the selected filter.</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
+                            );
+                        }
+
+                        return filteredReports.map((r) => (
+                            <Card key={r.id} className="overflow-hidden">
+                                <CardContent className="flex gap-4 items-start">
+                                    {/* Left: icon / avatar placeholder */}
+                                    <div className="flex-shrink-0">
+                                        <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center text-muted-foreground">
+                                            {r.post ? "P" : r.comment ? "C" : "?"}
+                                        </div>
+                                    </div>
+
+                                    {/* Main content */}
+                                    <div className="flex-1">
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <div className="text-foreground font-semibold">
+                                                    {r.post?.title ?? (r.comment ? `${r.comment.content.slice(0, 80)}${r.comment.content.length > 80 ? "..." : ""}` : "(no title)")}
+                                                </div>
+                                                <div className="text-muted-foreground text-sm mt-1">
+                                                    Reported by <span className="text-foreground font-medium">{r.user?.name ?? "Unknown"}</span>
+                                                    {" • "}
+                                                    <span>Author: </span>
+                                                    <span className="text-foreground font-medium">{r.post?.author?.name ?? r.comment?.author?.name ?? "Unknown"}</span>
+                                                </div>
+                                                <div className="mt-1 text-sm text-muted-foreground">{new Date(r.createdAt).toLocaleString()}</div>
+
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <Badge variant="secondary" className="text-xs">
+                                                    {r.post ? "Post" : r.comment ? "Comment" : "Other"}
+                                                </Badge>
+                                                {/* status badge next to type */}
+                                                {r.resolvedAt ? (
+                                                    <Badge className="text-xs bg-green-100  dark:bg-green-900 text-foreground">Resolved</Badge>
+                                                ) : (
+                                                    <Badge className="text-xs bg-yellow-100 dark:bg-yellow-900 text-foreground">Pending</Badge>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-3 flex items-center gap-3">
+                                            <div className="text-sm text-muted-foreground">Reason:</div>
+                                            <div className="text-foreground font-medium text-sm">{r.reason}</div>
+                                        </div>
+                                        <div className="mt-3 flex items-center gap-3 justify-between">
+                                            <div className="prose prose-blog dark:prose-invert text-foreground/80 mt-3 max-w-full">
+                                                <Markdown remarkPlugins={[remarkGfm]}>{r.details ?? "No additional details provided."}</Markdown>
+                                            </div>
+
+                                            {!r.resolvedAt && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleResolve(r.id)}
+                                                    className="ml-2"
+                                                >
+                                                    <Check className="h-4 w-4" /> Resolve
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ));
+                    })()}
                 </div>
             </div>
-
-            {/* Delete confirmation dialog */}
-            {/* <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Delete report?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Are you sure you want to delete this report? This action cannot be
-                            undone.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setOpenDeleteDialog(false)}>
-                            Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                            className="bg-destructive hover:bg-destructive/80"
-                            onClick={confirmDelete}
-                        >
-                            Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog> */}
 
             {/* Resolve dialog (admin note) */}
             <Dialog open={openResolveDialog} onOpenChange={setOpenResolveDialog}>
