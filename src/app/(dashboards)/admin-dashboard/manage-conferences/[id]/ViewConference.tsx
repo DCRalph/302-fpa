@@ -86,69 +86,59 @@ export default function ViewConferencePage() {
             Back to Conferences
           </Button>
         </Link>
-        <div className="flex items-start justify-between">
-          <div className="flex">
-
-            <div className="flex flex-col gap-3">
-
-              <div className="flex items-start gap-3 justify-between">
-                <div className="flex flex-col items-center gap-3">
-                  <h1 className="text-3xl font-bold">{conference.name}</h1>
-                  {/* <p className="text-muted-foreground">{conference.description}</p> */}
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Badge variant={conference.isActive ? "default" : "secondary"}>
-                    {conference.isActive ? "Active" : "Inactive"}
-                  </Badge>
-                  {isRegistrationOpen && (
-                    <Badge variant="default" className="bg-green-500">
-                      Registration Open
-                    </Badge>
-                  )}
-                  {isConferenceOngoing && (
-                    <Badge variant="default" className="bg-blue-500">
-                      Ongoing
-                    </Badge>
-                  )}
-                  {isConferencePast && (
-                    <Badge variant="secondary">Past</Badge>
-                  )}
-
-                  <Link href={`/admin-dashboard/manage-conferences/${conference.id}/edit`}>
-                    <Button className="gap-2">
-                      <Edit className="h-4 w-4" />
-                      Edit
-                    </Button>
-                  </Link>
-
-                  <Button
-                    variant="outline"
-                    className="gap-2"
-                    onClick={handleToggleActive}
-                    disabled={toggleActiveMutation.isPending}
-                  >
-                    {conference.isActive ? (
-                      <>
-                        <XCircle className="h-4 w-4" />
-                        Deactivate
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="h-4 w-4" />
-                        Activate
-                      </>
-                    )}
-                  </Button>
-
-                </div>
-              </div>
-
-              <p className="text-muted-foreground">{conference.description}</p>
-
+        <div className="flex items-start justify-between w-full">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold">{conference.name}</h1>
+            <div className="flex items-center gap-2">
+              <Badge variant={conference.isActive ? "default" : "secondary"}>
+                {conference.isActive ? "Active" : "Inactive"}
+              </Badge>
+              {isRegistrationOpen && (
+                <Badge variant="default" className="bg-green-500">
+                  Registration Open
+                </Badge>
+              )}
+              {isConferenceOngoing && (
+                <Badge variant="default" className="bg-blue-500">
+                  Ongoing
+                </Badge>
+              )}
+              {isConferencePast && (
+                <Badge variant="secondary">Past</Badge>
+              )}
             </div>
           </div>
+
+          <div className="flex items-center gap-3">
+            <Link href={`/admin-dashboard/manage-conferences/${conference.id}/edit`}>
+              <Button className="gap-2">
+                <Edit className="h-4 w-4" />
+                Edit
+              </Button>
+            </Link>
+
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={handleToggleActive}
+              disabled={toggleActiveMutation.isPending}
+            >
+              {conference.isActive ? (
+                <>
+                  <XCircle className="h-4 w-4" />
+                  Deactivate
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  Activate
+                </>
+              )}
+            </Button>
+          </div>
         </div>
+
+        <p className="text-muted-foreground mt-2">{conference.description}</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

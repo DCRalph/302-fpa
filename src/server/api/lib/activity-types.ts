@@ -38,6 +38,7 @@ export const ActivityEntity = {
   SESSION: "session",
   COMMENT: "comment",
   ATTACHMENT: "attachment",
+  REPORT: "report"
 } as const;
 
 export type ActivityEntity = (typeof ActivityEntity)[keyof typeof ActivityEntity];
@@ -125,6 +126,11 @@ export const AppActivityType = {
   BLOG_COMMENT_CREATED: "blog_comment_created",
   BLOG_COMMENT_APPROVED: "blog_comment_approved",
   BLOG_COMMENT_DELETED: "blog_comment_deleted",
+
+  // Report Events
+  REPORT_SUBMITTED: "report_submitted",
+  REPORT_RESOLVED: "report_resolved",
+  REPORT_DELETED: "report_deleted",
 
   // Conference Events
   CONFERENCE_CREATED: "conference_created",

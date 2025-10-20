@@ -591,6 +591,7 @@ export const memberBlogRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  // Get a list of comments for a post
   getComments: protectedProcedure
     .input(z.object({ postId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -632,6 +633,7 @@ export const memberBlogRouter = createTRPCRouter({
       return comments;
     }),
 
+  // Get approved comment count for a post
   getCommentCount: protectedProcedure
     .input(z.object({ postId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -663,8 +665,8 @@ export const memberBlogRouter = createTRPCRouter({
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: { createdAt: "desc" },
         include: {
-          post: { select: { id: true, title: true } },
-          comment: { select: { id: true, content: true } },
+          post: { select: { id: true, title: true, author: true } },
+          comment: { select: { id: true, content: true, author: true } },
           user: { select: { id: true, name: true } },
         },
       });
@@ -690,7 +692,7 @@ export const memberBlogRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
 
-      await ctx.db.blogReport.create({
+      const report = await ctx.db.blogReport.create({
         data: {
           userId: ctx.dbUser.id,
           postId: input.type === "post" ? input.id : undefined,
@@ -698,9 +700,38 @@ export const memberBlogRouter = createTRPCRouter({
           reason: input.reason,
           details: input.details,
         },
+        include: {
+          post: { select: { id: true, title: true, author: true } },
+          comment: { select: { id: true, content: true, author: true } },
+        },
       });
 
-      return { success: true };
+      // Get a friendly label for the target (post title or short comment preview)
+      const targetLabel =
+        report.post?.title ??
+        (report.comment?.content ? `${report.comment.content.slice(0, 120)}${report.comment.content.length > 120 ? "…" : ""}` : `(${input.type})`);
+
+      // Log app activity
+      await logAppActivity(ctx.db, {
+        userId: ctx.dbUser.id,
+        userName: ctx.dbUser.name ?? undefined,
+        userEmail: ctx.dbUser.email ?? undefined,
+        type: AppActivityType.REPORT_SUBMITTED,
+        action: ActivityActionEnum.CREATED,
+        entity: ActivityEntity.REPORT,
+        entityId: report.postId ?? report.commentId as string | undefined,
+        title: `Report submitted for ${input.type}: ${targetLabel}`,
+        description: `A report has been submitted by ${ctx.dbUser.name ?? "a user"}`,
+        category: ActivityCategory.CONTENT,
+        severity: ActivitySeverity.WARNING,
+        metadata: {
+          reportId: input.id,
+          postId: report.postId,
+          commentId: report.commentId,
+        },
+      });
+
+      return report;
     }),
 
   // Delete a report created by the current user

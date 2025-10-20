@@ -90,7 +90,7 @@ model User {
   blogPostLikes BlogPostLike[]
   blogPostComments BlogComment[]
   blogPostReports BlogReport[] @relation("UserBlogReports")
-  blogPostReportsClosed BlogReport[] @relation("UserBlogReportsClosed")
+  blogPostReportsResolved BlogReport[] @relation("UserBlogReportsResolved")
 
 }
 
@@ -470,9 +470,10 @@ model BlogReport {
   reason      String
   details     String?
 
-  closedAt    DateTime?
-  closedBy    String?
-  closedByUser User?     @relation("UserBlogReportsClosed", fields: [closedBy], references: [id])
+  resolvedAt  DateTime? 
+  resolvedById  String?
+  resolvedByUser User?     @relation("UserBlogReportsResolved", fields: [resolvedById], references: [id])
+  adminNote   String?
 
 
   @@index([userId])
