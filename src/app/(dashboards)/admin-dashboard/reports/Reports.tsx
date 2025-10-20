@@ -48,12 +48,6 @@ export default function ReportPage() {
 
     const { data } = api.member.blog.getReports.useQuery({ take });
 
-    const deleteReport = api.member.blog.deleteReport.useMutation({
-        onSuccess: () => {
-            void utils.member.blog.getReports.invalidate();
-        },
-    });
-
     // Resolve/close dialog state
     const [openResolveDialog, setOpenResolveDialog] = useState(false);
     const [selectedResolveReport, setSelectedResolveReport] = useState<string | null>(null);
@@ -79,7 +73,6 @@ export default function ReportPage() {
 
     const confirmDelete = () => {
         if (!selectedReport) return;
-        deleteReport.mutate({ id: selectedReport });
         setOpenDeleteDialog(false);
         setSelectedReport(null);
     };
