@@ -5,11 +5,18 @@ import {
   createPasswordResetEmail,
   createConferenceInvitationEmail,
   createNotificationEmail,
+  createOnboardingWelcomeEmail,
+  createConferenceRegistrationSuccessEmail,
+  createRegistrationStatusUpdateEmail,
   type WelcomeEmailData,
   type PasswordResetEmailData,
   type ConferenceInvitationEmailData,
-  type NotificationEmailData
+  type NotificationEmailData,
+  type OnboardingWelcomeEmailData,
+  type ConferenceRegistrationSuccessEmailData,
+  type RegistrationStatusUpdateEmailData
 } from './email-templates';
+import { db } from '~/server/db';
 
 // Create Resend instance
 export const resend = new Resend(env.RESEND_API_KEY);
@@ -46,6 +53,25 @@ export async function sendEmail({
       html,
       text,
       replyTo: replyTo ?? EMAIL_CONFIG.replyTo,
+    });
+
+    let sentTo = ""
+    if (Array.isArray(to)) {
+      sentTo = to.join(", ");
+    } else {
+      sentTo = to;
+    }
+
+    await db.emailsSent.create({
+      data: {
+        from: EMAIL_CONFIG.from,
+        to: sentTo,
+        subject,
+        html,
+        text: text ?? "N/A",
+        replyTo: replyTo ?? EMAIL_CONFIG.replyTo,
+        provider: "resend",
+      },
     });
 
     if (error) {
@@ -94,6 +120,36 @@ export async function sendConferenceInvitationEmail(data: ConferenceInvitationEm
 
 export async function sendNotificationEmail(data: NotificationEmailData) {
   const template = createNotificationEmail(data);
+  return sendEmail({
+    to: data.email,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+  });
+}
+
+export async function sendOnboardingWelcomeEmail(data: OnboardingWelcomeEmailData) {
+  const template = createOnboardingWelcomeEmail(data);
+  return sendEmail({
+    to: data.email,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+  });
+}
+
+export async function sendConferenceRegistrationSuccessEmail(data: ConferenceRegistrationSuccessEmailData) {
+  const template = createConferenceRegistrationSuccessEmail(data);
+  return sendEmail({
+    to: data.email,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+  });
+}
+
+export async function sendRegistrationStatusUpdateEmail(data: RegistrationStatusUpdateEmailData) {
+  const template = createRegistrationStatusUpdateEmail(data);
   return sendEmail({
     to: data.email,
     subject: template.subject,

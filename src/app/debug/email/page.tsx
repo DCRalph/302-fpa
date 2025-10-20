@@ -10,10 +10,16 @@ import {
   createPasswordResetEmail,
   createConferenceInvitationEmail,
   createNotificationEmail,
+  createOnboardingWelcomeEmail,
+  createConferenceRegistrationSuccessEmail,
+  createRegistrationStatusUpdateEmail,
   type WelcomeEmailData,
   type PasswordResetEmailData,
   type ConferenceInvitationEmailData,
-  type NotificationEmailData
+  type NotificationEmailData,
+  type OnboardingWelcomeEmailData,
+  type ConferenceRegistrationSuccessEmailData,
+  type RegistrationStatusUpdateEmailData
 } from '~/lib/email-templates';
 
 // Sample data for testing
@@ -47,11 +53,45 @@ const sampleNotificationData: NotificationEmailData = {
   actionText: 'View Resources'
 };
 
+const sampleOnboardingWelcomeData: OnboardingWelcomeEmailData = {
+  name: 'Alex Chen',
+  email: 'alex.chen@example.com',
+  school: 'University of the South Pacific',
+  dashboardUrl: 'https://fijiprinciples.org/member-dashboard'
+};
+
+const sampleRegistrationSuccessData: ConferenceRegistrationSuccessEmailData = {
+  name: 'Maria Santos',
+  email: 'maria.santos@example.com',
+  conferenceName: 'Fiji Principles Annual Conference 2024',
+  conferenceDate: 'March 15-17, 2024',
+  conferenceLocation: 'Suva, Fiji',
+  registrationId: 'REG-2024-001234',
+  paymentMethod: 'levy',
+  dashboardUrl: 'https://fijiprinciples.org/member-dashboard/conference-registration'
+};
+
+const sampleStatusUpdateData: RegistrationStatusUpdateEmailData = {
+  name: 'David Kumar',
+  email: 'david.kumar@example.com',
+  conferenceName: 'Fiji Principles Annual Conference 2024',
+  registrationId: 'REG-2024-001235',
+  previousStatus: 'pending',
+  newStatus: 'confirmed',
+  previousPaymentStatus: 'unpaid',
+  newPaymentStatus: 'unpaid',
+  reason: 'Registration approved after review of application materials',
+  dashboardUrl: 'https://fijiprinciples.org/member-dashboard/conference-registration'
+};
+
 export default function EmailDebugPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<string>('welcome');
 
   const templates = [
     { id: 'welcome', name: 'Welcome Email', data: sampleWelcomeData },
+    { id: 'onboarding-welcome', name: 'Onboarding Welcome', data: sampleOnboardingWelcomeData },
+    { id: 'registration-success', name: 'Registration Success', data: sampleRegistrationSuccessData },
+    { id: 'status-update', name: 'Status Update', data: sampleStatusUpdateData },
     { id: 'password-reset', name: 'Password Reset', data: samplePasswordResetData },
     { id: 'conference', name: 'Conference Invitation', data: sampleConferenceData },
     { id: 'notification', name: 'Notification', data: sampleNotificationData },
@@ -61,6 +101,12 @@ export default function EmailDebugPage() {
     switch (templateId) {
       case 'welcome':
         return createWelcomeEmail(sampleWelcomeData);
+      case 'onboarding-welcome':
+        return createOnboardingWelcomeEmail(sampleOnboardingWelcomeData);
+      case 'registration-success':
+        return createConferenceRegistrationSuccessEmail(sampleRegistrationSuccessData);
+      case 'status-update':
+        return createRegistrationStatusUpdateEmail(sampleStatusUpdateData);
       case 'password-reset':
         return createPasswordResetEmail(samplePasswordResetData);
       case 'conference':

@@ -12,8 +12,10 @@ const pageNamesMap: Record<string, string> = {
   "/admin-dashboard/payments": "Payments",
   "/admin-dashboard/manage-members": "Manage Members",
   "/admin-dashboard/activity": "Activity",
+  "/admin-dashboard/emails": "Emails",
+  "/admin-dashboard/reports": "Reports",
   "/admin-dashboard": "Admin Dashboard",
-  
+
   "/member-dashboard/community-blog/create-post": "Create Post",
   "/member-dashboard/community-blog": "Community Blog",
   "/member-dashboard/conference-registration": "Conference Registration",

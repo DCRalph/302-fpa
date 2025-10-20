@@ -11,6 +11,7 @@ import {
   ActivitySeverity,
   getActivityIcon,
 } from "~/server/api/lib/activity-logger";
+import { sendConferenceRegistrationSuccessEmail } from "~/lib/email-resend";
 
 export const memberRegistrationRouter = createTRPCRouter({
   getLatestConference: protectedProcedure.query(async ({ ctx }) => {
@@ -157,6 +158,27 @@ export const memberRegistrationRouter = createTRPCRouter({
           },
         },
       });
+
+      // Send registration success email
+      try {
+        const conferenceDate = conference.startDate && conference.endDate
+          ? `${new Date(conference.startDate).toLocaleDateString()} - ${new Date(conference.endDate).toLocaleDateString()}`
+          : 'TBA';
+
+        await sendConferenceRegistrationSuccessEmail({
+          name: input.participantName,
+          email: input.email,
+          conferenceName: conference.name,
+          conferenceDate,
+          conferenceLocation: conference.location ?? 'TBA',
+          registrationId: registration.id,
+          paymentMethod: input.paymentMethod,
+          dashboardUrl: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/member-dashboard/conference-registration`,
+        });
+      } catch (error: unknown) {
+        console.error("Failed to send registration success email:", error instanceof Error ? error.message : String(error));
+        // Don't throw error to prevent registration failure due to email issues
+      }
 
       // Log activity
       await Promise.all([
