@@ -6,6 +6,7 @@ import { adminRegistrationsRouter } from "./registrations";
 import { adminMembersRouter } from "./members";
 import { adminActivityRouter } from "./activity";
 import { adminEmailsRouter } from "./emails";
+import { adminFilesRouter } from "./files";
 
 export const adminRouter = createTRPCRouter({
   editHome: editHomeRouter,
@@ -15,4 +16,5 @@ export const adminRouter = createTRPCRouter({
   members: adminMembersRouter,
   activity: adminActivityRouter,
   emails: adminEmailsRouter,
+  files: adminFilesRouter,
 });

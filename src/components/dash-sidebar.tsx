@@ -21,6 +21,7 @@ import {
   CalendarCog,
   Activity,
   Mail,
+  FolderOpen,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -83,6 +84,11 @@ const adminMenuItems = [
     title: "Emails",
     url: "/admin-dashboard/emails",
     icon: Mail,
+  },
+  {
+    title: "Files",
+    url: "/admin-dashboard/files",
+    icon: FolderOpen,
   },
   {
     title: "Reports",
