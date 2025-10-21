@@ -6,8 +6,19 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { api } from "~/trpc/react";
 import { format } from "date-fns";
 import { Search, Mail, Eye, Calendar, User, Tag } from "lucide-react";
@@ -22,14 +33,14 @@ interface EmailModalProps {
 function EmailModal({ emailId, open, onOpenChange }: EmailModalProps) {
   const { data: email, isLoading } = api.admin.emails.getById.useQuery(
     { id: emailId! },
-    { enabled: !!emailId && open }
+    { enabled: !!emailId && open },
   );
 
   if (!email) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
+      <DialogContent className="max-h-[80vh] max-w-4xl overflow-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
@@ -44,32 +55,34 @@ function EmailModal({ emailId, open, onOpenChange }: EmailModalProps) {
         ) : (
           <div className="space-y-6">
             {/* Email Header Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+            <div className="grid grid-cols-1 gap-4 rounded-lg border p-4 md:grid-cols-2">
               <div>
-                <label className="text-sm font-medium text-gray-600">To:</label>
+                <label className="text-foreground/60 text-sm font-medium">
+                  To:
+                </label>
                 <p className="text-sm">{email.to}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-600">From:</label>
-                <p className="text-sm">{email.from}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-600">Subject:</label>
-                <p className="text-sm font-medium">{email.subject}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-600">Sent:</label>
-                <p className="text-sm">{format(new Date(email.createdAt), "PPp")}</p>
+                <label className="text-foreground/60 text-sm font-medium">
+                  Sent:
+                </label>
+                <p className="text-sm">
+                  {format(new Date(email.createdAt), "PPp")}
+                </p>
               </div>
               {email.replyTo && (
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Reply To:</label>
+                  <label className="text-foreground/60 text-sm font-medium">
+                    Reply To:
+                  </label>
                   <p className="text-sm">{email.replyTo}</p>
                 </div>
               )}
               <div>
-                <label className="text-sm font-medium text-gray-600">Provider:</label>
-                <Badge variant="outline" className="text-xs">
+                <label className="text-foreground/60 text-sm font-medium">
+                  Provider:
+                </label>
+                <Badge variant="outline" className="ml-2 text-xs">
                   {email.provider}
                 </Badge>
               </div>
@@ -83,35 +96,83 @@ function EmailModal({ emailId, open, onOpenChange }: EmailModalProps) {
               </TabsList>
 
               <TabsContent value="html" className="mt-4">
-                <div className="border rounded-lg p-4 bg-white">
+                <div className="bg-background rounded-lg border p-4">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="font-semibold">HTML Email Content</h3>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        const newWindow = window.open('', '_blank');
+                        const newWindow = window.open("", "_blank");
                         if (newWindow) {
                           newWindow.document.write(email.html);
                           newWindow.document.close();
                         }
                       }}
                     >
-                      <Eye className="h-4 w-4 mr-2" />
+                      <Eye className="mr-2 h-4 w-4" />
                       Open in New Tab
                     </Button>
                   </div>
-                  <div
-                    className="border rounded p-4 max-h-96 overflow-auto"
-                    dangerouslySetInnerHTML={{ __html: email.html }}
-                  />
+                  <div className="bg-background max-h-96 overflow-auto rounded border p-4 dark:bg-[#0b1220]">
+                    <div
+                      className="email-preview w-full"
+                      dangerouslySetInnerHTML={{
+                        __html:
+                            `<style>
+                                /* Force readable colors in dark mode for common text elements without touching backgrounds.
+                                   This overrides inline color declarations (via !important) but does NOT set background-color
+                                   so CTAs and hero backgrounds in email HTML are preserved. */
+                                .dark .email-preview, .email-preview.dark { color: #e5e7eb !important; }
+
+                                /* Common text-bearing elements */
+                                .dark .email-preview p,
+                                .dark .email-preview div,
+                                .dark .email-preview span,
+                                .dark .email-preview td,
+                                .dark .email-preview th,
+                                .dark .email-preview li,
+                                .dark .email-preview small,
+                                .dark .email-preview strong,
+                                .dark .email-preview b,
+                                .dark .email-preview em { color: #e5e7eb !important; }
+
+                                /* Links */
+                                .dark .email-preview a { color: #60a5fa !important; }
+
+                                /* Headings retain stronger contrast */
+                                .dark .email-preview h1,
+                                .dark .email-preview h2,
+                                .dark .email-preview h3,
+                                .dark .email-preview h4,
+                                .dark .email-preview h5,
+                                .dark .email-preview h6 { color: #ffffff !important; }
+
+                                /* Blockquote and code/table treatment */
+                                .dark .email-preview blockquote { border-left-color: rgba(255,255,255,0.06) !important; color: #d1d5db !important; }
+                                .dark .email-preview table,
+                                .dark .email-preview pre,
+                                .dark .email-preview code { background: rgba(255,255,255,0.03) !important; color: #e5e7eb !important; }
+
+                                /* Images responsive */
+                                .email-preview img { max-width:100% !important; height:auto !important; display:block !important; }
+
+                                /* Preserve button/CTA backgrounds: don't override background-color; ensure text inherits readable color. */
+                                .dark .email-preview a[role="button"],
+                                .dark .email-preview a[class*="btn"],
+                                .dark .email-preview .button,
+                                .dark .email-preview button { color: inherit !important; }
+                              </style>` + (email.html || ""),
+                      }}
+                    />
+                  </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="text" className="mt-4">
-                <div className="border rounded-lg p-4 bg-gray-50">
-                  <h3 className="font-semibold mb-4">Plain Text Content</h3>
-                  <pre className="whitespace-pre-wrap text-sm font-mono bg-white p-4 rounded border max-h-96 overflow-auto">
+                <div className="bg-background/60 rounded-lg border p-4">
+                  <h3 className="mb-4 font-semibold">Plain Text Content</h3>
+                  <pre className="bg-background max-h-96 overflow-auto rounded border p-4 font-mono text-sm whitespace-pre-wrap">
                     {email.text}
                   </pre>
                 </div>
@@ -126,7 +187,9 @@ function EmailModal({ emailId, open, onOpenChange }: EmailModalProps) {
 
 export default function EmailsPage() {
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<"createdAt" | "to" | "subject">("createdAt");
+  const [sortBy, setSortBy] = useState<"createdAt" | "to" | "subject">(
+    "createdAt",
+  );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
@@ -154,8 +217,8 @@ export default function EmailsPage() {
 
   return (
     <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold mb-2">Email Management</h2>
+      <div className="mx-auto max-w-7xl">
+        <h2 className="mb-2 text-3xl font-bold">Email Management</h2>
         <p className="text-muted-foreground">
           View and manage all emails sent through the system.
         </p>
@@ -163,11 +226,13 @@ export default function EmailsPage() {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Emails</CardTitle>
-              <Mail className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">
+                Total Emails
+              </CardTitle>
+              <Mail className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalEmails}</div>
@@ -176,7 +241,7 @@ export default function EmailsPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Today</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.emailsToday}</div>
@@ -185,7 +250,7 @@ export default function EmailsPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">This Week</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.emailsThisWeek}</div>
@@ -194,7 +259,7 @@ export default function EmailsPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">This Month</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.emailsThisMonth}</div>
@@ -204,17 +269,17 @@ export default function EmailsPage() {
       )}
 
       {/* Filters and Search */}
-      <div className="max-w-7xl mx-auto">
+      <div className="mx-auto max-w-7xl">
         <Card>
           <CardHeader>
             <CardTitle>Email List</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Search and Filters */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
                   <Input
                     placeholder="Search emails by recipient, subject, or sender..."
                     value={search}
@@ -224,7 +289,12 @@ export default function EmailsPage() {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Select value={sortBy} onValueChange={(value: "createdAt" | "to" | "subject") => setSortBy(value)}>
+                <Select
+                  value={sortBy}
+                  onValueChange={(value: "createdAt" | "to" | "subject") =>
+                    setSortBy(value)
+                  }
+                >
                   <SelectTrigger className="w-[140px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -234,7 +304,10 @@ export default function EmailsPage() {
                     <SelectItem value="subject">Subject</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={sortOrder} onValueChange={(value: "asc" | "desc") => setSortOrder(value)}>
+                <Select
+                  value={sortOrder}
+                  onValueChange={(value: "asc" | "desc") => setSortOrder(value)}
+                >
                   <SelectTrigger className="w-[100px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -252,7 +325,7 @@ export default function EmailsPage() {
                 <Spinner />
               </div>
             ) : emailsData?.emails.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-muted-foreground py-8 text-center">
                 No emails found.
               </div>
             ) : (
@@ -260,19 +333,26 @@ export default function EmailsPage() {
                 {emailsData?.emails.map((email) => (
                   <div
                     key={email.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="hover:bg-muted flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors"
                     onClick={() => handleEmailClick(email.id)}
                   >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-center gap-2">
                         <User className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm font-medium truncate">{email.to}</span>
+                        <span className="truncate text-sm font-medium">
+                          {email.to}
+                        </span>
                       </div>
-                      <p className="text-sm font-medium text-gray-900 truncate">{email.subject}</p>
-                      <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
+                      <p className="text-foreground/90 truncate text-sm font-medium">
+                        {email.subject}
+                      </p>
+                      <div className="text-foreground/60 mt-1 flex items-center gap-4 text-xs">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {format(new Date(email.createdAt), "MMM d, yyyy 'at' h:mm a")}
+                          {format(
+                            new Date(email.createdAt),
+                            "MMM d, yyyy 'at' h:mm a",
+                          )}
                         </span>
                         <span className="flex items-center gap-1">
                           <Tag className="h-3 w-3" />
@@ -292,7 +372,9 @@ export default function EmailsPage() {
             {emailsData && emailsData.pagination.totalPages > 1 && (
               <div className="flex items-center justify-between pt-4">
                 <div className="text-sm text-gray-500">
-                  Showing {((page - 1) * 20) + 1} to {Math.min(page * 20, emailsData.pagination.totalCount)} of {emailsData.pagination.totalCount} emails
+                  Showing {(page - 1) * 20 + 1} to{" "}
+                  {Math.min(page * 20, emailsData.pagination.totalCount)} of{" "}
+                  {emailsData.pagination.totalCount} emails
                 </div>
                 <div className="flex gap-2">
                   <Button
