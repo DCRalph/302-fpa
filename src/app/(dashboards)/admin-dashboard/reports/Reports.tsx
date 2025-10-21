@@ -9,11 +9,8 @@ import { api } from "~/trpc/react";
 import { Check, Eye } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "~/components/ui/dialog";
 import ResolveDialog from "~/components/reports/resolve-dialog";
 import ViewDetailsDialog from "~/components/reports/view-details-dialog";
-import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
 import {
   Select,
   SelectTrigger,
@@ -22,7 +19,7 @@ import {
   SelectItem,
 } from "~/components/ui/select";
 
-import type { ReportAction } from "@prisma/client";
+import type { BlogReport, ReportAction } from "@prisma/client";
 import { handleTRPCMutation } from "~/lib/toast";
 
 export default function ReportPage() {
@@ -72,9 +69,9 @@ export default function ReportPage() {
 
   // View details dialog state
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
-  const [selectedDetailsReport, setSelectedDetailsReport] = useState<any>(null);
+  const [selectedDetailsReport, setSelectedDetailsReport] = useState<BlogReport | null>(null);
 
-  const handleViewDetails = (report: any) => {
+  const handleViewDetails = (report: BlogReport) => {
     setSelectedDetailsReport(report);
     setOpenDetailsDialog(true);
   };

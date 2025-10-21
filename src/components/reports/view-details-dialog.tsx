@@ -7,10 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
-  DialogClose,
 } from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 

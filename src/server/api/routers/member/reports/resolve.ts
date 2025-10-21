@@ -30,7 +30,7 @@ export const resolveReport = protectedProcedure.input(
     action: ActivityActionEnum.UPDATED,
     entity: ActivityEntity.REPORT,
     entityId: report.postId ?? report.commentId as string | undefined,
-    title: `Report resolved with action ${input.action} and message: ${input.adminNote?.trim() || "No note provided"}`,
+    title: `Report resolved with action ${input.action} and message: ${input.adminNote?.trim() ?? "No note provided"}`,
     description: `A report has been resolved by Admin ${ctx.dbUser.name ?? "a user"}`,
     category: ActivityCategory.CONTENT,
     severity: ActivitySeverity.INFO,
