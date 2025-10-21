@@ -4,7 +4,22 @@ import { api } from "~/trpc/react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { Folder, File, Download, Calendar, HardDrive, Tag } from "lucide-react";
+import { Folder, File, Download, Calendar, HardDrive, Tag, User, Image, FileText, Archive } from "lucide-react";
+
+const getFileTypeInfo = (type: string) => {
+  switch (type) {
+    case "PROFILE_IMAGE":
+      return { label: "Profile Image", icon: User, variant: "default" as const };
+    case "REGISTRATION_ATTACHMENT":
+      return { label: "Registration", icon: FileText, variant: "secondary" as const };
+    case "BLOG_IMAGE":
+      return { label: "Blog Image", icon: Image, variant: "outline" as const };
+    case "OTHER":
+      return { label: "Other", icon: Archive, variant: "outline" as const };
+    default:
+      return { label: "Unknown", icon: File, variant: "outline" as const };
+  }
+};
 
 export default function MyFilesPage() {
   const { data, refetch, isFetching } = api.member.files.list.useQuery();
@@ -29,76 +44,86 @@ export default function MyFilesPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {(data ?? []).map((file) => (
-                <div key={file.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3 flex-1 min-w-0">
-                      <File className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm truncate">{file.filename}</h4>
-                        <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
-                          <div className="flex items-center space-x-1">
-                            <HardDrive className="h-3 w-3" />
-                            <span>{(file.sizeBytes / 1024).toFixed(1)} KB</span>
+              {(data ?? []).map((file) => {
+                const typeInfo = getFileTypeInfo(file.type);
+                const TypeIcon = typeInfo.icon;
+
+                return (
+                  <div key={file.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-3 flex-1 min-w-0">
+                        <TypeIcon className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h4 className="font-medium text-sm truncate">{file.filename}</h4>
+                            <Badge variant={typeInfo.variant} className="text-xs">
+                              {typeInfo.label}
+                            </Badge>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <Tag className="h-3 w-3" />
-                            <span>{file.mimeType}</span>
+                          <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                              <HardDrive className="h-3 w-3" />
+                              <span>{(file.sizeBytes / 1024).toFixed(1)} KB</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Tag className="h-3 w-3" />
+                              <span>{file.mimeType}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="h-3 w-3" />
+                              <span>{new Date(file.createdAt).toLocaleDateString()}</span>
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="h-3 w-3" />
-                            <span>{new Date(file.createdAt).toLocaleDateString()}</span>
-                          </div>
+                          {file.registration && (
+                            <div className="mt-2">
+                              <Badge variant="secondary" className="text-xs">
+                                {file.registration.conference?.name}
+                              </Badge>
+                              <Badge
+                                variant={
+                                  file.registration.status === "confirmed" ? "default" :
+                                    file.registration.status === "pending" ? "secondary" : "destructive"
+                                }
+                                className="text-xs ml-1"
+                              >
+                                {file.registration.status}
+                              </Badge>
+                            </div>
+                          )}
+                          {!file.registration && (
+                            <div className="mt-2">
+                              <Badge variant="outline" className="text-xs">
+                                Not attached to registration
+                              </Badge>
+                            </div>
+                          )}
                         </div>
-                        {file.registration && (
-                          <div className="mt-2">
-                            <Badge variant="secondary" className="text-xs">
-                              {file.registration.conference?.name}
-                            </Badge>
-                            <Badge
-                              variant={
-                                file.registration.status === "confirmed" ? "default" :
-                                  file.registration.status === "pending" ? "secondary" : "destructive"
-                              }
-                              className="text-xs ml-1"
-                            >
-                              {file.registration.status}
-                            </Badge>
-                          </div>
-                        )}
-                        {!file.registration && (
-                          <div className="mt-2">
-                            <Badge variant="outline" className="text-xs">
-                              Not attached to registration
-                            </Badge>
-                          </div>
-                        )}
+                      </div>
+                      <div className="flex items-center space-x-2 ml-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          asChild
+                          className="flex items-center space-x-1"
+                        >
+                          <a href={`/api/files/${file.id}/download`} target="_blank" rel="noreferrer">
+                            <Download className="h-3 w-3" />
+                            <span>Download</span>
+                          </a>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => del.mutate({ id: file.id })}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          Delete
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2 ml-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        asChild
-                        className="flex items-center space-x-1"
-                      >
-                        <a href={`/api/files/${file.id}/download`} target="_blank" rel="noreferrer">
-                          <Download className="h-3 w-3" />
-                          <span>Download</span>
-                        </a>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => del.mutate({ id: file.id })}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        Delete
-                      </Button>
-                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

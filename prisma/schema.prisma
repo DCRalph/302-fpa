@@ -292,6 +292,13 @@ model RegistrationStatusHistory {
 
 // File attachments (e.g., invoices, receipts) that can be linked to registrations
 
+enum FileType {
+  PROFILE_IMAGE
+  REGISTRATION_ATTACHMENT
+  BLOG_IMAGE
+  OTHER
+}
+
 model File {
   id             String        @id @default(cuid())
   data           Bytes
@@ -299,6 +306,8 @@ model File {
   filename       String
   mimeType       String?
   createdAt      DateTime      @default(now())
+
+  type FileType @default(OTHER)
 
   userId String
   user User @relation(fields: [userId], references: [id])

@@ -288,6 +288,7 @@ function UploadModal({ open, onOpenChange }: UploadModalProps) {
         mimeType: file.type,
         data: base64,
         registrationId: registrationId ?? undefined,
+        fileType: "OTHER", // Default to OTHER for admin uploads
       });
     } catch (error) {
       console.error(error);
@@ -412,6 +413,21 @@ export default function FilesPage() {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileTypeInfo = (type: string) => {
+    switch (type) {
+      case "PROFILE_IMAGE":
+        return { label: "Profile Image", variant: "default" as const };
+      case "REGISTRATION_ATTACHMENT":
+        return { label: "Registration", variant: "secondary" as const };
+      case "BLOG_IMAGE":
+        return { label: "Blog Image", variant: "outline" as const };
+      case "OTHER":
+        return { label: "Other", variant: "outline" as const };
+      default:
+        return { label: "Unknown", variant: "outline" as const };
+    }
   };
 
   return (
@@ -560,48 +576,55 @@ export default function FilesPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {filesData?.files.map((file) => (
-                  <div
-                    key={file.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors group"
-                    onClick={() => handleFileClick(file.id)}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="flex-shrink-0">
-                          {getFileIcon(file.mimeType)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium truncate">{file.filename}</span>
-                            <Badge variant="secondary" className="text-xs">
-                              {file.mimeType ?? 'Unknown'}
-                            </Badge>
+                {filesData?.files.map((file) => {
+                  const typeInfo = getFileTypeInfo((file.type as string) ?? "OTHER");
+
+                  return (
+                    <div
+                      key={file.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors group"
+                      onClick={() => handleFileClick(file.id)}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="flex-shrink-0">
+                            {getFileIcon(file.mimeType)}
                           </div>
-                          <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {format(new Date(file.createdAt), "MMM d, yyyy 'at' h:mm a")}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <HardDrive className="h-3 w-3" />
-                              {formatFileSize(file.sizeBytes)}
-                            </span>
-                            {file.registration && (
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium truncate">{file.filename}</span>
+                              <Badge variant={typeInfo.variant} className="text-xs">
+                                {typeInfo.label}
+                              </Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                {file.mimeType ?? 'Unknown'}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">
-                                <User className="h-3 w-3" />
-                                {file.registration.name}
+                                <Calendar className="h-3 w-3" />
+                                {format(new Date(file.createdAt), "MMM d, yyyy 'at' h:mm a")}
                               </span>
-                            )}
+                              <span className="flex items-center gap-1">
+                                <HardDrive className="h-3 w-3" />
+                                {formatFileSize(file.sizeBytes)}
+                              </span>
+                              {file.registration && (
+                                <span className="flex items-center gap-1">
+                                  <User className="h-3 w-3" />
+                                  {file.registration.name ?? 'Unknown'}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
+                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 

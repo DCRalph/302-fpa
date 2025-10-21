@@ -34,6 +34,7 @@ export const memberFilesRouter = createTRPCRouter({
         mimeType: true,
         sizeBytes: true,
         createdAt: true,
+        type: true,
         registrationId: true,
         registration: {
           select: {
@@ -125,6 +126,7 @@ export const memberFilesRouter = createTRPCRouter({
           mimeType: input.mimeType,
           data: buffer,
           sizeBytes: input.sizeBytes,
+          type: "REGISTRATION_ATTACHMENT",
           registrationId: null, // Will be linked later during registration
         },
       });
@@ -166,6 +168,181 @@ export const memberFilesRouter = createTRPCRouter({
         fileId: file.id,
         filename: file.filename,
         size: file.sizeBytes,
+      };
+    }),
+
+  uploadProfileImage: protectedProcedure
+    .input(
+      z.object({
+        filename: z.string().min(1),
+        mimeType: z.string().optional(),
+        data: z.string(), // Base64 encoded data
+        sizeBytes: z.number().max(5 * 1024 * 1024), // 5MB limit
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check file size limit
+      if (input.sizeBytes > 5 * 1024 * 1024) {
+        throw new Error("File size exceeds 5MB limit");
+      }
+
+      // Validate image type
+      if (input.mimeType && !input.mimeType.startsWith('image/')) {
+        throw new Error("Only image files are allowed for profile images");
+      }
+
+      // Convert base64 to buffer
+      const buffer = Buffer.from(input.data, 'base64');
+
+      // Delete any existing profile image for this user
+      await ctx.db.file.deleteMany({
+        where: {
+          userId: ctx.dbUser.id,
+          type: "PROFILE_IMAGE",
+        },
+      });
+
+      // Create file record
+      const file = await ctx.db.file.create({
+        data: {
+          userId: ctx.dbUser.id,
+          filename: input.filename,
+          mimeType: input.mimeType,
+          data: buffer,
+          sizeBytes: input.sizeBytes,
+          type: "PROFILE_IMAGE",
+          registrationId: null, // Profile images are not linked to registrations
+        },
+      });
+
+      // Update user's profile image URL (without domain)
+      const downloadUrl = `/api/files/profile-image/${ctx.dbUser.id}?fileId=${file.id}`;
+      await ctx.db.user.update({
+        where: { id: ctx.dbUser.id },
+        data: { image: downloadUrl },
+      });
+
+      // Log activity
+      await Promise.all([
+        logUserActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          title: `Profile image updated`,
+          description: "Your profile image has been updated successfully. Previous profile image was replaced.",
+          icon: getActivityIcon(UserActivityType.FILE_UPLOADED),
+          type: UserActivityType.FILE_UPLOADED,
+          metadata: {
+            fileId: file.id,
+            filename: input.filename,
+            sizeBytes: input.sizeBytes,
+            replaced: true,
+          },
+        }),
+        logAppActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          userName: ctx.dbUser.name ?? undefined,
+          userEmail: ctx.dbUser.email ?? undefined,
+          type: AppActivityType.FILE_UPLOADED,
+          action: ActivityActionEnum.CREATED,
+          entity: ActivityEntity.ATTACHMENT,
+          entityId: file.id,
+          title: `Profile image updated: ${input.filename}`,
+          description: "Previous profile image was replaced",
+          category: ActivityCategory.CONTENT,
+          severity: ActivitySeverity.INFO,
+          metadata: {
+            fileId: file.id,
+            filename: input.filename,
+            sizeBytes: input.sizeBytes,
+            replaced: true,
+          },
+        }),
+      ]);
+
+      return {
+        fileId: file.id,
+        filename: file.filename,
+        size: file.sizeBytes,
+        downloadUrl,
+      };
+    }),
+
+  uploadBlogImage: protectedProcedure
+    .input(
+      z.object({
+        filename: z.string().min(1),
+        mimeType: z.string().optional(),
+        data: z.string(), // Base64 encoded data
+        sizeBytes: z.number().max(5 * 1024 * 1024), // 5MB limit
+        blogPostId: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check file size limit
+      if (input.sizeBytes > 5 * 1024 * 1024) {
+        throw new Error("File size exceeds 5MB limit");
+      }
+
+      // Validate image type
+      if (input.mimeType && !input.mimeType.startsWith('image/')) {
+        throw new Error("Only image files are allowed for blog images");
+      }
+
+      // Convert base64 to buffer
+      const buffer = Buffer.from(input.data, 'base64');
+
+      // Create file record
+      const file = await ctx.db.file.create({
+        data: {
+          userId: ctx.dbUser.id,
+          filename: input.filename,
+          mimeType: input.mimeType,
+          data: buffer,
+          sizeBytes: input.sizeBytes,
+          type: "BLOG_IMAGE",
+          blogPostId: input.blogPostId,
+        },
+      });
+
+      // Log activity
+      await Promise.all([
+        logUserActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          title: `Blog image uploaded: ${input.filename}`,
+          description: "Your blog image has been uploaded successfully",
+          icon: getActivityIcon(UserActivityType.FILE_UPLOADED),
+          type: UserActivityType.FILE_UPLOADED,
+          metadata: {
+            fileId: file.id,
+            filename: input.filename,
+            sizeBytes: input.sizeBytes,
+            blogPostId: input.blogPostId,
+          },
+        }),
+        logAppActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          userName: ctx.dbUser.name ?? undefined,
+          userEmail: ctx.dbUser.email ?? undefined,
+          type: AppActivityType.FILE_UPLOADED,
+          action: ActivityActionEnum.CREATED,
+          entity: ActivityEntity.ATTACHMENT,
+          entityId: file.id,
+          title: `Blog image uploaded: ${input.filename}`,
+          category: ActivityCategory.CONTENT,
+          severity: ActivitySeverity.INFO,
+          metadata: {
+            fileId: file.id,
+            filename: input.filename,
+            sizeBytes: input.sizeBytes,
+            blogPostId: input.blogPostId,
+          },
+        }),
+      ]);
+
+      return {
+        fileId: file.id,
+        filename: file.filename,
+        size: file.sizeBytes,
+        downloadUrl: `/api/files/${file.id}/member-download`,
       };
     }),
 });

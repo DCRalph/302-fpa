@@ -51,7 +51,20 @@ export const adminFilesRouter = createTRPCRouter({
           orderBy: { [sortBy]: sortOrder },
           skip,
           take: limit,
-          include: {
+          select: {
+            id: true,
+            filename: true,
+            mimeType: true,
+            sizeBytes: true,
+            createdAt: true,
+            type: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
             registration: {
               select: {
                 id: true,
@@ -207,6 +220,7 @@ export const adminFilesRouter = createTRPCRouter({
         mimeType: z.string().optional(),
         data: z.string(), // Base64 encoded data
         registrationId: z.string().optional(),
+        fileType: z.enum(["PROFILE_IMAGE", "REGISTRATION_ATTACHMENT", "BLOG_IMAGE", "OTHER"]).default("OTHER"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -228,6 +242,7 @@ export const adminFilesRouter = createTRPCRouter({
           mimeType: input.mimeType,
           data: buffer,
           sizeBytes,
+          type: input.fileType,
           registrationId: input.registrationId?.trim() == "" ? null : input.registrationId,
           userId: ctx.dbUser.id,
         },

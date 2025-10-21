@@ -23,9 +23,6 @@ export async function GET(
       select: { role: true },
     });
 
-    if (user?.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
 
     const fileId = (await params).id;
     if (!fileId) {
@@ -36,6 +33,7 @@ export async function GET(
     const file = await db.file.findUnique({
       where: { id: fileId },
       select: {
+        userId: true,
         data: true,
         filename: true,
         mimeType: true,
@@ -45,6 +43,11 @@ export async function GET(
 
     if (!file) {
       return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+
+
+    if (user?.role !== "ADMIN" && file.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Convert the file data to a Buffer
