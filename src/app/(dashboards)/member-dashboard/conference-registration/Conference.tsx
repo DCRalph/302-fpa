@@ -52,11 +52,11 @@ export default function ConferenceRegistration() {
     finalConfirmation: false,
   });
 
-  const [uploadedFile, setUploadedFile] = useState<{
+  const [uploadedFiles, setUploadedFiles] = useState<{
     id: string;
     filename: string;
     size: number;
-  } | null>(null);
+  }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -64,13 +64,29 @@ export default function ConferenceRegistration() {
   };
 
   const uploadFileMutation = api.member.files.upload.useMutation({
-    onSuccess: (result: { fileId: string; filename: string; size: number }) => {
-      setUploadedFile({
+    onSuccess: async (result: { fileId: string; filename: string; size: number }) => {
+      setUploadedFiles(prev => [...prev, {
         id: result.fileId,
         filename: result.filename,
         size: result.size,
-      });
-      toast.success("File uploaded successfully");
+      }]);
+
+      // If there's an existing registration, automatically attach the file
+      if (existingRegistration?.id) {
+        try {
+          await addFilesMutation.mutateAsync({
+            registrationId: existingRegistration.id,
+            fileIds: [result.fileId],
+          });
+          toast.success("File uploaded and attached to registration");
+        } catch (error) {
+          console.error("Failed to attach file to registration:", error);
+          toast.error("File uploaded but failed to attach to registration");
+        }
+      } else {
+        toast.success("File uploaded successfully");
+      }
+
       setIsUploading(false);
     },
     onError: (error: { message: string }) => {
@@ -80,7 +96,28 @@ export default function ConferenceRegistration() {
     },
   });
 
+  const addFilesMutation = api.member.registration.addFiles.useMutation({
+    onSuccess: (data, variables) => {
+      // Only show success message and clear files if this was a manual submission
+      if (variables.fileIds.length > 1 || uploadedFiles.length > 1) {
+        toast.success("Files added to registration successfully");
+        setUploadedFiles([]); // Clear the uploaded files after successful submission
+      }
+      // Refetch registration files to update the display
+      void utils.member.registration.getRegistrationFiles.invalidate();
+    },
+    onError: (error: { message: string }) => {
+      console.error("Add files error:", error);
+      toast.error(error.message);
+    },
+  });
+
   const handleFileUpload = async (file: File) => {
+    if (uploadedFiles.length >= 3) {
+      toast.error("Maximum 3 files allowed");
+      return;
+    }
+
     if (file.size > 5 * 1024 * 1024) {
       toast.error("File size must be less than 5MB");
       return;
@@ -105,9 +142,10 @@ export default function ConferenceRegistration() {
     }
   };
 
-  const handleFileRemove = () => {
-    setUploadedFile(null);
+  const handleFileRemove = (fileId: string) => {
+    setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
   };
+
 
   const { data: conference, isLoading: conferenceLoading } =
     api.member.registration.getLatestConference.useQuery();
@@ -118,6 +156,12 @@ export default function ConferenceRegistration() {
       { conferenceId: conference?.id ?? "" },
       { enabled: !!conference?.id },
     );
+
+  // Get files for existing registration
+  const { data: registrationFiles } = api.member.registration.getRegistrationFiles.useQuery(
+    { registrationId: existingRegistration?.id ?? "" },
+    { enabled: !!existingRegistration?.id },
+  );
 
   const utils = api.useUtils();
   const submitRegistration = api.member.registration.submit.useMutation({
@@ -154,7 +198,7 @@ export default function ConferenceRegistration() {
       },
       remits: [formData.remit1, formData.remit2].filter(Boolean),
       finalConfirmation: formData.finalConfirmation,
-      fileId: uploadedFile?.id,
+      fileIds: uploadedFiles.map(file => file.id),
     });
   };
 
@@ -452,6 +496,145 @@ export default function ConferenceRegistration() {
                     </div>
                   </>
                 )}
+
+                {/* Uploaded Files */}
+                <Separator />
+                <div>
+                  <h3 className="mb-3 font-semibold">Uploaded Files</h3>
+                  {registrationFiles && registrationFiles.length > 0 ? (
+                    <div className="space-y-2">
+                      {registrationFiles.map((file) => (
+                        <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
+                          <div className="flex items-center space-x-3">
+                            <File className="h-5 w-5 text-muted-foreground" />
+                            <div>
+                              <p className="text-sm font-medium">{file.filename}</p>
+                              <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                                <span>{(file.sizeBytes / 1024).toFixed(1)} KB</span>
+                                <span>{file.mimeType}</span>
+                                <span>{new Date(file.createdAt).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                          >
+                            <a href={`/api/files/${file.id}/download`} target="_blank" rel="noreferrer">
+                              Download
+                            </a>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No files uploaded yet</p>
+                  )}
+                </div>
+
+                {/* File Upload Section for Existing Registrations */}
+                <Separator />
+                <div>
+                  <h3 className="mb-3 font-semibold">Supporting Documents</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Upload additional files to your registration. Files will be automatically attached to your registration.
+                  </p>
+                  <div className="space-y-4">
+                    {uploadedFiles.length === 0 ? (
+                      <div className="space-y-4">
+                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                          <div className="space-y-2">
+                            <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
+                            <div className="text-sm text-muted-foreground">
+                              <Label htmlFor="existing-file-upload" className="cursor-pointer">
+                                <span className="font-medium text-primary hover:text-primary/80">
+                                  Click to upload
+                                </span>{" "}
+                                or drag and drop
+                              </Label>
+                              <Input
+                                id="existing-file-upload"
+                                type="file"
+                                className="hidden"
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    void handleFileUpload(file);
+                                  }
+                                }}
+                                disabled={isUploading || uploadedFiles.length >= 3}
+                              />
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              PDF, DOC, DOCX, JPG, PNG, GIF, TXT up to 5MB (Max 3 files)
+                            </p>
+                          </div>
+                        </div>
+                        {isUploading && (
+                          <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                            <span>Uploading...</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {uploadedFiles.map((file) => (
+                          <div key={file.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                            <div className="flex items-center space-x-3">
+                              <File className="h-5 w-5 text-muted-foreground" />
+                              <div>
+                                <p className="text-sm font-medium">{file.filename}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {(file.size / 1024).toFixed(1)} KB
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleFileRemove(file.id)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        {uploadedFiles.length < 3 && (
+                          <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center">
+                            <div className="space-y-2">
+                              <Upload className="mx-auto h-6 w-6 text-muted-foreground" />
+                              <div className="text-sm text-muted-foreground">
+                                <Label htmlFor="existing-file-upload-additional" className="cursor-pointer">
+                                  <span className="font-medium text-primary hover:text-primary/80">
+                                    Add another file
+                                  </span>
+                                </Label>
+                                <Input
+                                  id="existing-file-upload-additional"
+                                  type="file"
+                                  className="hidden"
+                                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      void handleFileUpload(file);
+                                    }
+                                  }}
+                                  disabled={isUploading}
+                                />
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {3 - uploadedFiles.length} more files allowed
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 {/* Action Buttons */}
                 <Separator />
@@ -849,14 +1032,14 @@ export default function ConferenceRegistration() {
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs text-sm">
                         <p>
-                          Upload any supporting documents related to your registration (e.g., ID, certificates, etc.). Maximum file size: 5MB.
+                          Upload any supporting documents related to your registration (e.g., ID, certificates, etc.). Files will be attached to your registration upon submission. Maximum file size: 5MB.
                         </p>
                       </TooltipContent>
                     </Tooltip>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {!uploadedFile ? (
+                  {uploadedFiles.length === 0 ? (
                     <div className="space-y-4">
                       <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
                         <div className="space-y-2">
@@ -879,11 +1062,11 @@ export default function ConferenceRegistration() {
                                   void handleFileUpload(file);
                                 }
                               }}
-                              disabled={!isRegistrationOpen || isUploading}
+                              disabled={!isRegistrationOpen || isUploading || uploadedFiles.length >= 3}
                             />
                           </div>
                           <p className="text-xs text-muted-foreground">
-                            PDF, DOC, DOCX, JPG, PNG, GIF, TXT up to 5MB
+                            PDF, DOC, DOCX, JPG, PNG, GIF, TXT up to 5MB (Max 3 files)
                           </p>
                         </div>
                       </div>
@@ -895,24 +1078,58 @@ export default function ConferenceRegistration() {
                       )}
                     </div>
                   ) : (
-                    <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
-                      <div className="flex items-center space-x-3">
-                        <File className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="text-sm font-medium">{uploadedFile.filename}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {(uploadedFile.size / 1024).toFixed(1)} KB
-                          </p>
+                    <div className="space-y-3">
+                      {uploadedFiles.map((file) => (
+                        <div key={file.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                          <div className="flex items-center space-x-3">
+                            <File className="h-5 w-5 text-muted-foreground" />
+                            <div>
+                              <p className="text-sm font-medium">{file.filename}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {(file.size / 1024).toFixed(1)} KB
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleFileRemove(file.id)}
+                            disabled={!isRegistrationOpen}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
                         </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleFileRemove}
-                        disabled={!isRegistrationOpen}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                      ))}
+                      {uploadedFiles.length < 3 && (
+                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center">
+                          <div className="space-y-2">
+                            <Upload className="mx-auto h-6 w-6 text-muted-foreground" />
+                            <div className="text-sm text-muted-foreground">
+                              <Label htmlFor="file-upload-additional" className="cursor-pointer">
+                                <span className="font-medium text-primary hover:text-primary/80">
+                                  Add another file
+                                </span>
+                              </Label>
+                              <Input
+                                id="file-upload-additional"
+                                type="file"
+                                className="hidden"
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    void handleFileUpload(file);
+                                  }
+                                }}
+                                disabled={!isRegistrationOpen || isUploading}
+                              />
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {3 - uploadedFiles.length} more files allowed
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </CardContent>

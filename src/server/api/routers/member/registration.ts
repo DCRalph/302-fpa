@@ -77,7 +77,7 @@ export const memberRegistrationRouter = createTRPCRouter({
         }).optional(),
         remits: z.array(z.string().min(1)).max(2).optional(),
         finalConfirmation: z.boolean(),
-        fileId: z.string().optional(),
+        fileIds: z.array(z.string()).max(3).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -160,10 +160,10 @@ export const memberRegistrationRouter = createTRPCRouter({
         },
       });
 
-      // Link uploaded file to registration if provided
-      if (input.fileId) {
-        await ctx.db.file.update({
-          where: { id: input.fileId },
+      // Link uploaded files to registration if provided
+      if (input.fileIds && input.fileIds.length > 0) {
+        await ctx.db.file.updateMany({
+          where: { id: { in: input.fileIds } },
           data: { registrationId: registration.id },
         });
       }
@@ -291,6 +291,120 @@ export const memberRegistrationRouter = createTRPCRouter({
       ]);
 
       return reg;
+    }),
+
+  addFiles: protectedProcedure
+    .input(z.object({
+      registrationId: z.string(),
+      fileIds: z.array(z.string()).max(3)
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Verify the registration belongs to the user
+      const registration = await ctx.db.registration.findFirst({
+        where: {
+          id: input.registrationId,
+          userId: ctx.dbUser.id,
+        },
+        include: {
+          conference: {
+            select: { name: true }
+          }
+        }
+      });
+
+      if (!registration) {
+        throw new Error("Registration not found or access denied");
+      }
+
+      // Check if registration is still active (not cancelled)
+      if (registration.status === "cancelled") {
+        throw new Error("Cannot add files to a cancelled registration");
+      }
+
+      // Get current file count for this registration
+      const currentFileCount = await ctx.db.file.count({
+        where: { registrationId: input.registrationId }
+      });
+
+      if (currentFileCount + input.fileIds.length > 3) {
+        throw new Error("Maximum 3 files allowed per registration");
+      }
+
+      // Link the files to the registration
+      await ctx.db.file.updateMany({
+        where: {
+          id: { in: input.fileIds },
+          userId: ctx.dbUser.id, // Ensure user owns the files
+        },
+        data: { registrationId: input.registrationId },
+      });
+
+      // Log activity
+      await Promise.all([
+        logUserActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          title: `Added files to ${registration.conference?.name ?? "conference"} registration`,
+          description: `${input.fileIds.length} file(s) added to your registration`,
+          icon: getActivityIcon(UserActivityType.FILE_UPLOADED),
+          type: UserActivityType.FILE_UPLOADED,
+          metadata: {
+            registrationId: input.registrationId,
+            fileCount: input.fileIds.length,
+            fileIds: input.fileIds,
+          },
+        }),
+        logAppActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          userName: ctx.dbUser.name ?? undefined,
+          userEmail: ctx.dbUser.email ?? undefined,
+          type: AppActivityType.FILE_UPLOADED,
+          action: ActivityActionEnum.CREATED,
+          entity: ActivityEntity.ATTACHMENT,
+          entityId: input.registrationId,
+          title: `Files added to registration`,
+          description: `${ctx.dbUser.name ?? "User"} added ${input.fileIds.length} file(s) to their registration`,
+          category: ActivityCategory.CONTENT,
+          severity: ActivitySeverity.INFO,
+          metadata: {
+            registrationId: input.registrationId,
+            fileCount: input.fileIds.length,
+            fileIds: input.fileIds,
+          },
+        }),
+      ]);
+
+      return { success: true, fileCount: input.fileIds.length };
+    }),
+
+  getRegistrationFiles: protectedProcedure
+    .input(z.object({ registrationId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Verify the registration belongs to the user
+      const registration = await ctx.db.registration.findFirst({
+        where: {
+          id: input.registrationId,
+          userId: ctx.dbUser.id,
+        },
+      });
+
+      if (!registration) {
+        throw new Error("Registration not found or access denied");
+      }
+
+      // Get files for this registration
+      const files = await ctx.db.file.findMany({
+        where: { registrationId: input.registrationId },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          filename: true,
+          mimeType: true,
+          sizeBytes: true,
+          createdAt: true,
+        },
+      });
+
+      return files;
     }),
 });
 

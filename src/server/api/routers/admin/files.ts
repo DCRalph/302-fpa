@@ -229,6 +229,7 @@ export const adminFilesRouter = createTRPCRouter({
           data: buffer,
           sizeBytes,
           registrationId: input.registrationId?.trim() == "" ? null : input.registrationId,
+          userId: ctx.dbUser.id,
         },
         include: {
           registration: {

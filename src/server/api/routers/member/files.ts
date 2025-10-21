@@ -28,64 +28,30 @@ export const memberFilesRouter = createTRPCRouter({
         ],
       },
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        filename: true,
+        mimeType: true,
+        sizeBytes: true,
+        createdAt: true,
+        registrationId: true,
+        registration: {
+          select: {
+            id: true,
+            status: true,
+            conference: {
+              select: {
+                name: true,
+                startDate: true,
+                endDate: true,
+              },
+            },
+          },
+        },
+      },
     });
     return files;
   }),
-
-  addByUrl: protectedProcedure
-    .input(z.object({ url: z.string().url(), filename: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      const latestReg = await ctx.db.registration.findFirst({
-        where: { userId: ctx.dbUser.id },
-        orderBy: { createdAt: "desc" },
-        select: { id: true },
-      });
-
-      const file = await ctx.db.file.create({
-        data: {
-          registrationId: latestReg?.id ?? null,
-          filename: input.filename,
-          mimeType: null,
-          data: Buffer.from(''), // Empty buffer for URL-based files
-          sizeBytes: 0,
-        },
-      });
-
-      // Log activity
-      await Promise.all([
-        logUserActivity(ctx.db, {
-          userId: ctx.dbUser.id,
-          title: `File uploaded: ${input.filename}`,
-          description: "Your file has been saved",
-          icon: getActivityIcon(UserActivityType.FILE_UPLOADED),
-          type: UserActivityType.FILE_UPLOADED,
-          metadata: {
-            fileId: file.id,
-            filename: input.filename,
-            registrationId: latestReg?.id,
-          },
-        }),
-        logAppActivity(ctx.db, {
-          userId: ctx.dbUser.id,
-          userName: ctx.dbUser.name ?? undefined,
-          userEmail: ctx.dbUser.email ?? undefined,
-          type: AppActivityType.FILE_UPLOADED,
-          action: ActivityActionEnum.CREATED,
-          entity: ActivityEntity.ATTACHMENT,
-          entityId: file.id,
-          title: `File uploaded: ${input.filename}`,
-          category: ActivityCategory.CONTENT,
-          severity: ActivitySeverity.INFO,
-          metadata: {
-            fileId: file.id,
-            filename: input.filename,
-            registrationId: latestReg?.id,
-          },
-        }),
-      ]);
-
-      return file;
-    }),
 
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
@@ -154,6 +120,7 @@ export const memberFilesRouter = createTRPCRouter({
       // Create file record
       const file = await ctx.db.file.create({
         data: {
+          userId: ctx.dbUser.id,
           filename: input.filename,
           mimeType: input.mimeType,
           data: buffer,

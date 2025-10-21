@@ -85,6 +85,7 @@ model User {
   professionalBio String?
   
 
+
   onboardedAt DateTime?
 
   blogPosts     BlogPost[]
@@ -92,6 +93,7 @@ model User {
   adminNotes    AdminNote[]                 @relation("UserAdminNotes")
   statusChanges RegistrationStatusHistory[] @relation("UserStatusChanges")
   activities  UserActivity[]
+  files File[]
 
   blogPostLikes BlogPostLike[]
   blogPostComments BlogComment[]
@@ -218,6 +220,8 @@ model BlogPost {
   comments   BlogComment[]
 
   reports BlogReport[]
+
+  image File?
 }
 
 // Ticket types (e.g., early-bird, standard, student) used for pricing/management
@@ -295,9 +299,15 @@ model File {
   filename       String
   mimeType       String?
   createdAt      DateTime      @default(now())
+
+  userId String
+  user User @relation(fields: [userId], references: [id])
   
   registrationId String?
   registration   Registration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
+
+  blogPostId String? @unique
+  blogPost BlogPost? @relation(fields: [blogPostId], references: [id])
 
   @@index([registrationId])
 }
