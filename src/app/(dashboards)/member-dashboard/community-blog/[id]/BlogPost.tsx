@@ -670,7 +670,6 @@ export default function BlogPost({ post }: BlogPostProps) {
                         <CommentItem
                           comment={comment}
                           currentUserId={dbUser?.id}
-                          currentUserRole={dbUser?.role}
                           onUpdate={(id, content) =>
                             updateComment.mutate({ id: id, content })
                           }

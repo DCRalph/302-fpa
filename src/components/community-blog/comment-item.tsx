@@ -45,7 +45,6 @@ type Comment = RouterOutputs["member"]["blog"]["getComments"][number];
 function CommentItem({
   comment,
   currentUserId,
-  currentUserRole,
   onUpdate,
   onDelete,
   onReply,
@@ -53,7 +52,6 @@ function CommentItem({
 }: {
   comment: Comment;
   currentUserId?: string;
-  currentUserRole?: string | null;
   onUpdate: (id: string, content: string) => void;
   onDelete: (id: string) => void;
   onReply?: (parentCommentId: string, content: string) => void;

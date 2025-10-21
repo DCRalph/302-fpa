@@ -418,7 +418,7 @@ Fiji Principles Association
 export function createOnboardingWelcomeEmail(
   data: OnboardingWelcomeEmailData
 ): EmailTemplate {
-  const { name, email, school, dashboardUrl } = data;
+  const { name, school, dashboardUrl } = data;
 
   return {
     subject: 'Welcome to the Fiji Principles Association Community!',
@@ -507,7 +507,7 @@ Fiji Principles Association Team
 export function createConferenceRegistrationSuccessEmail(
   data: ConferenceRegistrationSuccessEmailData
 ): EmailTemplate {
-  const { name, email, conferenceName, conferenceDate, conferenceLocation, registrationId, paymentMethod, dashboardUrl } = data;
+  const { name, conferenceName, conferenceDate, conferenceLocation, registrationId, paymentMethod, dashboardUrl } = data;
 
   return {
     subject: `Registration Confirmed: ${conferenceName}`,
@@ -609,7 +609,6 @@ export function createRegistrationStatusUpdateEmail(
 ): EmailTemplate {
   const {
     name,
-    email,
     conferenceName,
     registrationId,
     previousStatus,

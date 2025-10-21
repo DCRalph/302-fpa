@@ -459,7 +459,6 @@ function BlogPostCard({ post }: { post: BlogPost }) {
                         key={comment.id}
                         comment={comment}
                         currentUserId={dbUser?.id}
-                        currentUserRole={dbUser?.role}
                         onUpdate={(id, content) =>
                           updateComment.mutate({ id: id, content })
                         }
