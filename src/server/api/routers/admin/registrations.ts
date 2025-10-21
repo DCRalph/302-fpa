@@ -629,5 +629,223 @@ export const adminRegistrationsRouter = createTRPCRouter({
 
       return note;
     }),
+
+  // Add manual payment to registration
+  addPayment: protectedProcedure
+    .input(
+      z.object({
+        registrationId: z.string(),
+        amountCents: z.number().int().min(1),
+        currency: z.string().default("FJD"),
+        reason: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is admin
+      if (ctx.dbUser.role !== "ADMIN") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can perform this action",
+        });
+      }
+
+      // Get registration details
+      const registration = await ctx.db.registration.findUnique({
+        where: { id: input.registrationId },
+        include: {
+          conference: {
+            select: {
+              name: true,
+              priceCents: true,
+              currency: true,
+            },
+          },
+        },
+      });
+
+      if (!registration) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Registration not found",
+        });
+      }
+
+      // Create payment record
+      const payment = await ctx.db.payment.create({
+        data: {
+          registrationId: input.registrationId,
+          provider: "manual",
+          amountCents: input.amountCents,
+          currency: input.currency,
+          status: "succeeded",
+          metadata: {
+            reason: input.reason,
+            addedBy: ctx.dbUser.id,
+            addedByName: ctx.dbUser.name,
+          },
+        },
+      });
+
+      // Calculate total paid amount
+      const totalPaid = await ctx.db.payment.aggregate({
+        where: {
+          registrationId: input.registrationId,
+          status: "succeeded",
+        },
+        _sum: {
+          amountCents: true,
+        },
+      });
+
+      const expectedAmount = registration.priceCents ?? registration.conference?.priceCents ?? 0;
+      const totalPaidAmount = totalPaid._sum.amountCents ?? 0;
+
+      // Update payment status based on amount paid
+      let newPaymentStatus = registration.paymentStatus;
+      if (totalPaidAmount >= expectedAmount && expectedAmount > 0) {
+        newPaymentStatus = "paid";
+      } else if (totalPaidAmount > 0) {
+        newPaymentStatus = "partial";
+      }
+
+      // Update registration payment status if it changed
+      if (newPaymentStatus !== registration.paymentStatus) {
+        await ctx.db.registration.update({
+          where: { id: input.registrationId },
+          data: { paymentStatus: newPaymentStatus },
+        });
+      }
+
+      // Log activity
+      await logAppActivity(ctx.db, {
+        userId: ctx.dbUser.id,
+        userName: ctx.dbUser.name ?? "Admin",
+        userEmail: ctx.dbUser.email ?? "",
+        type: "payment_created",
+        action: ActivityActionEnum.CREATED,
+        entity: ActivityEntity.PAYMENT,
+        entityId: payment.id,
+        title: "Manual Payment Added",
+        description: `Added ${input.currency} $${(input.amountCents / 100).toFixed(2)} payment for ${registration.name}`,
+        category: ActivityCategory.REGISTRATION,
+        severity: ActivitySeverity.INFO,
+        metadata: {
+          registrationId: input.registrationId,
+          amountCents: input.amountCents,
+          currency: input.currency,
+          reason: input.reason,
+          conferenceId: registration.conferenceId,
+          conferenceName: registration.conference?.name,
+        },
+      });
+
+      return payment;
+    }),
+
+  // Delete payment from registration
+  deletePayment: protectedProcedure
+    .input(
+      z.object({
+        paymentId: z.string(),
+        reason: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is admin
+      if (ctx.dbUser.role !== "ADMIN") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can perform this action",
+        });
+      }
+
+      // Get payment details
+      const payment = await ctx.db.payment.findUnique({
+        where: { id: input.paymentId },
+        include: {
+          registration: {
+            include: {
+              conference: {
+                select: {
+                  name: true,
+                  priceCents: true,
+                  currency: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!payment) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Payment not found",
+        });
+      }
+
+      // Delete the payment
+      await ctx.db.payment.delete({
+        where: { id: input.paymentId },
+      });
+
+      // Recalculate total paid amount
+      const totalPaid = await ctx.db.payment.aggregate({
+        where: {
+          registrationId: payment.registrationId,
+          status: "succeeded",
+        },
+        _sum: {
+          amountCents: true,
+        },
+      });
+
+      const expectedAmount = payment.registration.priceCents ?? payment.registration.conference?.priceCents ?? 0;
+      const totalPaidAmount = totalPaid._sum.amountCents ?? 0;
+
+      // Update payment status based on remaining amount
+      let newPaymentStatus = payment.registration.paymentStatus;
+      if (totalPaidAmount >= expectedAmount && expectedAmount > 0) {
+        newPaymentStatus = "paid";
+      } else if (totalPaidAmount > 0) {
+        newPaymentStatus = "partial";
+      } else {
+        newPaymentStatus = "unpaid";
+      }
+
+      // Update registration payment status if it changed
+      if (newPaymentStatus !== payment.registration.paymentStatus) {
+        await ctx.db.registration.update({
+          where: { id: payment.registrationId },
+          data: { paymentStatus: newPaymentStatus },
+        });
+      }
+
+      // Log activity
+      await logAppActivity(ctx.db, {
+        userId: ctx.dbUser.id,
+        userName: ctx.dbUser.name ?? "Admin",
+        userEmail: ctx.dbUser.email ?? "",
+        type: "payment_created",
+        action: ActivityActionEnum.DELETED,
+        entity: ActivityEntity.PAYMENT,
+        entityId: input.paymentId,
+        title: "Payment Deleted",
+        description: `Deleted ${payment.currency} $${(payment.amountCents / 100).toFixed(2)} payment for ${payment.registration.name}`,
+        category: ActivityCategory.REGISTRATION,
+        severity: ActivitySeverity.INFO,
+        metadata: {
+          paymentId: input.paymentId,
+          registrationId: payment.registrationId,
+          amountCents: payment.amountCents,
+          currency: payment.currency,
+          reason: input.reason,
+          conferenceId: payment.registration.conferenceId,
+          conferenceName: payment.registration.conference?.name,
+        },
+      });
+
+      return { success: true };
+    }),
 });
 

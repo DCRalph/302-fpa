@@ -7,6 +7,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
@@ -16,7 +17,7 @@ import { Label } from "~/components/ui/label";
 import { api } from "~/trpc/react";
 import { Spinner } from "~/components/ui/spinner";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Calendar, DollarSign, User, Mail, Phone, Building2, Briefcase, GraduationCap, Award, FileText, Download } from "lucide-react";
+import { CheckCircle, XCircle, Calendar, DollarSign, User, Mail, Phone, Building2, Briefcase, GraduationCap, Award, FileText, Download, Trash2, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 
 interface RegistrationDetailsDialogProps {
@@ -34,6 +35,20 @@ export function RegistrationDetailsDialog({
   const [denialReason, setDenialReason] = useState("");
   const [showApprovalForm, setShowApprovalForm] = useState(false);
   const [showDenialForm, setShowDenialForm] = useState(false);
+  const [deletePaymentDialog, setDeletePaymentDialog] = useState<{
+    open: boolean;
+    paymentId: string | null;
+    paymentAmount: number;
+    paymentCurrency: string;
+    paymentDate: string;
+  }>({
+    open: false,
+    paymentId: null,
+    paymentAmount: 0,
+    paymentCurrency: "FJD",
+    paymentDate: "",
+  });
+  const [deleteReason, setDeleteReason] = useState("");
 
   const { data: registration, isLoading } = api.admin.registrations.getById.useQuery(
     { id: registrationId },
@@ -70,6 +85,19 @@ export function RegistrationDetailsDialog({
     },
   });
 
+  const deletePaymentMutation = api.admin.registrations.deletePayment.useMutation({
+    onSuccess: async () => {
+      toast.success("Payment deleted successfully");
+      await utils.admin.registrations.getByConferenceId.invalidate();
+      await utils.admin.registrations.getById.invalidate({ id: registrationId });
+      setDeletePaymentDialog({ open: false, paymentId: null, paymentAmount: 0, paymentCurrency: "FJD", paymentDate: "" });
+      setDeleteReason("");
+    },
+    onError: (err) => {
+      toast.error(err.message ?? "Failed to delete payment");
+    },
+  });
+
   const handleApprove = () => {
     approveMutation.mutate({
       id: registrationId,
@@ -85,6 +113,25 @@ export function RegistrationDetailsDialog({
     denyMutation.mutate({
       id: registrationId,
       reason: denialReason,
+    });
+  };
+
+  const handleDeletePayment = (paymentId: string, amountCents: number, currency: string, createdAt: string) => {
+    setDeletePaymentDialog({
+      open: true,
+      paymentId,
+      paymentAmount: amountCents,
+      paymentCurrency: currency,
+      paymentDate: createdAt,
+    });
+  };
+
+  const confirmDeletePayment = () => {
+    if (!deletePaymentDialog.paymentId) return;
+
+    deletePaymentMutation.mutate({
+      paymentId: deletePaymentDialog.paymentId,
+      reason: deleteReason || undefined,
     });
   };
 
@@ -325,6 +372,78 @@ export function RegistrationDetailsDialog({
               )}
             </div>
           </div>
+
+          {/* Payment History */}
+          {registration.payments.length > 0 && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg">Payment History</h3>
+                <div className="space-y-3">
+                  {registration.payments.map((payment) => (
+                    <div key={payment.id} className="rounded-lg border bg-muted/50 p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <Badge
+                                  variant={payment.status === "succeeded" ? "default" : payment.status === "failed" ? "destructive" : "secondary"}
+                                >
+                                  {payment.status}
+                                </Badge>
+                                <span className="text-sm text-muted-foreground">
+                                  {payment.provider === "manual" ? "Manual Payment" : payment.provider}
+                                </span>
+                              </div>
+                              <div className="mt-2 space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                  <span className="font-medium">
+                                    {payment.currency} ${(payment.amountCents / 100).toFixed(2)}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Calendar className="h-4 w-4" />
+                                  <span>
+                                    {new Date(payment.createdAt).toLocaleString()}
+                                  </span>
+                                </div>
+                                {payment.metadata && typeof payment.metadata === 'object' && 'reason' in payment.metadata && (
+                                  <div className="text-sm text-muted-foreground">
+                                    <strong>Note:</strong> {typeof payment.metadata.reason === 'string' ? payment.metadata.reason : JSON.stringify(payment.metadata.reason)}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {payment.status === "succeeded" && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeletePayment(
+                                    payment.id,
+                                    payment.amountCents,
+                                    payment.currency,
+                                    payment.createdAt.toISOString()
+                                  )}
+                                  disabled={deletePaymentMutation.isPending}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Additional Information */}
           {(metadata?.dietary ?? metadata?.remits?.length) && (
@@ -598,6 +717,52 @@ export function RegistrationDetailsDialog({
           </div>
         </div>
       </DialogContent>
+
+      {/* Payment Deletion Confirmation Dialog */}
+      <Dialog open={deletePaymentDialog.open} onOpenChange={(open) => setDeletePaymentDialog(prev => ({ ...prev, open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Delete Payment
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this payment? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-muted p-4 rounded-lg">
+              <div className="space-y-2">
+                <div><strong>Amount:</strong> {deletePaymentDialog.paymentCurrency} ${(deletePaymentDialog.paymentAmount / 100).toFixed(2)}</div>
+                <div><strong>Date:</strong> {new Date(deletePaymentDialog.paymentDate).toLocaleString()}</div>
+                <div><strong>Status:</strong> Succeeded</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="delete-reason">Reason for deletion (optional)</Label>
+              <Textarea
+                id="delete-reason"
+                placeholder="Enter reason for deleting this payment..."
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeletePaymentDialog(prev => ({ ...prev, open: false }))}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeletePayment}
+              disabled={deletePaymentMutation.isPending}
+            >
+              {deletePaymentMutation.isPending ? "Deleting..." : "Delete Payment"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }

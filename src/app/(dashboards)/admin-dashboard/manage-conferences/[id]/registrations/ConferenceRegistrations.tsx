@@ -17,6 +17,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { toast } from "sonner";
 
 export default function ConferenceRegistrationsPage() {
@@ -37,8 +47,45 @@ export default function ConferenceRegistrationsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [edited, setEdited] = useState<Record<string, { status: "pending" | "confirmed" | "cancelled"; paymentStatus: "unpaid" | "pending" | "paid" | "refunded" | "partial" }>>({});
+  const [addingPaymentId, setAddingPaymentId] = useState<string | null>(null);
+  const [customAmountDialog, setCustomAmountDialog] = useState<{
+    open: boolean;
+    registrationId: string | null;
+    amount: string;
+    currency: string;
+  }>({
+    open: false,
+    registrationId: null,
+    amount: "",
+    currency: "FJD",
+  });
+  const [confirmationDialog, setConfirmationDialog] = useState<{
+    open: boolean;
+    registrationId: string | null;
+    amountCents: number;
+    currency: string;
+    registrationName: string;
+  }>({
+    open: false,
+    registrationId: null,
+    amountCents: 0,
+    currency: "FJD",
+    registrationName: "",
+  });
 
   const utils = api.useUtils();
+  const addPaymentMutation = api.admin.registrations.addPayment.useMutation({
+    onSuccess: async () => {
+      toast.success("Payment added successfully");
+      await utils.admin.registrations.getByConferenceId.invalidate({ conferenceId });
+      setAddingPaymentId(null);
+    },
+    onError: (err) => {
+      toast.error(err.message ?? "Failed to add payment");
+      setAddingPaymentId(null);
+    },
+  });
+
   const updateStatusMutation = api.admin.registrations.updateStatus.useMutation({
     // Optimistic update
     onMutate: async (input) => {
@@ -85,6 +132,57 @@ export default function ConferenceRegistrationsPage() {
   const handleViewDetails = (registrationId: string) => {
     setSelectedRegistrationId(registrationId);
     setDialogOpen(true);
+  };
+
+  const handleAddPayment = (registrationId: string, amountCents: number, currency: string, registrationName: string) => {
+    setConfirmationDialog({
+      open: true,
+      registrationId,
+      amountCents,
+      currency,
+      registrationName,
+    });
+  };
+
+  const confirmAddPayment = () => {
+    if (!confirmationDialog.registrationId) return;
+
+    setAddingPaymentId(confirmationDialog.registrationId);
+    setConfirmationDialog({ open: false, registrationId: null, amountCents: 0, currency: "FJD", registrationName: "" });
+
+    addPaymentMutation.mutate({
+      registrationId: confirmationDialog.registrationId,
+      amountCents: confirmationDialog.amountCents,
+      currency: confirmationDialog.currency,
+      reason: "Manual payment added by admin",
+    });
+  };
+
+  const openCustomAmountDialog = (registrationId: string, currency: string) => {
+    setCustomAmountDialog({
+      open: true,
+      registrationId,
+      amount: "",
+      currency,
+    });
+  };
+
+  const handleCustomAmountSubmit = () => {
+    if (!customAmountDialog.registrationId || !customAmountDialog.amount) return;
+
+    const amountCents = Math.round(parseFloat(customAmountDialog.amount) * 100);
+    const registration = registrations?.find(r => r.id === customAmountDialog.registrationId);
+
+    if (registration) {
+      handleAddPayment(
+        customAmountDialog.registrationId,
+        amountCents,
+        customAmountDialog.currency,
+        registration.name
+      );
+    }
+
+    setCustomAmountDialog({ open: false, registrationId: null, amount: "", currency: "FJD" });
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -300,8 +398,82 @@ export default function ConferenceRegistrationsPage() {
                               </Select>
                             </div>
 
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground text-xs">Add Payment</span>
+                              <Select
+                                disabled={addingPaymentId === registration.id && addPaymentMutation.isPending}
+                                onValueChange={(value) => {
+                                  const currency = registration.conference?.currency ?? "FJD";
+
+                                  if (value === "custom") {
+                                    openCustomAmountDialog(registration.id, currency);
+                                    return;
+                                  }
+
+                                  const amountCents = parseInt(value);
+                                  handleAddPayment(registration.id, amountCents, currency, registration.name);
+                                }}
+                              >
+                                <SelectTrigger size="sm" aria-label="Add payment amount">
+                                  <SelectValue placeholder="Quick payment" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {/* Remaining amount option */}
+                                  {amountDue > 0 && (
+                                    <SelectItem value={String(amountDue)}>
+                                      Remaining Amount ({registration.conference?.currency ?? "FJD"} ${(amountDue / 100).toFixed(2)})
+                                    </SelectItem>
+                                  )}
+
+                                  {/* Full price - only if not already paid */}
+                                  <SelectItem
+                                    value={String(expectedAmount)}
+                                    disabled={totalPaid >= expectedAmount}
+                                  >
+                                    Full Price ({registration.conference?.currency ?? "FJD"} ${(expectedAmount / 100).toFixed(2)})
+                                    {totalPaid >= expectedAmount && " (Already paid)"}
+                                  </SelectItem>
+
+                                  {/* Quarter price - only if it wouldn't exceed total */}
+                                  <SelectItem
+                                    value={String(Math.floor(expectedAmount * 0.25))}
+                                    disabled={totalPaid + Math.floor(expectedAmount * 0.25) > expectedAmount}
+                                  >
+                                    Quarter Price ({registration.conference?.currency ?? "FJD"} ${(Math.floor(expectedAmount * 0.25) / 100).toFixed(2)})
+                                    {totalPaid + Math.floor(expectedAmount * 0.25) > expectedAmount && " (Would exceed total)"}
+                                  </SelectItem>
+
+                                  {/* Half price - only if it wouldn't exceed total */}
+                                  <SelectItem
+                                    value={String(Math.floor(expectedAmount * 0.5))}
+                                    disabled={totalPaid + Math.floor(expectedAmount * 0.5) > expectedAmount}
+                                  >
+                                    Half Price ({registration.conference?.currency ?? "FJD"} ${(Math.floor(expectedAmount * 0.5) / 100).toFixed(2)})
+                                    {totalPaid + Math.floor(expectedAmount * 0.5) > expectedAmount && " (Would exceed total)"}
+                                  </SelectItem>
+
+                                  {/* Three quarter price - only if it wouldn't exceed total */}
+                                  <SelectItem
+                                    value={String(Math.floor(expectedAmount * 0.75))}
+                                    disabled={totalPaid + Math.floor(expectedAmount * 0.75) > expectedAmount}
+                                  >
+                                    Three Quarter Price ({registration.conference?.currency ?? "FJD"} ${(Math.floor(expectedAmount * 0.75) / 100).toFixed(2)})
+                                    {totalPaid + Math.floor(expectedAmount * 0.75) > expectedAmount && " (Would exceed total)"}
+                                  </SelectItem>
+
+                                  {/* Custom amount option */}
+                                  <SelectItem value="custom">
+                                    Custom Amount...
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
                             {savingId === registration.id && updateStatusMutation.isPending && (
                               <span className="text-muted-foreground text-xs">Saving…</span>
+                            )}
+                            {addingPaymentId === registration.id && addPaymentMutation.isPending && (
+                              <span className="text-muted-foreground text-xs">Adding payment…</span>
                             )}
                           </div>
 
@@ -369,6 +541,75 @@ export default function ConferenceRegistrationsPage() {
           onOpenChange={setDialogOpen}
         />
       )}
+
+      {/* Custom Amount Dialog */}
+      <Dialog open={customAmountDialog.open} onOpenChange={(open) => setCustomAmountDialog(prev => ({ ...prev, open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Custom Payment</DialogTitle>
+            <DialogDescription>
+              Enter the custom payment amount for this registration.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="amount">Amount</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{customAmountDialog.currency} $</span>
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={customAmountDialog.amount}
+                  onChange={(e) => setCustomAmountDialog(prev => ({ ...prev, amount: e.target.value }))}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCustomAmountDialog(prev => ({ ...prev, open: false }))}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCustomAmountSubmit}
+              disabled={!customAmountDialog.amount || parseFloat(customAmountDialog.amount) <= 0}
+            >
+              Add Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={confirmationDialog.open} onOpenChange={(open) => setConfirmationDialog(prev => ({ ...prev, open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Payment</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to add this payment?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-muted p-4 rounded-lg">
+              <div className="space-y-2">
+                <div><strong>Registration:</strong> {confirmationDialog.registrationName}</div>
+                <div><strong>Amount:</strong> {confirmationDialog.currency} ${(confirmationDialog.amountCents / 100).toFixed(2)}</div>
+                <div><strong>Payment Method:</strong> Manual (Admin)</div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmationDialog(prev => ({ ...prev, open: false }))}>
+              Cancel
+            </Button>
+            <Button onClick={confirmAddPayment}>
+              Confirm Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
