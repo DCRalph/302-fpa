@@ -8,7 +8,7 @@ export const resolveReport = protectedProcedure.input(
   z.object({
     id: z.string(),
     action: z.nativeEnum(ReportAction),
-    adminNote: z.string().optional(),
+    adminNote: z.string().optional().nullable(),
   })
 ).mutation(async ({ ctx, input }) => {
   const report = await ctx.db.blogReport.update({
@@ -17,7 +17,7 @@ export const resolveReport = protectedProcedure.input(
       resolvedAt: new Date(),
       resolvedById: ctx.dbUser.id,
       action: input.action,
-      adminNote: input.adminNote,
+      adminNote: input.adminNote == "" ? null : input.adminNote,
     },
   });
 
@@ -30,10 +30,10 @@ export const resolveReport = protectedProcedure.input(
     action: ActivityActionEnum.UPDATED,
     entity: ActivityEntity.REPORT,
     entityId: report.postId ?? report.commentId as string | undefined,
-    title: `Report resolved with action ${input.action} and message: ${input.adminNote ?? "No note provided"}`,
+    title: `Report resolved with action ${input.action} and message: ${input.adminNote?.trim() || "No note provided"}`,
     description: `A report has been resolved by Admin ${ctx.dbUser.name ?? "a user"}`,
     category: ActivityCategory.CONTENT,
-    severity: ActivitySeverity.WARNING,
+    severity: ActivitySeverity.INFO,
     metadata: {
       reportId: input.id,
       postId: report.postId,

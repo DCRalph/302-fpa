@@ -434,44 +434,44 @@ export default function FilesPage() {
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
+            <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Files</CardTitle>
-                <File className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-white">Total Files</CardTitle>
+                <File className="h-4 w-4 text-white/80" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalFiles.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">All time</p>
+                <div className="text-2xl font-bold text-white">{stats.totalFiles.toLocaleString()}</div>
+                <p className="text-xs text-white/80">All time</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Size</CardTitle>
-                <HardDrive className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-white">Total Size</CardTitle>
+                <HardDrive className="h-4 w-4 text-white/80" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalSizeMB.toLocaleString()} MB</div>
-                <p className="text-xs text-muted-foreground">Storage used</p>
+                <div className="text-2xl font-bold text-white">{stats.totalSizeMB.toLocaleString()} MB</div>
+                <p className="text-xs text-white/80">Storage used</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">This Week</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-white">This Week</CardTitle>
+                <Calendar className="h-4 w-4 text-white/80" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.filesThisWeek}</div>
-                <p className="text-xs text-muted-foreground">Uploads this week</p>
+                <div className="text-2xl font-bold text-white">{stats.filesThisWeek}</div>
+                <p className="text-xs text-white/80">Uploads this week</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">This Month</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-white">This Month</CardTitle>
+                <Calendar className="h-4 w-4 text-white/80" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.filesThisMonth}</div>
-                <p className="text-xs text-muted-foreground">Uploads this month</p>
+                <div className="text-2xl font-bold text-white">{stats.filesThisMonth}</div>
+                <p className="text-xs text-white/80">Uploads this month</p>
               </CardContent>
             </Card>
           </div>
