@@ -9,9 +9,9 @@ import {
   ActivityActionEnum,
   ActivityEntity,
   ActivityCategory,
-  ActivitySeverity,
   getActivityIcon,
 } from "~/server/api/lib/activity-logger";
+import { Severity } from "@prisma/client";
 
 export const adminConferenceRouter = createTRPCRouter({
   // Get all conferences ordered by creation date (latest first)
@@ -176,7 +176,7 @@ export const adminConferenceRouter = createTRPCRouter({
         title: `Conference created: ${input.name}`,
         description: `Admin ${ctx.dbUser.name} created a new conference`,
         category: ActivityCategory.CONFERENCE,
-        severity: ActivitySeverity.INFO,
+        severity: Severity.INFO,
         metadata: {
           conferenceId: conference.id,
           conferenceName: input.name,
@@ -291,7 +291,7 @@ export const adminConferenceRouter = createTRPCRouter({
         title: `Conference updated: ${conference.name}`,
         description: `Admin ${ctx.dbUser.name} updated conference details`,
         category: ActivityCategory.CONFERENCE,
-        severity: ActivitySeverity.INFO,
+        severity: Severity.INFO,
         metadata: {
           conferenceId: conference.id,
           conferenceName: conference.name,
@@ -331,7 +331,7 @@ export const adminConferenceRouter = createTRPCRouter({
         title: `Conference deactivated: ${conference.name}`,
         description: `Admin ${ctx.dbUser.name} deactivated the conference`,
         category: ActivityCategory.CONFERENCE,
-        severity: ActivitySeverity.WARNING,
+        severity: Severity.WARNING,
         metadata: {
           conferenceId: conference.id,
           conferenceName: conference.name,
@@ -370,7 +370,7 @@ export const adminConferenceRouter = createTRPCRouter({
         title: `Conference ${input.isActive ? "activated" : "deactivated"}: ${conference.name}`,
         description: `Admin ${ctx.dbUser.name} ${input.isActive ? "activated" : "deactivated"} the conference`,
         category: ActivityCategory.CONFERENCE,
-        severity: input.isActive ? ActivitySeverity.INFO : ActivitySeverity.WARNING,
+        severity: input.isActive ? Severity.INFO : Severity.WARNING,
         metadata: {
           conferenceId: conference.id,
           conferenceName: conference.name,

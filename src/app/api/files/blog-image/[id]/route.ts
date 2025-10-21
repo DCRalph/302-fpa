@@ -1,17 +1,17 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { db } from "~/server/db";
-import { auth } from "~/lib/auth";
+// import { auth } from "~/lib/auth";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication using Better Auth
-    const session = await auth.api.getSession({
-      headers: request.headers
-    });
+     // Check authentication using Better Auth
+    // const session = await auth.api.getSession({
+    //   headers: request.headers
+    // });
 
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

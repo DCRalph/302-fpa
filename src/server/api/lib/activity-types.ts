@@ -1,17 +1,5 @@
 
 // ============================================================================
-// SEVERITIES
-// ============================================================================
-export const ActivitySeverity = {
-  INFO: "info",
-  WARNING: "warning",
-  ERROR: "error",
-  CRITICAL: "critical",
-} as const;
-
-export type ActivitySeverity = (typeof ActivitySeverity)[keyof typeof ActivitySeverity];
-
-// ============================================================================
 // CATEGORIES
 // ============================================================================
 export const ActivityCategory = {

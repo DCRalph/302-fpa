@@ -7,8 +7,8 @@ import { api } from "~/trpc/react";
 import { Spinner } from "~/components/ui/spinner";
 import { ArrowLeft, Eye, FileText } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import { RegistrationDetailsDialog } from "./RegistrationDetailsDialog";
 import {
   Select,
@@ -31,6 +31,7 @@ import { toast } from "sonner";
 
 export default function ConferenceRegistrationsPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const conferenceId = params.id as string;
 
   const { data: registrations, isLoading } = api.admin.registrations.getByConferenceId.useQuery(
@@ -72,6 +73,19 @@ export default function ConferenceRegistrationsPage() {
     currency: "FJD",
     registrationName: "",
   });
+
+  // Auto-open dialog if registrationId query param is provided
+  useEffect(() => {
+    const registrationId = searchParams.get('registrationId');
+    if (registrationId && registrations) {
+      // Check if the registration exists in the current conference
+      const registration = registrations.find(r => r.id === registrationId);
+      if (registration) {
+        setSelectedRegistrationId(registrationId);
+        setDialogOpen(true);
+      }
+    }
+  }, [searchParams, registrations]);
 
   const utils = api.useUtils();
   const addPaymentMutation = api.admin.registrations.addPayment.useMutation({

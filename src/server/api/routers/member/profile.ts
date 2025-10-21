@@ -10,9 +10,9 @@ import {
   ActivityActionEnum,
   ActivityEntity,
   ActivityCategory,
-  ActivitySeverity,
   getActivityIcon,
 } from "~/server/api/lib/activity-logger";
+import { Severity } from "@prisma/client";
 
 export const memberProfileRouter = createTRPCRouter({
   // Fetch current user's profile and linked accounts
@@ -149,7 +149,7 @@ export const memberProfileRouter = createTRPCRouter({
           title: `Profile updated`,
           description: `User updated profile: ${updatedFields.join(", ")}`,
           category: ActivityCategory.PROFILE,
-          severity: ActivitySeverity.INFO,
+          severity: Severity.INFO,
           metadata: {
             updatedFields,
           },
@@ -199,7 +199,7 @@ export const memberProfileRouter = createTRPCRouter({
             entityId: ctx.dbUser.id,
             title: "Password changed",
             category: ActivityCategory.AUTH,
-            severity: ActivitySeverity.INFO,
+            severity: Severity.INFO,
             metadata: {},
           }),
         ]);
@@ -263,7 +263,7 @@ export const memberProfileRouter = createTRPCRouter({
             entityId: ctx.dbUser.id,
             title: "Password set",
             category: ActivityCategory.AUTH,
-            severity: ActivitySeverity.INFO,
+            severity: Severity.INFO,
             metadata: {},
           }),
         ]);

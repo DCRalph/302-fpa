@@ -25,8 +25,11 @@ import {
   Image,
   Archive,
   Video,
-  Music
+  Music,
+  ExternalLink,
+  BookOpen
 } from "lucide-react";
+import Link from "next/link";
 import { Spinner } from "~/components/ui/spinner";
 import { toast } from "sonner";
 
@@ -198,13 +201,48 @@ function FileModal({ fileId, open, onOpenChange }: FileModalProps) {
                 <>
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-muted-foreground">Attached to Registration</Label>
-                    <p className="text-sm">{file.registration.name} ({file.registration.email})</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm">{file.registration.name} ({file.registration.email})</p>
+                      <Link
+                        href={`/admin-dashboard/manage-conferences/${file.registration.conference?.id ?? ""}/registrations?registrationId=${file.registration.id}`}
+                        className="text-blue-600 hover:text-blue-800 transition-colors"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Link>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-muted-foreground">Conference</Label>
                     <p className="text-sm">{file.registration.conference?.name ?? 'N/A'}</p>
                   </div>
                 </>
+              )}
+              {file.blogPost && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Blog Post</Label>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm">{file.blogPost.title}</p>
+                    <Link
+                      href={`/member-dashboard/community-blog/${file.blogPost.id}`}
+                      className="text-blue-600 hover:text-blue-800 transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Link>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Status: {file.blogPost.published ? 'Published' : 'Draft'}
+                  </p>
+                </div>
+              )}
+              {!file.registration && !file.blogPost && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">File Type</Label>
+                  <p className="text-sm">
+                    {file.type === "PROFILE_IMAGE" ? "Profile Image" :
+                      file.type === "BLOG_IMAGE" ? "Blog Image" :
+                        file.type === "REGISTRATION_ATTACHMENT" ? "Registration Attachment" : "Other"}
+                  </p>
+                </div>
               )}
             </div>
 
@@ -612,7 +650,23 @@ export default function FilesPage() {
                               {file.registration && (
                                 <span className="flex items-center gap-1">
                                   <User className="h-3 w-3" />
-                                  {file.registration.name ?? 'Unknown'}
+                                  <Link
+                                    href={`/admin-dashboard/manage-conferences/${file.registration.conference?.id ?? ""}/registrations?registrationId=${file.registration.id}`}
+                                    className="hover:text-foreground transition-colors underline"
+                                  >
+                                    {file.registration.name ?? 'Unknown'}
+                                  </Link>
+                                </span>
+                              )}
+                              {file.blogPost && (
+                                <span className="flex items-center gap-1">
+                                  <BookOpen className="h-3 w-3" />
+                                  <Link
+                                    href={`/member-dashboard/community-blog/${file.blogPost.id}`}
+                                    className="hover:text-foreground transition-colors underline"
+                                  >
+                                    {file.blogPost.title}
+                                  </Link>
                                 </span>
                               )}
                             </div>

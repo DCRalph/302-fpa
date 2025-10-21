@@ -9,10 +9,10 @@ import {
   ActivityActionEnum,
   ActivityEntity,
   ActivityCategory,
-  ActivitySeverity,
   getActivityIcon,
 } from "~/server/api/lib/activity-logger";
 import { sendOnboardingWelcomeEmail } from "~/lib/email-resend";
+import { Severity } from "@prisma/client";
 
 
 export const onboardingRouter = createTRPCRouter({
@@ -81,7 +81,7 @@ export const onboardingRouter = createTRPCRouter({
           entityId: userId,
           title: `User completed onboarding: ${input.name}`,
           category: ActivityCategory.AUTH,
-          severity: ActivitySeverity.INFO,
+          severity: Severity.INFO,
           metadata: {
             name: input.name,
             school: input.school,

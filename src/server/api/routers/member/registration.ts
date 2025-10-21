@@ -8,10 +8,10 @@ import {
   ActivityActionEnum,
   ActivityEntity,
   ActivityCategory,
-  ActivitySeverity,
   getActivityIcon,
 } from "~/server/api/lib/activity-logger";
 import { sendConferenceRegistrationSuccessEmail } from "~/lib/email-resend";
+import { Severity } from "@prisma/client";
 
 export const memberRegistrationRouter = createTRPCRouter({
   getLatestConference: protectedProcedure.query(async ({ ctx }) => {
@@ -222,7 +222,7 @@ export const memberRegistrationRouter = createTRPCRouter({
           title: `Registration submitted for ${conference.name}`,
           description: `${ctx.dbUser.name ?? input.participantName} registered for ${conference.name}`,
           category: ActivityCategory.REGISTRATION,
-          severity: ActivitySeverity.INFO,
+          severity: Severity.INFO,
           metadata: {
             conferenceId: conference.id,
             conferenceName: conference.name,
@@ -281,7 +281,7 @@ export const memberRegistrationRouter = createTRPCRouter({
           entityId: reg.id,
           title: `Registration cancelled for ${reg.conference?.name ?? "conference"}`,
           category: ActivityCategory.REGISTRATION,
-          severity: ActivitySeverity.INFO,
+          severity: Severity.INFO,
           metadata: {
             conferenceId: reg.conferenceId,
             conferenceName: reg.conference?.name,
@@ -364,7 +364,7 @@ export const memberRegistrationRouter = createTRPCRouter({
           title: `Files added to registration`,
           description: `${ctx.dbUser.name ?? "User"} added ${input.fileIds.length} file(s) to their registration`,
           category: ActivityCategory.CONTENT,
-          severity: ActivitySeverity.INFO,
+          severity: Severity.INFO,
           metadata: {
             registrationId: input.registrationId,
             fileCount: input.fileIds.length,

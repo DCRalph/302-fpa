@@ -5,9 +5,9 @@ import {
   ActivityActionEnum,
   ActivityEntity,
   AppActivityType,
-  ActivityCategory,
-  ActivitySeverity,
+  ActivityCategory
 } from "~/server/api/lib/activity-logger";
+import { Severity } from "@prisma/client";
 
 export const createReport = protectedProcedure
     .input(
@@ -51,7 +51,7 @@ export const createReport = protectedProcedure
         title: `Report submitted for ${input.type}: ${targetLabel}`,
         description: `A report has been submitted by ${ctx.dbUser.name ?? "a user"}`,
         category: ActivityCategory.CONTENT,
-        severity: ActivitySeverity.WARNING,
+        severity: Severity.WARNING,
         metadata: {
           reportId: input.id,
           postId: report.postId,

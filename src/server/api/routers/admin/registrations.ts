@@ -9,10 +9,10 @@ import {
   ActivityActionEnum,
   ActivityEntity,
   ActivityCategory,
-  ActivitySeverity,
   getActivityIcon,
 } from "~/server/api/lib/activity-logger";
 import { sendRegistrationStatusUpdateEmail } from "~/lib/email-resend";
+import { Severity } from "@prisma/client";
 
 export const adminRegistrationsRouter = createTRPCRouter({
   // Get all registrations for a conference
@@ -262,7 +262,7 @@ export const adminRegistrationsRouter = createTRPCRouter({
         title: `Registration approved for ${registration.conference?.name ?? "conference"}`,
         description: `Admin ${ctx.dbUser.name} approved registration for ${registration.user?.name ?? registration.name}`,
         category: ActivityCategory.REGISTRATION,
-        severity: ActivitySeverity.INFO,
+        severity: Severity.GOOD,
         metadata: {
           conferenceId: registration.conferenceId,
           conferenceName: registration.conference?.name,
@@ -385,7 +385,7 @@ export const adminRegistrationsRouter = createTRPCRouter({
         title: `Registration denied for ${registration.conference?.name ?? "conference"}`,
         description: `Admin ${ctx.dbUser.name} denied registration for ${registration.user?.name ?? registration.name}`,
         category: ActivityCategory.REGISTRATION,
-        severity: ActivitySeverity.WARNING,
+        severity: Severity.BAD,
         metadata: {
           conferenceId: registration.conferenceId,
           conferenceName: registration.conference?.name,
@@ -543,7 +543,7 @@ export const adminRegistrationsRouter = createTRPCRouter({
           : `Registration payment updated: ${currentReg.paymentStatus} → ${input.paymentStatus}`,
         description: `Admin updated registration for ${registration.user?.name ?? registration.name}`,
         category: ActivityCategory.REGISTRATION,
-        severity: ActivitySeverity.INFO,
+        severity: Severity.INFO,
         metadata: {
           conferenceId: registration.conferenceId,
           conferenceName: registration.conference?.name,
@@ -618,7 +618,7 @@ export const adminRegistrationsRouter = createTRPCRouter({
         title: `Note added to registration for ${note.registration.name}`,
         description: `Admin added note to registration`,
         category: ActivityCategory.REGISTRATION,
-        severity: ActivitySeverity.INFO,
+        severity: Severity.INFO,
         metadata: {
           conferenceId: note.registration.conferenceId,
           conferenceName: note.registration.conference?.name,
@@ -728,7 +728,7 @@ export const adminRegistrationsRouter = createTRPCRouter({
         title: "Manual Payment Added",
         description: `Added ${input.currency} $${(input.amountCents / 100).toFixed(2)} payment for ${registration.name}`,
         category: ActivityCategory.REGISTRATION,
-        severity: ActivitySeverity.INFO,
+        severity: Severity.INFO,
         metadata: {
           registrationId: input.registrationId,
           amountCents: input.amountCents,
@@ -833,7 +833,7 @@ export const adminRegistrationsRouter = createTRPCRouter({
         title: "Payment Deleted",
         description: `Deleted ${payment.currency} $${(payment.amountCents / 100).toFixed(2)} payment for ${payment.registration.name}`,
         category: ActivityCategory.REGISTRATION,
-        severity: ActivitySeverity.INFO,
+        severity: Severity.INFO,
         metadata: {
           paymentId: input.paymentId,
           registrationId: payment.registrationId,

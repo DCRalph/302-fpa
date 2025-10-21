@@ -4,7 +4,8 @@ import { api } from "~/trpc/react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { Folder, File, Download, Calendar, HardDrive, Tag, User, Image, FileText, Archive } from "lucide-react";
+import { Folder, File, Download, Calendar, HardDrive, Tag, User, Image, FileText, Archive, ExternalLink, BookOpen } from "lucide-react";
+import Link from "next/link";
 
 const getFileTypeInfo = (type: string) => {
   switch (type) {
@@ -75,25 +76,77 @@ export default function MyFilesPage() {
                             </div>
                           </div>
                           {file.registration && (
-                            <div className="mt-2">
-                              <Badge variant="secondary" className="text-xs">
-                                {file.registration.conference?.name}
-                              </Badge>
-                              <Badge
-                                variant={
-                                  file.registration.status === "confirmed" ? "default" :
-                                    file.registration.status === "pending" ? "secondary" : "destructive"
-                                }
-                                className="text-xs ml-1"
-                              >
-                                {file.registration.status}
-                              </Badge>
+                            <div className="mt-2 space-y-1">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="text-xs">
+                                  Conference Registration
+                                </Badge>
+                                <Badge
+                                  variant={
+                                    file.registration.status === "confirmed" ? "default" :
+                                      file.registration.status === "pending" ? "secondary" : "destructive"
+                                  }
+                                  className="text-xs"
+                                >
+                                  {file.registration.status}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <ExternalLink className="h-3 w-3" />
+                                <Link
+                                  href="/member-dashboard/conference-registration"
+                                  className="hover:text-foreground transition-colors underline"
+                                >
+                                  {file.registration.conference?.name ?? "Conference Registration"}
+                                </Link>
+                              </div>
                             </div>
                           )}
-                          {!file.registration && (
+                          {file.type === "BLOG_IMAGE" && (
+                            <div className="mt-2 space-y-1">
+                              <Badge variant="outline" className="text-xs">
+                                Blog Post Image
+                              </Badge>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <BookOpen className="h-3 w-3" />
+                                {file.blogPost ? (
+                                  <Link
+                                    href={`/member-dashboard/community-blog/${file.blogPost.id}`}
+                                    className="hover:text-foreground transition-colors underline"
+                                  >
+                                    {file.blogPost.title}
+                                  </Link>
+                                ) : (
+                                  <Link
+                                    href="/member-dashboard/community-blog"
+                                    className="hover:text-foreground transition-colors underline"
+                                  >
+                                    View Blog Posts
+                                  </Link>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          {file.type === "PROFILE_IMAGE" && (
+                            <div className="mt-2 space-y-1">
+                              <Badge variant="default" className="text-xs">
+                                Profile Image
+                              </Badge>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <User className="h-3 w-3" />
+                                <Link
+                                  href="/member-dashboard/profile"
+                                  className="hover:text-foreground transition-colors underline"
+                                >
+                                  View Profile
+                                </Link>
+                              </div>
+                            </div>
+                          )}
+                          {!file.registration && file.type !== "BLOG_IMAGE" && file.type !== "PROFILE_IMAGE" && (
                             <div className="mt-2">
                               <Badge variant="outline" className="text-xs">
-                                Not attached to registration
+                                Standalone File
                               </Badge>
                             </div>
                           )}

@@ -21,6 +21,15 @@ enum ReportAction {
   OTHER
 }
 
+enum Severity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+  GOOD
+  BAD
+}
+
 model Session {
   id        String   @id
   expiresAt DateTime
@@ -383,7 +392,7 @@ model AppActivity {
   ipAddress   String?
   
   // Severity/Category for filtering
-  severity    String   @default("info") // "info", "warning", "error", "critical"
+  severity    Severity @default(INFO)
   category    String?  // e.g., "auth", "content", "registration", "admin"
   
   createdAt   DateTime @default(now())

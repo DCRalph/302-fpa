@@ -10,9 +10,9 @@ import {
   ActivityActionEnum,
   ActivityEntity,
   ActivityCategory,
-  ActivitySeverity,
   getActivityIcon,
 } from "~/server/api/lib/activity-logger";
+import { Severity } from "@prisma/client";
 
 import { getReports } from "./reports/get";
 import { createReport } from "./reports/create";
@@ -170,7 +170,7 @@ export const memberBlogRouter = createTRPCRouter({
           title: `Blog post created: ${title}`,
           description: published ? "Published" : "Draft",
           category: ActivityCategory.CONTENT,
-          severity: ActivitySeverity.INFO,
+          severity: Severity.INFO,
           metadata: {
             postId: post.id,
             postTitle: title,
@@ -260,7 +260,7 @@ export const memberBlogRouter = createTRPCRouter({
           title: `Blog post updated: ${input.title}`,
           description: `Updated blog post`,
           category: ActivityCategory.CONTENT,
-          severity: ActivitySeverity.INFO,
+          severity: Severity.INFO,
           metadata: {
             postId: post.id,
             postTitle: input.title,
@@ -353,7 +353,7 @@ export const memberBlogRouter = createTRPCRouter({
           entityId: input.id,
           title: `Blog post deleted: ${post.title}`,
           category: ActivityCategory.CONTENT,
-          severity: ActivitySeverity.INFO,
+          severity: Severity.INFO,
           metadata: {
             postId: input.id,
             postTitle: post.title,

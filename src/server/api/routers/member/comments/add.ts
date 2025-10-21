@@ -9,9 +9,9 @@ import {
   ActivityActionEnum,
   ActivityEntity,
   ActivityCategory,
-  ActivitySeverity,
   getActivityIcon,
 } from "~/server/api/lib/activity-logger";
+import { Severity } from "@prisma/client";
 
 export const addComment = protectedProcedure
     .input(
@@ -90,7 +90,7 @@ export const addComment = protectedProcedure
         entityId: comment.id,
         title: `Comment added on post: ${post.title}`,
         category: ActivityCategory.CONTENT,
-        severity: ActivitySeverity.INFO,
+        severity: Severity.INFO,
         metadata: {
           postId: input.postId,
           postTitle: post.title,

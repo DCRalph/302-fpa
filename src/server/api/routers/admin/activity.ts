@@ -8,14 +8,14 @@ export const adminActivityRouter = createTRPCRouter({
     .input(
       z
         .object({
-          take: z.number().min(1).max(100).default(50),
-          cursor: z.string().nullish(),
+          page: z.number().min(1).default(1),
+          limit: z.number().min(1).max(1000).default(50),
           search: z.string().optional(),
           type: z.string().optional(),
           entity: z.string().optional(),
           userId: z.string().optional(),
-          severity: z.enum(["info", "warning", "error", "critical"]).optional(),
-          category: z.string().optional(),
+          severity: z.array(z.enum(["INFO", "WARNING", "ERROR", "CRITICAL", "GOOD", "BAD"])).optional(),
+          category: z.array(z.string()).optional(),
           startDate: z.date().optional(),
           endDate: z.date().optional(),
         })
@@ -31,8 +31,8 @@ export const adminActivityRouter = createTRPCRouter({
       }
 
       const {
-        take = 50,
-        cursor,
+        page = 1,
+        limit = 50,
         search,
         type,
         entity,
@@ -43,39 +43,69 @@ export const adminActivityRouter = createTRPCRouter({
         endDate,
       } = input ?? {};
 
-      const activities = await ctx.db.appActivity.findMany({
-        where: {
-          ...(search && {
-            OR: [
-              { title: { contains: search, mode: "insensitive" } },
-              { description: { contains: search, mode: "insensitive" } },
-            ],
-          }),
-          ...(type && { type }),
-          ...(entity && { entity }),
-          ...(userId && { userId }),
-          ...(severity && { severity }),
-          ...(category && { category }),
-          ...(startDate &&
-            endDate && {
-            createdAt: {
-              gte: startDate,
-              lte: endDate,
-            },
-          }),
-        },
-        take: take + 1,
-        cursor: cursor ? { id: cursor } : undefined,
-        orderBy: { createdAt: "desc" },
-      });
+      const skip = (page - 1) * limit;
 
-      let nextCursor: string | undefined = undefined;
-      if (activities.length > take) {
-        const next = activities.pop();
-        nextCursor = next?.id;
-      }
+      const [activities, total] = await Promise.all([
+        ctx.db.appActivity.findMany({
+          where: {
+            ...(search && {
+              OR: [
+                { title: { contains: search, mode: "insensitive" } },
+                { description: { contains: search, mode: "insensitive" } },
+              ],
+            }),
+            ...(type && { type }),
+            ...(entity && { entity }),
+            ...(userId && { userId }),
+            ...(severity && severity.length > 0 && { severity: { in: severity } }),
+            ...(category && category.length > 0 && { category: { in: category } }),
+            ...(startDate &&
+              endDate && {
+              createdAt: {
+                gte: startDate,
+                lte: endDate,
+              },
+            }),
+          },
+          skip,
+          take: limit,
+          orderBy: { createdAt: "desc" },
+        }),
+        ctx.db.appActivity.count({
+          where: {
+            ...(search && {
+              OR: [
+                { title: { contains: search, mode: "insensitive" } },
+                { description: { contains: search, mode: "insensitive" } },
+              ],
+            }),
+            ...(type && { type }),
+            ...(entity && { entity }),
+            ...(userId && { userId }),
+            ...(severity && severity.length > 0 && { severity: { in: severity } }),
+            ...(category && category.length > 0 && { category: { in: category } }),
+            ...(startDate &&
+              endDate && {
+              createdAt: {
+                gte: startDate,
+                lte: endDate,
+              },
+            }),
+          },
+        }),
+      ]);
 
-      return { activities, nextCursor };
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        activities,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages,
+        }
+      };
     }),
 
   // Get activity stats

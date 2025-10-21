@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { api } from "~/trpc/react";
 import {
   Activity,
@@ -39,34 +39,48 @@ import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 
-type Severity = "info" | "warning" | "error" | "critical";
+type Severity = "INFO" | "WARNING" | "ERROR" | "CRITICAL" | "GOOD" | "BAD";
 type Category = "auth" | "content" | "registration" | "conference" | "file" | "profile";
 
 // Helper function to get appropriate styling for severity
 const getSeverityStyle = (severity: string) => {
   switch (severity) {
-    case "critical":
+    case "CRITICAL":
       return {
         bgColor: "bg-red-100 dark:bg-red-900/20",
         textColor: "text-red-800 dark:text-red-400",
         dotColor: "bg-red-500",
         icon: <XCircle className="h-5 w-5 text-red-500 dark:text-red-400" />,
       };
-    case "error":
+    case "ERROR":
       return {
         bgColor: "bg-red-50 dark:bg-red-900/10",
         textColor: "text-red-600 dark:text-red-400",
         dotColor: "bg-orange-500 dark:bg-orange-400",
         icon: <AlertCircle className="h-5 w-5 text-red-500 dark:text-red-400" />,
       };
-    case "warning":
+    case "WARNING":
       return {
         bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
         textColor: "text-yellow-600 dark:text-yellow-400",
         dotColor: "bg-yellow-500 dark:bg-yellow-400",
         icon: <AlertTriangle className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />,
       };
-    case "info":
+    case "GOOD":
+      return {
+        bgColor: "bg-green-50 dark:bg-green-900/20",
+        textColor: "text-green-600 dark:text-green-400",
+        dotColor: "bg-green-500 dark:bg-green-400",
+        icon: <Info className="h-5 w-5 text-green-500 dark:text-green-400" />,
+      };
+    case "BAD":
+      return {
+        bgColor: "bg-red-50 dark:bg-red-900/20",
+        textColor: "text-red-600 dark:text-red-400",
+        dotColor: "bg-red-500 dark:bg-red-400",
+        icon: <XCircle className="h-5 w-5 text-red-500 dark:text-red-400" />,
+      };
+    case "INFO":
     default:
       return {
         bgColor: "bg-blue-50 dark:bg-blue-900/20",
@@ -83,12 +97,13 @@ const formatMetadata = (metadata: unknown) => {
   return JSON.stringify(metadata, null, 2);
 };
 
-const SEVERITIES: Severity[] = ["info", "warning", "error", "critical"];
+const SEVERITIES: Severity[] = ["INFO", "WARNING", "ERROR", "CRITICAL", "GOOD", "BAD"];
 const CATEGORIES: Category[] = ["auth", "content", "registration", "conference", "file", "profile"];
 
 export default function ActivityPage() {
   const utils = api.useUtils();
   const REFRESH_MS = 30000;
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -140,18 +155,31 @@ export default function ActivityPage() {
     return () => clearTimeout(id);
   }, [search]);
 
-  // Reset when debounced search term changes (refetch is triggered automatically)
+  // Reset to first page when debounced search term changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  // Create filters key for prefetching optimization
+  const filtersKey = useMemo(() => {
+    return JSON.stringify({
+      limit: limitTo,
+      search: debouncedSearch,
+      severity: selectedSeverities.size > 0 ? Array.from(selectedSeverities) : undefined,
+      category: selectedCategories.size > 0 ? Array.from(selectedCategories) : undefined,
+    });
+  }, [limitTo, debouncedSearch, selectedSeverities, selectedCategories]);
 
   // Prepare query parameters
   const queryParams = {
-    take: limitTo,
-    cursor: undefined,
+    page,
+    limit: limitTo,
     search: debouncedSearch.length > 0 ? debouncedSearch : undefined,
     severity: selectedSeverities.size > 0 && selectedSeverities.size < SEVERITIES.length
-      ? Array.from(selectedSeverities)[0]
+      ? Array.from(selectedSeverities)
       : undefined,
     category: selectedCategories.size > 0 && selectedCategories.size < CATEGORIES.length
-      ? Array.from(selectedCategories)[0]
+      ? Array.from(selectedCategories)
       : undefined,
   };
 
@@ -165,6 +193,24 @@ export default function ActivityPage() {
       setIsPaused(false);
     }
   }, [isLoading]);
+
+  // Prefetch next and previous pages for snappy pagination
+  useEffect(() => {
+    const totalPages = data?.pagination?.totalPages ?? undefined;
+    if (!totalPages) return;
+
+    const tasks: Promise<unknown>[] = [];
+    if (page > 1) {
+      tasks.push(utils.admin.activity.getAll.prefetch({ ...queryParams, page: page - 1 }));
+    }
+    if (page < totalPages) {
+      tasks.push(utils.admin.activity.getAll.prefetch({ ...queryParams, page: page + 1 }));
+    }
+    if (tasks.length > 0) {
+      void Promise.all(tasks).catch(() => undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, filtersKey, data?.pagination?.totalPages]);
 
   const handleRefreshActivities = async () => {
     await refetch();
@@ -205,9 +251,16 @@ export default function ActivityPage() {
     setSelectedSeverities(new Set(SEVERITIES));
     setSelectedCategories(new Set(CATEGORIES));
     setSearch("");
+    setPage(1);
   };
 
   const activities = data?.activities ?? [];
+  const pagination = data?.pagination ?? {
+    total: 0,
+    page,
+    limit: limitTo,
+    totalPages: 1,
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -250,7 +303,7 @@ export default function ActivityPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {[25, 50, 100, 200].map((n) => (
+                    {[25, 50, 100, 200, 500, 1000].map((n) => (
                       <SelectItem key={n} value={String(n)}>
                         {n} items
                       </SelectItem>
@@ -309,7 +362,7 @@ export default function ActivityPage() {
                             }}
                           />
                           <Label htmlFor={`severity-${severity}`} className="text-sm font-medium capitalize">
-                            {severity}
+                            {severity.toLowerCase()}
                           </Label>
                         </div>
                       ))}
@@ -415,7 +468,7 @@ export default function ActivityPage() {
             {/* Top status bar */}
             <div className="flex items-center justify-between border-b bg-muted/30 px-3 py-2 text-sm">
               <div className="text-muted-foreground">
-                {activities.length} {activities.length === 1 ? 'activity' : 'activities'}
+                Page {pagination.page} of {pagination.totalPages} · {pagination.total} total
               </div>
               <div className="flex items-center gap-3 text-muted-foreground">
                 {!isPaused ? (
@@ -423,6 +476,27 @@ export default function ActivityPage() {
                 ) : (
                   <span className="text-xs">Paused</span>
                 )}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    className="h-7 px-2"
+                    disabled={pagination.page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  >
+                    Prev
+                  </Button>
+                  <div className="min-w-[60px] text-center">
+                    {pagination.page}
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="h-7 px-2"
+                    disabled={pagination.page >= pagination.totalPages}
+                    onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                  >
+                    Next
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="max-h-[70vh] overflow-auto">
@@ -452,14 +526,16 @@ export default function ActivityPage() {
                     <span
                       className={cn(
                         "rounded px-2 py-0.5 text-[10px] font-semibold",
-                        activity.severity === "critical" || activity.severity === "error"
+                        activity.severity === "CRITICAL" || activity.severity === "ERROR" || activity.severity === "BAD"
                           ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                          : activity.severity === "warning"
+                          : activity.severity === "WARNING"
                             ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                            : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                            : activity.severity === "GOOD"
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
                       )}
                     >
-                      {activity.severity}
+                      {activity.severity.toLowerCase()}
                     </span>
                     {activity.category && (
                       <span className="rounded bg-muted px-2 py-0.5 text-[10px] uppercase text-muted-foreground">
@@ -487,6 +563,33 @@ export default function ActivityPage() {
               {!isLoading && activities.length === 0 && (
                 <div className="p-6 text-center text-muted-foreground">No activities found</div>
               )}
+            </div>
+            {/* Pagination controls */}
+            <div className="flex items-center justify-between border-t bg-muted/30 px-3 py-2 text-sm">
+              <div className="text-muted-foreground">
+                Page {pagination.page} of {pagination.totalPages} · {pagination.total} total
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  className="h-8"
+                  disabled={pagination.page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  Previous
+                </Button>
+                <div className="min-w-[90px] text-center">
+                  {pagination.page}
+                </div>
+                <Button
+                  variant="outline"
+                  className="h-8"
+                  disabled={pagination.page >= pagination.totalPages}
+                  onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -542,7 +645,7 @@ export default function ActivityPage() {
                               getSeverityStyle(activity.severity).textColor,
                             )}
                           >
-                            {activity.severity}
+                            {activity.severity.toLowerCase()}
                           </span>
                         </div>
                       </div>

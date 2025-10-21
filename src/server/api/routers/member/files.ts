@@ -8,24 +8,16 @@ import {
   ActivityActionEnum,
   ActivityEntity,
   ActivityCategory,
-  ActivitySeverity,
   getActivityIcon,
 } from "~/server/api/lib/activity-logger";
+import { Severity } from "@prisma/client";
 
 export const memberFilesRouter = createTRPCRouter({
   list: protectedProcedure.query(async ({ ctx }) => {
-    // List files for the user's latest registration, falling back to unattached files
-    const latestReg = await ctx.db.registration.findFirst({
-      where: { userId: ctx.dbUser.id },
-      orderBy: { createdAt: "desc" },
-      select: { id: true },
-    });
+    // List files for the current user only
     const files = await ctx.db.file.findMany({
       where: {
-        OR: [
-          { registrationId: latestReg?.id ?? undefined },
-          { registrationId: null },
-        ],
+        userId: ctx.dbUser.id,
       },
       orderBy: { createdAt: "desc" },
       select: {
@@ -36,6 +28,14 @@ export const memberFilesRouter = createTRPCRouter({
         createdAt: true,
         type: true,
         registrationId: true,
+        blogPostId: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         registration: {
           select: {
             id: true,
@@ -47,6 +47,14 @@ export const memberFilesRouter = createTRPCRouter({
                 endDate: true,
               },
             },
+          },
+        },
+        blogPost: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            published: true,
           },
         },
       },
@@ -88,7 +96,7 @@ export const memberFilesRouter = createTRPCRouter({
             entityId: input.id,
             title: `File deleted: ${file.filename}`,
             category: ActivityCategory.CONTENT,
-            severity: ActivitySeverity.INFO,
+            severity: Severity.INFO,
             metadata: {
               attachmentId: input.id,
               filename: file.filename,
@@ -155,7 +163,7 @@ export const memberFilesRouter = createTRPCRouter({
           entityId: file.id,
           title: `File uploaded: ${input.filename}`,
           category: ActivityCategory.CONTENT,
-          severity: ActivitySeverity.INFO,
+          severity: Severity.INFO,
           metadata: {
             fileId: file.id,
             filename: input.filename,
@@ -248,7 +256,7 @@ export const memberFilesRouter = createTRPCRouter({
           title: `Profile image updated: ${input.filename}`,
           description: "Previous profile image was replaced",
           category: ActivityCategory.CONTENT,
-          severity: ActivitySeverity.INFO,
+          severity: Severity.INFO,
           metadata: {
             fileId: file.id,
             filename: input.filename,
@@ -350,7 +358,7 @@ export const memberFilesRouter = createTRPCRouter({
           entityId: file.id,
           title: `Blog image uploaded: ${input.filename}`,
           category: ActivityCategory.CONTENT,
-          severity: ActivitySeverity.INFO,
+          severity: Severity.INFO,
           metadata: {
             fileId: file.id,
             filename: input.filename,

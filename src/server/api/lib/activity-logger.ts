@@ -1,6 +1,5 @@
-import { type PrismaClient, type Prisma } from "@prisma/client";
+import { type PrismaClient, type Prisma, Severity } from "@prisma/client";
 import type {
-  ActivitySeverity,
   ActivityCategory,
   ActivityEntity,
   ActivityAction,
@@ -10,7 +9,6 @@ import type {
 
 // Re-export types and enums for convenience
 export {
-  ActivitySeverity,
   ActivityCategory,
   ActivityEntity,
   ActivityActionEnum,
@@ -18,6 +16,8 @@ export {
   AppActivityType,
   getActivityIcon,
 } from "./activity-types";
+
+export { Severity };
 
 export type { ActivityAction } from "./activity-types";
 
@@ -51,7 +51,7 @@ export type AppActivityInput = {
   description?: string;
   metadata?: Record<string, unknown>;
   ipAddress?: string;
-  severity?: ActivitySeverity;
+  severity?: Severity;
   category?: ActivityCategory;
 };
 
@@ -103,7 +103,7 @@ export async function logAppActivity(
       description: input.description,
       metadata: (input.metadata ?? undefined) as Prisma.InputJsonValue | undefined,
       ipAddress: input.ipAddress,
-      severity: input.severity ?? "info",
+      severity: input.severity ?? Severity.INFO,
       category: input.category,
     },
   });

@@ -1,8 +1,7 @@
-import { ReportAction } from "@prisma/client";
+import { ReportAction, Severity } from "@prisma/client";
 import { z } from "zod";
 import { protectedProcedure } from "~/server/api/trpc";
-import { logAppActivity, AppActivityType, ActivityActionEnum, ActivityEntity, ActivityCategory, ActivitySeverity } from "~/server/api/lib/activity-logger";
-
+import { logAppActivity, AppActivityType, ActivityActionEnum, ActivityEntity, ActivityCategory } from "~/server/api/lib/activity-logger";
 
 export const resolveReport = protectedProcedure.input(
   z.object({
@@ -33,7 +32,7 @@ export const resolveReport = protectedProcedure.input(
     title: `Report resolved with action ${input.action} and message: ${input.adminNote?.trim() ?? "No note provided"}`,
     description: `A report has been resolved by Admin ${ctx.dbUser.name ?? "a user"}`,
     category: ActivityCategory.CONTENT,
-    severity: ActivitySeverity.INFO,
+    severity: Severity.GOOD,
     metadata: {
       reportId: input.id,
       postId: report.postId,

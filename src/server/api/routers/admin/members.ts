@@ -9,8 +9,8 @@ import {
   ActivityActionEnum,
   ActivityEntity,
   ActivityCategory,
-  ActivitySeverity,
 } from "~/server/api/lib/activity-logger";
+import { Severity } from "@prisma/client";
 
 export const adminMembersRouter = createTRPCRouter({
   // Get all members
@@ -223,7 +223,7 @@ export const adminMembersRouter = createTRPCRouter({
           : `Member updated: ${member.name}`,
         description: `Admin updated member details: ${updatedFields.join(", ")}`,
         category: ActivityCategory.ADMIN,
-        severity: roleChanged ? ActivitySeverity.WARNING : ActivitySeverity.INFO,
+        severity: roleChanged ? Severity.WARNING : Severity.INFO,
         metadata: {
           memberId: id,
           memberName: member.name,
@@ -298,7 +298,7 @@ export const adminMembersRouter = createTRPCRouter({
         title: `Member deleted: ${memberToDelete?.name ?? "Unknown"}`,
         description: `Admin deleted member account`,
         category: ActivityCategory.ADMIN,
-        severity: ActivitySeverity.WARNING,
+        severity: Severity.WARNING,
         metadata: {
           deletedMemberId: input.id,
           deletedMemberName: memberToDelete?.name,

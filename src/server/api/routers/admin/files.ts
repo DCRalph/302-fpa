@@ -73,8 +73,17 @@ export const adminFilesRouter = createTRPCRouter({
                 conference: {
                   select: {
                     name: true,
+                    id: true,
                   },
                 },
+              },
+            },
+            blogPost: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                published: true,
               },
             },
           },
@@ -108,6 +117,13 @@ export const adminFilesRouter = createTRPCRouter({
       const file = await ctx.db.file.findUnique({
         where: { id: input.id },
         include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
           registration: {
             select: {
               id: true,
@@ -123,6 +139,14 @@ export const adminFilesRouter = createTRPCRouter({
                   endDate: true,
                 },
               },
+            },
+          },
+          blogPost: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              published: true,
             },
           },
         },
