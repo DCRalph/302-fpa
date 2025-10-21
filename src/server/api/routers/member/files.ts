@@ -290,6 +290,15 @@ export const memberFilesRouter = createTRPCRouter({
       // Convert base64 to buffer
       const buffer = Buffer.from(input.data, 'base64');
 
+      // Delete any existing blog image for this blog post
+      // await ctx.db.file.deleteMany({
+      //   where: {
+      //     userId: ctx.dbUser.id,
+      //     type: "BLOG_IMAGE",
+      //     blogPostId: input.blogPostId,
+      //   },
+      // });
+
       // Create file record
       const file = await ctx.db.file.create({
         data: {
@@ -302,6 +311,19 @@ export const memberFilesRouter = createTRPCRouter({
           blogPostId: input.blogPostId,
         },
       });
+
+      const downloadUrl = `/api/files/blog-image/${file.id}?fileId=${file.id}`;
+
+
+      // Update blog post with image
+      if (input.blogPostId) {
+        await ctx.db.blogPost.update({
+          where: { id: input.blogPostId },
+          data: {
+            coverImageUrl: downloadUrl,
+          },
+        });
+      }
 
       // Log activity
       await Promise.all([
@@ -342,7 +364,7 @@ export const memberFilesRouter = createTRPCRouter({
         fileId: file.id,
         filename: file.filename,
         size: file.sizeBytes,
-        downloadUrl: `/api/files/${file.id}/member-download`,
+        downloadUrl,
       };
     }),
 });

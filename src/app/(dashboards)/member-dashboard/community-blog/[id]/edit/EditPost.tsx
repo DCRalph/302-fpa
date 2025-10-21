@@ -105,10 +105,39 @@ export default function EditPostPage({ post }: BlogPostProps) {
   // }, [categories, editCategoryId, selectedFilter]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const [imageFile, setImageFile] = useState<File | null>(null); // TODO: Create an S3 bucket to upload images to
+  const [, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploadedImageId, setUploadedImageId] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const utils = api.useUtils();
+
+  // Upload image mutation
+  const uploadImageMutation = api.member.files.uploadBlogImage.useMutation({
+    onSuccess: (data) => {
+      setUploadedImageId(data.fileId);
+      setIsUploadingImage(false);
+      post.coverImageUrl = data.downloadUrl;
+      toast.success("Image uploaded successfully");
+    },
+    onError: (error) => {
+      setIsUploadingImage(false);
+      toast.error(error.message ?? "Failed to upload image");
+    },
+  });
+
+  // Delete blog images mutation
+  const deleteBlogImagesMutation = api.member.blog.deleteBlogImages.useMutation({
+    onSuccess: () => {
+      setPreviewUrl(null);
+      // setCoverImageRemoved(true);
+      post.coverImageUrl = null;
+      toast.success("Image deleted successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to delete image");
+    },
+  });
 
   const updatePostMutation = api.member.blog.updatePost.useMutation({
     onSuccess: async () => {
@@ -166,9 +195,78 @@ export default function EditPostPage({ post }: BlogPostProps) {
       content: editContent ?? "",
       published: editPublished ?? true,
       categoryId: editCategoryId,
-      // image: uploadedImageUrl ?? undefined,
+      // coverImageUrl: coverImageUrl ?? undefined,
     });
   };
+
+  // Handle image file selection and upload
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error("Please select an image file");
+        return;
+      }
+
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size must be less than 5MB");
+        return;
+      }
+
+      // Create preview URL
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+
+      // Upload image immediately
+      setIsUploadingImage(true);
+
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = reader.result as string;
+        const base64Data = base64.split(',')[1]; // Remove data:image/...;base64, prefix
+
+        uploadImageMutation.mutate({
+          filename: file.name,
+          mimeType: file.type,
+          data: base64Data ?? "",
+          sizeBytes: file.size,
+          blogPostId: postId,
+        });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPreviewUrl(null);
+      setUploadedImageId(null);
+    }
+  };
+
+  // Remove current image
+  const handleRemoveCurrentImage = () => {
+    deleteBlogImagesMutation.mutate({ postId });
+  };
+
+  // Remove new image
+  const handleRemoveNewImage = () => {
+    setImageFile(null);
+    setPreviewUrl(null);
+    setUploadedImageId(null);
+    // Don't clear coverImageUrl here - keep the original if it exists
+    // Reset file input
+    const fileInput = document.getElementById('image') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
+
+  // Initialize preview with current image
+  useEffect(() => {
+    if (post?.coverImageUrl && !previewUrl) {
+      setPreviewUrl(post.coverImageUrl);
+    }
+  }, [post?.coverImageUrl, previewUrl]);
 
   return (
     <main className="flex-1 p-3 sm:p-4 md:p-6">
@@ -240,35 +338,82 @@ export default function EditPostPage({ post }: BlogPostProps) {
 
               {/* Post Cover Image */}
               <div className="space-y-2">
-                <Label htmlFor="image">Image</Label>
+                <Label htmlFor="image">Image (Optional)</Label>
                 <Input
                   id="image"
                   type="file"
                   accept="image/*"
                   className="file:bg-muted file:text-foreground hover:file:bg-muted/80 cursor-pointer rounded-md file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-1 file:font-semibold"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] ?? null;
-                    // setImageFile(file);
-                    if (file) {
-                      const url = URL.createObjectURL(file);
-                      setPreviewUrl(url);
-                    } else {
-                      setPreviewUrl(null);
-                    }
-                  }}
+                  onChange={handleImageChange}
+                  disabled={isUploadingImage}
                 />
 
-                {/* Image Preview */}
-                {previewUrl && (
-                  <div className="mt-2">
-                    <p className="text-muted-foreground text-sm">Preview</p>
+                {/* Upload Status */}
+                {isUploadingImage && (
+                  <p className="text-sm text-muted-foreground">Uploading image...</p>
+                )}
+
+                {/* Current Image - Show when there's an existing image and no new upload */}
+                {post?.coverImageUrl && !uploadedImageId && (
+                  <div className="mt-2 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-muted-foreground text-sm">Current Image</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRemoveCurrentImage}
+                        disabled={deleteBlogImagesMutation.isPending}
+                      >
+                        {deleteBlogImagesMutation.isPending ? "Removing..." : "Remove"}
+                      </Button>
+                    </div>
                     <Image
-                      src={previewUrl}
-                      alt="Selected image preview"
+                      src={post.coverImageUrl}
+                      alt="Current image"
                       className="mt-2 max-h-64 w-auto rounded-md object-contain"
                       width={100}
                       height={100}
                     />
+                  </div>
+                )}
+
+                {/* New Image Preview - Show when user has uploaded a new image */}
+                {previewUrl && uploadedImageId && (
+                  <div className="mt-2 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-muted-foreground text-sm">
+                        {post?.coverImageUrl ? "New Image (will replace current)" : "New Image Preview"}
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRemoveNewImage}
+                        disabled={isUploadingImage}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                    <Image
+                      src={previewUrl}
+                      alt="New image preview"
+                      className="mt-2 max-h-64 w-auto rounded-md object-contain"
+                      width={100}
+                      height={100}
+                    />
+                    <p className="text-xs text-green-600">✓ New image uploaded successfully</p>
+                    {post?.coverImageUrl && (
+                      <p className="text-xs text-amber-600">⚠️ This will replace the current image</p>
+                    )}
+                  </div>
+                )}
+
+                {/* No Image State - Only show when not uploading */}
+                {!post?.coverImageUrl && !uploadedImageId && !isUploadingImage && (
+                  <div className="mt-2 p-4 border-2 border-dashed border-muted-foreground/25 rounded-lg text-center">
+                    <p className="text-muted-foreground text-sm">No image selected</p>
+                    <p className="text-xs text-muted-foreground mt-1">Upload an image to add a cover photo</p>
                   </div>
                 )}
 

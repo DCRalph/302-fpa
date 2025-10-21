@@ -120,10 +120,11 @@ export const memberBlogRouter = createTRPCRouter({
         content: z.string().min(1),
         categoryId: z.string(),
         published: z.boolean().default(true),
+        coverImageUrl: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { title, content, categoryId, published } = input;
+      const { title, content, categoryId, published, coverImageUrl } = input;
 
       const post = await ctx.db.blogPost.create({
         data: {
@@ -133,6 +134,7 @@ export const memberBlogRouter = createTRPCRouter({
           published,
           publishedAt: published ? new Date() : null,
           categoryId,
+          coverImageUrl,
         },
       });
 
@@ -191,6 +193,7 @@ export const memberBlogRouter = createTRPCRouter({
         content: z.string().min(1),
         categoryId: z.string(),
         published: z.boolean().default(true),
+        // coverImageUrl: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -205,7 +208,7 @@ export const memberBlogRouter = createTRPCRouter({
           authorId: true,
           title: true,
           published: true,
-          categoryId: true
+          categoryId: true,
         },
       });
 
@@ -269,6 +272,45 @@ export const memberBlogRouter = createTRPCRouter({
       ]);
 
       return post;
+    }),
+
+  // Delete all blog images for a post
+  deleteBlogImages: protectedProcedure
+    .input(z.object({ postId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Get the post to check authorization
+      const post = await ctx.db.blogPost.findUnique({
+        where: { id: input.postId },
+        select: {
+          authorId: true,
+          title: true,
+        },
+      });
+
+      if (!post || post.authorId !== ctx.dbUser.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not authorized to delete images for this post",
+        });
+      }
+
+      // Delete all blog images for this post
+      await ctx.db.file.deleteMany({
+        where: {
+          blogPostId: input.postId,
+          type: "BLOG_IMAGE",
+        },
+      });
+
+      // Update blog post with image
+      await ctx.db.blogPost.update({
+        where: { id: input.postId },
+        data: {
+          coverImageUrl: null,
+        },
+      });
+
+      return { success: true };
     }),
 
   // Delete a post

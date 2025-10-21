@@ -39,10 +39,27 @@ export default function CreatePostPage() {
   // Load categories to populate select and map slug -> id
   const { data: categories } = api.member.blog.getCategories.useQuery();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const [imageFile, setImageFile] = useState<File | null>(null); // TODO: Create an S3 bucket to upload images to
+  const [, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploadedImageId, setUploadedImageId] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
 
   const utils = api.useUtils();
+
+  // Upload image mutation
+  const uploadImageMutation = api.member.files.uploadBlogImage.useMutation({
+    onSuccess: (data) => {
+      setUploadedImageId(data.fileId);
+      setCoverImageUrl(`/api/files/blog-image/${data.fileId}`);
+      setIsUploadingImage(false);
+      toast.success("Image uploaded successfully");
+    },
+    onError: (error) => {
+      setIsUploadingImage(false);
+      toast.error(error.message ?? "Failed to upload image");
+    },
+  });
 
   const createPostMutation = api.member.blog.createPost.useMutation({
     onSuccess: async () => {
@@ -104,7 +121,7 @@ export default function CreatePostPage() {
       content,
       published,
       categoryId: selectedCategory,
-      // image: uploadedImageUrl ?? undefined,
+      coverImageUrl: coverImageUrl ?? undefined,
     });
   };
 
@@ -114,6 +131,62 @@ export default function CreatePostPage() {
       setSelectedCategory(categories[0]?.id ?? "");
     }
   }, [categories, selectedCategory]);
+
+  // Handle image file selection and upload
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error("Please select an image file");
+        return;
+      }
+
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size must be less than 5MB");
+        return;
+      }
+
+      // Create preview URL
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+
+      // Upload image immediately
+      setIsUploadingImage(true);
+
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = reader.result as string;
+        const base64Data = base64.split(',')[1]; // Remove data:image/...;base64, prefix
+
+        uploadImageMutation.mutate({
+          filename: file.name,
+          mimeType: file.type,
+          data: base64Data ?? "",
+          sizeBytes: file.size,
+        });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPreviewUrl(null);
+      setUploadedImageId(null);
+    }
+  };
+
+  // Remove image
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setPreviewUrl(null);
+    setUploadedImageId(null);
+    setCoverImageUrl(null);
+    // Reset file input
+    const fileInput = document.getElementById('image') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
 
   return (
     <main className="flex-1 p-3 sm:p-4 md:p-6">
@@ -186,28 +259,36 @@ export default function CreatePostPage() {
 
               {/* Post Cover Image */}
               <div className="space-y-2">
-                <Label htmlFor="image">Image</Label>
+                <Label htmlFor="image">Image (Optional)</Label>
                 <Input
                   id="image"
                   type="file"
                   accept="image/*"
                   className="file:bg-muted file:text-foreground hover:file:bg-muted/80 cursor-pointer rounded-md file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-1 file:font-semibold"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] ?? null;
-                    // setImageFile(file);
-                    if (file) {
-                      const url = URL.createObjectURL(file);
-                      setPreviewUrl(url);
-                    } else {
-                      setPreviewUrl(null);
-                    }
-                  }}
+                  onChange={handleImageChange}
+                  disabled={isUploadingImage}
                 />
+
+                {/* Upload Status */}
+                {isUploadingImage && (
+                  <p className="text-sm text-muted-foreground">Uploading image...</p>
+                )}
 
                 {/* Image Preview */}
                 {previewUrl && (
-                  <div className="mt-2">
-                    <p className="text-muted-foreground text-sm">Preview</p>
+                  <div className="mt-2 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-muted-foreground text-sm">Preview</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRemoveImage}
+                        disabled={isUploadingImage}
+                      >
+                        Remove
+                      </Button>
+                    </div>
                     <Image
                       src={previewUrl}
                       alt="Selected image preview"
@@ -215,6 +296,9 @@ export default function CreatePostPage() {
                       width={100}
                       height={100}
                     />
+                    {uploadedImageId && (
+                      <p className="text-xs text-green-600">✓ Image uploaded successfully</p>
+                    )}
                   </div>
                 )}
 
