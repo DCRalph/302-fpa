@@ -583,13 +583,6 @@ export default function BlogPost({ post }: BlogPostProps) {
                   />
                   <span className="text-base">{localLikeCount}</span>
                 </Button>
-                <div className="text-muted-foreground flex items-center space-x-2">
-                  <MessageSquareText className="h-5 w-5" />
-                  <span className="flex gap-2 text-base">
-                    {post._count?.comments ?? 0}{" "}
-                    <span className="hidden sm:flex">Comments</span>
-                  </span>
-                </div>
               </div>
               <div className="mt-2 flex items-center gap-2">
                 <p className="text-muted-foreground text-sm">

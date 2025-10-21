@@ -227,42 +227,42 @@ export default function EmailsPage() {
       {/* Stats Cards */}
       {stats && (
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-4">
-          <Card>
+          <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-white">
                 Total Emails
               </CardTitle>
-              <Mail className="text-muted-foreground h-4 w-4" />
+              <Mail className="text-white/80 h-4 w-4 " />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalEmails}</div>
+              <div className="text-2xl font-bold text-white">{stats.totalEmails}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Today</CardTitle>
-              <Calendar className="text-muted-foreground h-4 w-4" />
+              <CardTitle className="text-sm font-medium text-white">Today</CardTitle>
+              <Calendar className="text-white/80 h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.emailsToday}</div>
+              <div className="text-2xl font-bold text-white">{stats.emailsToday}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">This Week</CardTitle>
-              <Calendar className="text-muted-foreground h-4 w-4" />
+              <CardTitle className="text-sm font-medium text-white">This Week</CardTitle>
+              <Calendar className="text-white/80 h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.emailsThisWeek}</div>
+              <div className="text-2xl font-bold text-white">{stats.emailsThisWeek}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">This Month</CardTitle>
-              <Calendar className="text-muted-foreground h-4 w-4" />
+              <CardTitle className="text-sm font-medium text-white">This Month</CardTitle>
+              <Calendar className="text-white/80 h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.emailsThisMonth}</div>
+              <div className="text-2xl font-bold text-white">{stats.emailsThisMonth}</div>
             </CardContent>
           </Card>
         </div>

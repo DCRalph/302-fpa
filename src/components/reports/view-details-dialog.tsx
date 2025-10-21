@@ -118,12 +118,6 @@ export function ViewDetailsDialog({ open, onOpenChange, report }: ViewDetailsDia
             </div>
           )}
         </div>
-
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="ghost">Close</Button>
-          </DialogClose>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
