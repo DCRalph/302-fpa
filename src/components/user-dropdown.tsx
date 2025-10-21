@@ -48,7 +48,7 @@ export function UserDropdown({ detailed = false }) {
       <DropdownMenuTrigger asChild>
         <div
           className={cn(
-            `flex items-center gap-3 p-2 cursor-pointer rounded-md transition-colors duration-200 hover:bg-sidebar-accent justify-center`,
+            `flex items-center gap-3 p-2 cursor-pointer rounded-md transition-colors duration-200 hover:bg-foreground/10 justify-center`,
           )}
         >
           {dbUser?.image ? (
@@ -98,7 +98,7 @@ export function UserDropdown({ detailed = false }) {
           )}
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={"end"} className="w-56">
+      <DropdownMenuContent align={"end"} className="w-56 ">
         {dbUser ? (
           <>
             <DropdownMenuLabel className="flex items-center gap-3 py-2">

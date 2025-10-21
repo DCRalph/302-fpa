@@ -11,6 +11,7 @@ import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import { useRouter } from 'nextjs-toploader/app';
 import { Copy } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 
 export function BasicInfoTab() {
   const { dbUser } = useAuth();
@@ -184,7 +185,7 @@ export function BasicInfoTab() {
             <CardContent className="space-y-5 break-words">
               <div className="grid grid-cols-1 gap-4">
                 {/* Joined */}
-                <div className="border-border/60 bg-background/50 rounded-lg border p-3 shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
+                <div className="border-border/60 shadow-sm bg-background/50 rounded-lg border p-3">
                   <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
                     Joined
                   </div>
@@ -194,26 +195,36 @@ export function BasicInfoTab() {
                 </div>
 
                 {/* User ID */}
-                <div className="group border-border/60 bg-background/50 relative rounded-lg border p-3 shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
+                <div className="group border-border/60 shadow-sm bg-background/50 relative rounded-lg border p-3">
                   <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
                     User ID
                   </div>
-                  <div className="truncate font-medium">{dbUser?.id}</div>
-                  {/* Copy button (optional, requires a button component if you want interactivity) */}
-                  <Button
-                    variant={"ghost"}
-                    type="button"
-                    onClick={() =>
-                      navigator.clipboard.writeText(dbUser?.id ?? "")
-                    }
-                    className="text-muted-foreground hover:bg-muted/60 absolute top-2 right-2 rounded-md border border-transparent px-2 py-1 text-[10px]"
-                  >
-                    <Copy />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="truncate font-medium cursor-help">{dbUser?.id}</div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>User ID:</p>
+                        <p>{dbUser?.id}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    {/* Copy button (optional, requires a button component if you want interactivity) */}
+                    <Button
+                      variant={"ghost"}
+                      type="button"
+                      onClick={() =>
+                        navigator.clipboard.writeText(dbUser?.id ?? "")
+                      }
+                      className="text-muted-foreground hover:bg-muted/60 rounded-md border border-transparent px-1 py-1 text-[10px]"
+                    >
+                      <Copy />
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Role */}
-                <div className="border-border/60 bg-background/50 rounded-lg border p-3 shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
+                <div className="border-border/60 shadow-sm bg-background/50 rounded-lg border p-3">
                   <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
                     Role
                   </div>

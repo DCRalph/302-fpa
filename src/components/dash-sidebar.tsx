@@ -125,7 +125,7 @@ export function DashboardSideBar() {
 
   return (
     <div className="relative h-screen">
-      <Sidebar collapsible="icon" className="fixed top-0 left-0">
+      <Sidebar collapsible="icon" className="fixed top-0 left-0 !border-r-0">
         <SidebarHeader>
           <div
             className={`transition-all duration-300 ${isCollapsed ? "pt-1" : "p-1"} flex items-center gap-2 text-lg font-bold`}
