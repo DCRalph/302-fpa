@@ -174,7 +174,7 @@ export default function MemberDashboardPage() {
                         .map((post) => (
                           <div
                             key={post.id}
-                            className="border-border bg-muted/30 hover:bg-muted/50 flex items-start gap-4 rounded-lg border p-4 transition-colors"
+                            className="shadow-m border-border bg-muted/30 hover:bg-muted/50 flex items-start gap-4 rounded-lg border p-4 transition-colors"
                           >
                             {/* Post Content */}
                             <div className="min-w-0 flex-1">
