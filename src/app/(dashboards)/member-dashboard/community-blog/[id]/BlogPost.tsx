@@ -559,13 +559,16 @@ export default function BlogPost({ post }: BlogPostProps) {
             {/* Cover Image */}
             {post.coverImageUrl && (
               <div className="mt-8 overflow-hidden rounded-lg">
-                <Image
-                  src={post.coverImageUrl}
-                  alt="Post cover"
-                  className="h-96 w-full object-cover"
-                  width={800}
-                  height={400}
-                />
+                <div className="relative w-full h-64 lg:h-[480px]">
+                  <Image
+                    src={post.coverImageUrl}
+                    alt="Post cover"
+                    className="object-cover"
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1600px"
+                    quality={100}
+                  />
+                </div>
               </div>
             )}
 

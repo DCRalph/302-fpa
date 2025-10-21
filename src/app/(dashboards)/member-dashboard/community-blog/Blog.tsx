@@ -384,13 +384,16 @@ function BlogPostCard({ post }: { post: BlogPost }) {
           {/* Cover Image */}
           {post.coverImageUrl && (
             <div className="mt-6 overflow-hidden rounded-lg">
-              <Image
-                src={post.coverImageUrl}
-                alt="Post cover"
-                className="h-64 w-full object-cover"
-                width={100}
-                height={100}
-              />
+              <div className="relative w-full h-64 sm:h-80 lg:h-64">
+                <Image
+                  src={post.coverImageUrl}
+                  alt="Post cover"
+                  className="object-cover"
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1200px"
+                  quality={100}
+                />
+              </div>
             </div>
           )}
 
