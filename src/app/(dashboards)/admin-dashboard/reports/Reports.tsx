@@ -60,7 +60,7 @@ export default function ReportPage() {
           adminNote: resolveNote,
         }),
       "Report resolved successfully.",
-      "Error resolving report.",
+      "Error resolving report."
     );
     setOpenResolveDialog(false);
     setSelectedResolveReport(null);
