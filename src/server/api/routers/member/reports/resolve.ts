@@ -30,7 +30,7 @@ export const resolveReport = protectedProcedure.input(
     (report.comment?.content ? `${report.comment.content.slice(0, 120)}${report.comment.content.length > 120 ? "…" : ""}` : `(${report.postId ? "post" : "comment"})`);
 
 
-  // Notify the author of the reported content about the resolution
+  // Notify the author of the reported content if it's been marked for removal
   // Determine the actual author user id (post author or comment author)
   const reportedAuthorId = report.post?.author?.id ?? report.comment?.author?.id;
 
