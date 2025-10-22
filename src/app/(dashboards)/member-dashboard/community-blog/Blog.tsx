@@ -663,13 +663,13 @@ export default function CommunityBlog() {
               <p className="text-foreground/70 text-base">
                 Share your knowledge with the community
               </p>
-              <div className="pt-4 flex flex-col gap-4">
-                <Button asChild className="w-full">
+              <div className="pt-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <Button asChild>
                   <Link href={"/member-dashboard/community-blog/create"}>
                     Create a Post
                   </Link>
                 </Button>
-                <Button variant={"outline"} onClick={handleYourPosts} className="flex-1">
+                <Button variant={"outline"} onClick={handleYourPosts} className="">
                   Your Posts
                 </Button>
               </div>

@@ -45,10 +45,10 @@ export function UserDropdown({ detailed = false }) {
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
+  <DropdownMenuTrigger asChild>
         <div
           className={cn(
-            `flex items-center gap-3 p-2 cursor-pointer rounded-md transition-colors duration-200 hover:bg-foreground/10 justify-center`,
+            `flex items-center gap-3 p-2 cursor-pointer rounded-md transition-colors duration-200 hover:bg-sidebar-accent justify-center`,
           )}
         >
           {dbUser?.image ? (
@@ -98,7 +98,10 @@ export function UserDropdown({ detailed = false }) {
           )}
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={"end"} className="w-56 ">
+      <DropdownMenuContent
+        align={"end"}
+        className="w-56 bg-white text-foreground border border-border shadow-sm dark:bg-card dark:text-foreground"
+      >
         {dbUser ? (
           <>
             <DropdownMenuLabel className="flex items-center gap-3 py-2">
@@ -125,7 +128,7 @@ export function UserDropdown({ detailed = false }) {
               Navigation
             </DropdownMenuLabel>
 
-            <DropdownMenuItem asChild>
+            <DropdownMenuItem asChild className="text-foreground hover:bg-background/10 dark:hover:bg-muted">
               <Link
                 href="/"
                 className="flex items-center gap-3 py-2"
@@ -135,7 +138,7 @@ export function UserDropdown({ detailed = false }) {
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuItem asChild>
+            <DropdownMenuItem asChild className="text-foreground hover:bg-muted/10 dark:hover:bg-muted">
               <Link
                 href="/member-dashboard"
                 className="flex items-center gap-3 py-2"
@@ -146,7 +149,7 @@ export function UserDropdown({ detailed = false }) {
             </DropdownMenuItem>
 
             {dbUser?.role === "ADMIN" && (
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="text-foreground hover:bg-muted/10 dark:hover:bg-muted">
                 <Link
                   href="/admin-dashboard"
                   className="flex items-center gap-3 py-2"
@@ -171,7 +174,7 @@ export function UserDropdown({ detailed = false }) {
             <DropdownMenuSeparator />
 
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="flex items-center gap-3 py-2">
+              <DropdownMenuSubTrigger className="flex items-center gap-3 py-2 text-foreground hover:bg-muted dark:hover:bg-muted">
                 {mounted && (
                   <>
                     {theme === "light" && (
@@ -187,24 +190,18 @@ export function UserDropdown({ detailed = false }) {
                 )}
                 <span>Theme</span>
               </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem
-                  onClick={() => setTheme("light")}
-                >
+              <DropdownMenuSubContent className="bg-white text-foreground border border-border shadow-sm dark:bg-card dark:text-foreground">
+                <DropdownMenuItem onClick={() => setTheme("light")} className="text-foreground hover:bg-muted/10 dark:hover:bg-muted">
                   <Sun className="size-4 mr-2" />
                   Light
                   {theme === "light" && <Check className="ml-auto size-4" />}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setTheme("dark")}
-                >
+                <DropdownMenuItem onClick={() => setTheme("dark")} className="text-foreground hover:bg-muted/10 dark:hover:bg-muted">
                   <Moon className="size-4 mr-2" />
                   Dark
                   {theme === "dark" && <Check className="ml-auto size-4" />}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setTheme("system")}
-                >
+                <DropdownMenuItem onClick={() => setTheme("system")} className="text-foreground hover:bg-muted/10 dark:hover:bg-muted">
                   <Computer className="size-4 mr-2" />
                   System
                   {theme === "system" && <Check className="ml-auto size-4" />}
@@ -213,7 +210,7 @@ export function UserDropdown({ detailed = false }) {
             </DropdownMenuSub>
 
             <SignOut asChild>
-              <DropdownMenuItem variant="destructive">
+              <DropdownMenuItem variant="destructive" className="text-foreground hover:bg-muted/10 dark:hover:bg-muted">
                 <LogOut className="size-4 text-muted-foreground" />
                 <span>Sign Out</span>
               </DropdownMenuItem>
@@ -237,7 +234,7 @@ export function UserDropdown({ detailed = false }) {
               Navigation
             </DropdownMenuLabel>
 
-            <DropdownMenuItem asChild>
+            <DropdownMenuItem asChild className="text-foreground hover:bg-muted/10 dark:hover:bg-muted">
               <Link href="/" className="flex w-full cursor-pointer items-center">
                 <Home className="mr-2 h-4 w-4" />
                 Home
@@ -246,7 +243,7 @@ export function UserDropdown({ detailed = false }) {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem asChild>
+            <DropdownMenuItem asChild className="text-foreground hover:bg-muted/10 dark:hover:bg-muted">
               <Link
                 href="/signin"
                 className="flex items-center gap-3 py-2"
@@ -256,7 +253,7 @@ export function UserDropdown({ detailed = false }) {
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuItem asChild>
+            <DropdownMenuItem asChild className="text-foreground hover:bg-muted/10 dark:hover:bg-muted">
               <Link
                 href="/signup"
                 className="flex items-center gap-3 py-2"
@@ -269,7 +266,7 @@ export function UserDropdown({ detailed = false }) {
             <DropdownMenuSeparator />
 
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="flex items-center gap-3 py-2">
+              <DropdownMenuSubTrigger className="flex items-center gap-3 py-2 text-foreground hover:bg-muted/10 dark:hover:bg-muted">
                 {mounted && (
                   <>
                     {theme === "light" && (
@@ -285,24 +282,18 @@ export function UserDropdown({ detailed = false }) {
                 )}
                 <span>Theme</span>
               </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem
-                  onClick={() => setTheme("light")}
-                >
+              <DropdownMenuSubContent className="bg-white text-foreground border border-border shadow-sm dark:bg-card dark:text-foreground">
+                <DropdownMenuItem onClick={() => setTheme("light")} className="text-foreground hover:bg-muted/10 dark:hover:bg-muted">
                   <Sun className="size-4 mr-2" />
                   Light
                   {theme === "light" && <Check className="ml-auto size-4" />}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setTheme("dark")}
-                >
+                <DropdownMenuItem onClick={() => setTheme("dark")} className="text-foreground hover:bg-muted/10 dark:hover:bg-muted">
                   <Moon className="size-4 mr-2" />
                   Dark
                   {theme === "dark" && <Check className="ml-auto size-4" />}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setTheme("system")}
-                >
+                <DropdownMenuItem onClick={() => setTheme("system")} className="text-foreground hover:bg-muted/10 dark:hover:bg-muted">
                   <Computer className="size-4 mr-2" />
                   System
                   {theme === "system" && <Check className="ml-auto size-4" />}

@@ -263,7 +263,7 @@ export default function ActivityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-7xl">
         <div className="p-8">
           {/* Header */}
