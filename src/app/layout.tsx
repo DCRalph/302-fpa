@@ -33,7 +33,7 @@ export default function RootLayout({
           <TRPCReactProvider>
             <AuthProvider>
               <NextTopLoader showSpinner={false} />
-              <Toaster position="top-right" richColors />
+              <Toaster position="bottom-right" richColors />
               {children}
             </AuthProvider>
           </TRPCReactProvider>
