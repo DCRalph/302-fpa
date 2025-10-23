@@ -174,7 +174,7 @@ export function UserDropdown({ detailed = false }) {
             <DropdownMenuSeparator />
 
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="flex items-center gap-3 py-2 text-foreground hover:bg-muted dark:hover:bg-muted">
+              <DropdownMenuSubTrigger className="flex items-center gap-3 py-2 text-foreground">
                 {mounted && (
                   <>
                     {theme === "light" && (
