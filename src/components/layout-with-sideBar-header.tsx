@@ -13,7 +13,7 @@ export function LayoutWithSideBarHeader({ children, sidebar, header: header }: L
       <div className="bg-sidebar flex h-screen w-full">
         {sidebar}
         <div className="flex flex-1 flex-col w-full overflow-x-hidden mt-2 rounded-tl-xl bg-page-background">
-          {/* <div className=""> */}
+          {/* <div className="shadow-glass"> */}
             {header}
             {children}
           {/* </div> */}

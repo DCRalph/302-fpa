@@ -24,3 +24,4 @@ export function MemberAuth() {
 
   return null;
 }
+

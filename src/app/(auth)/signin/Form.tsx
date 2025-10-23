@@ -57,10 +57,15 @@ export default function SignInForm() {
     setIsLoading(true);
 
     try {
-      await authClient.signIn.email({
+      const res =await authClient.signIn.email({
         email,
         password,
       });
+
+      if(res.error) {
+        toast.error(res.error.message);
+        return;
+      }
 
       toast.success("Signed in successfully!");
       router.push("/member-dashboard");

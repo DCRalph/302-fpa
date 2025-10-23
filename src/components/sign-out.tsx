@@ -3,7 +3,6 @@
 import { Button } from "~/components/ui/button";
 import { LogOut } from "lucide-react";
 import { authClient } from "~/lib/auth-client";
-import { useRouter } from 'nextjs-toploader/app';
 import { toast } from "sonner";
 import { api } from "~/trpc/react";
 import { forwardRef } from "react";
@@ -24,14 +23,13 @@ export const SignOut = forwardRef<HTMLDivElement, SignOutProps>(({
   asChild = false,
   ...props
 }, ref) => {
-  const router = useRouter();
   const utils = api.useUtils();
 
   const handleSignOut = async () => {
     try {
       void authClient.signOut();
       void utils.auth.me.invalidate();
-      router.push("/");
+      window.location.href = "/";
       toast.success("Signed out successfully");
     } catch (error) {
       console.error("Sign out error:", error);
