@@ -141,7 +141,7 @@ export function DashboardSideBar() {
             {!isCollapsed && (
               <div>
                 <p>FPA Conference</p>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-sidebar-foreground/70 text-sm font-medium">
                   {new Date().getFullYear()}
                 </p>
               </div>
