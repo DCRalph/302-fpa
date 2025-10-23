@@ -54,34 +54,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* custom shadows with that pop out effect */
-  --shadow-sm: inset 0 1px 2px #ffffff30, /* top highlight */ 0 1px 2px #00000030,
-  /* dark shadow */ 0 2px 4px #00000015;
-  --shadow-md: inset 0 1px 2px #ffffff50, /* top highlight */ 0 2px 4px #00000030,
-  /* dark shadow */ 0 4px 8px #00000015 ;
-  --shadow-lg: inset 0 1px 2px #ffffff70, /* top highlight */ 0 4px 6px #00000030,
-  /* dark shadow */ 0 6px 10px #00000015; 
-  --shadow-xl: inset 0 1px 2px #ffffff70, /* top highlight */ 0 4px 6px #00000030,
-  /* dark shadow */ 0 6px 10px #00000015; 
-
-  /* custom shadows with that pop in effect */
-  /* Inset shadows to make the element look sunken (below its parent) */
-  --inset-shadow-sm: 
-    inset 0 1px 2px #00000030, /* subtle inner top & sides shadow */
-    inset 0 -1px 2px #ffffff20, /* subtle inner bottom highlight */
-    inset 0 2px 4px #00000015;  /* deeper shadow below */
-  --inset-shadow-md: 
-    inset 0 2px 4px #00000050, /* stronger darkness at top/sides inside */
-    inset 0 -2px 4px #ffffff20, /* span of bottom highlight inside */
-    inset 0 4px 8px #00000015;  /* deep inner shadow below */
-  --inset-shadow-lg: 
-    inset 0 4px 6px #00000070, /* intense darkness at top/sides inside */
-    inset 0 -4px 6px #ffffff20, /* bolder bottom highlight */
-    inset 0 6px 10px #00000015;  /* deepest inner shadow below */
-  --inset-shadow-xl: 
-    inset 0 4px 8px #00000070, /* strongest sunken shadow top/sides */
-    inset 0 -6px 10px #ffffff20, /* brightest bottom highlight */
-    inset 0 8px 16px #00000015;  /* large/pillowy inner shadow below */
+  
 }
 
 :root {
