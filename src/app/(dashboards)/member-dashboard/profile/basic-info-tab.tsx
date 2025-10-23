@@ -195,38 +195,40 @@ export function BasicInfoTab() {
                 </div>
 
                 {/* User ID */}
-                <div className="flex justify-center gap-3 group border-border/60 shadow-sm bg-background/50 relative rounded-lg border p-3">
-                  <div className="flex flex-col gap-3">
-
-
-                    <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
-                      User ID
+                <div className="group border-border/60 bg-background/50 relative rounded-lg border p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
+                        User ID
+                      </div>
+                      <div className="flex items-center">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="cursor-help truncate font-medium min-w-0">
+                              {dbUser?.id}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>User ID:</p>
+                            <p>{dbUser?.id}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-1 w-min">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="truncate font-medium cursor-help">{dbUser?.id}</div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>User ID:</p>
-                          <p>{dbUser?.id}</p>
-                        </TooltipContent>
-                      </Tooltip>
-
+                    <div className="flex-shrink-0">
+                      <Button
+                        variant={"ghost"}
+                        type="button"
+                        onClick={() =>
+                          navigator.clipboard.writeText(dbUser?.id ?? "")
+                        }
+                        className="text-muted-foreground hover:bg-muted/60 rounded-md border border-transparent px-1 py-1 text-[10px]"
+                      >
+                        <Copy />
+                      </Button>
                     </div>
                   </div>
-                  {/* Copy button (optional, requires a button component if you want interactivity) */}
-                  <Button
-                    variant={"ghost"}
-                    type="button"
-                    onClick={() =>
-                      navigator.clipboard.writeText(dbUser?.id ?? "")
-                    }
-                    className="text-muted-foreground hover:bg-muted/60 rounded-md border border-transparent px-1 py-1 text-[10px]"
-                  >
-                    <Copy />
-                  </Button>
                 </div>
 
                 {/* Role */}
