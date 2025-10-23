@@ -130,9 +130,8 @@ function CommentItem({
       >
         {/* Avatar */}
         <div
-          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
-            comment.author?.image ? "" : "bg-gray-300"
-          } text-black`}
+          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${comment.author?.image ? "" : "bg-gray-300"
+            } text-black`}
         >
           {comment.author?.image ? (
             <Image
@@ -173,10 +172,10 @@ function CommentItem({
                 </p>
                 {comment.updatedAt.getTime() !==
                   comment.createdAt.getTime() && (
-                  <span className="text-muted-foreground text-xs">
-                    (Edited)
-                  </span>
-                )}
+                    <span className="text-muted-foreground text-xs">
+                      (Edited)
+                    </span>
+                  )}
               </div>
 
               {/* Action Buttons */}
@@ -233,6 +232,7 @@ function CommentItem({
                             >
                               <AlertDialogTrigger asChild>
                                 <DropdownMenuItem
+                                  variant="destructive"
                                   className="text-destructive focus:text-destructive"
                                   onSelect={(e) => e.preventDefault()} // prevent closing immediately
                                 >
