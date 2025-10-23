@@ -55,8 +55,8 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
 
-  --shadow-glass: inset 0 1px 2px #ffffff50, /* top highlight */ 0 2px 4px #00000030,
-  /* dark shadow */ 0 4px 8px #00000015 ;
+
+  --shadow-glass: var(--shadow-glass);
   
 }
 
@@ -134,6 +134,11 @@
   --tint: oklch(72.944% 0.2175 143.739);
   --tint-hover: oklch(59.012% 0.17438 143.733);
   --primary-button-hover: oklch(49.528% 0.15598 253.676);
+
+
+  --shadow-glass: inset 0 1px 2px #ffffff50, /* top highlight */ 0 2px 4px #00000030,
+  /* dark shadow */ 0 4px 8px #00000015 ;
+  
 }
 
 @layer base {
