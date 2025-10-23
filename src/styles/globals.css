@@ -67,7 +67,7 @@
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0 / 90%);
+  --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   /* Brand primary: approachable blue */
   --primary: oklch(63.207% 0.20187 254.106);
@@ -103,7 +103,7 @@
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.17 0 0 / 90%);
+  --popover: oklch(0.17 0 0);
   --popover-foreground: oklch(0.985 0 0);
   /* Keep brand blue in dark mode */
   --primary: oklch(63.207% 0.20187 254.106);
