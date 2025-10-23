@@ -86,10 +86,13 @@ export default function ViewConferencePage() {
             Back to Conferences
           </Button>
         </Link>
-        <div className="flex items-start justify-between w-full">
-          <div className="flex items-center gap-3">
+        <div className="flex gap-4 items-start justify-between w-full">
+          <div className="flex items-center justify-center gap-3">
             <h1 className="text-3xl font-bold">{conference.name}</h1>
-            <div className="flex items-center gap-2">
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center gap-2">
               <Badge variant={conference.isActive ? "default" : "secondary"}>
                 {conference.isActive ? "Active" : "Inactive"}
               </Badge>
@@ -107,9 +110,8 @@ export default function ViewConferencePage() {
                 <Badge variant="secondary">Past</Badge>
               )}
             </div>
-          </div>
 
-          <div className="flex items-center gap-3">
+
             <Link href={`/admin-dashboard/manage-conferences/${conference.id}/edit`}>
               <Button className="gap-2">
                 <Edit className="h-4 w-4" />
