@@ -313,6 +313,7 @@ function BlogPostCard({ post }: { post: BlogPost }) {
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
+                        variant="destructive"
                         onSelect={(e) => {
                           e.preventDefault();
                           setOpenDeleteDialog(true);

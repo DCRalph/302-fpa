@@ -398,6 +398,7 @@ export default function BlogPost({ post }: BlogPostProps) {
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
+                          variant="destructive"
                           onSelect={(e) => {
                             e.preventDefault();
                             setOpenDeleteDialog(true);
@@ -481,11 +482,10 @@ export default function BlogPost({ post }: BlogPostProps) {
                     {categories?.map((category) => (
                       <div
                         key={category.id}
-                        className={`relative flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-all duration-200 ${
-                          editCategoryId === category.id
+                        className={`relative flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-all duration-200 ${editCategoryId === category.id
                             ? "border-primary bg-primary/5 shadow-sm"
                             : "border-border bg-background hover:border-primary/50 hover:bg-muted/30"
-                        }`}
+                          }`}
                       >
                         <RadioGroupItem
                           value={category.id}

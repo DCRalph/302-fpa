@@ -83,6 +83,10 @@ export const UserActivityType = {
   // Comments & Engagement
   BLOG_COMMENT_RECEIVED: "blog_comment_received",
 
+  // Reports
+  REPORT_RECIEVED: "report_recieved",
+  CONTENT_DELETED: "content_deleted",
+
   // Files
   FILE_UPLOADED: "file_uploaded",
   FILE_DELETED: "file_deleted",
@@ -180,6 +184,10 @@ export const ActivityIcon = {
   [UserActivityType.BLOG_POST_UPDATED]: "Edit",
   [UserActivityType.BLOG_POST_DELETED]: "Trash",
   [UserActivityType.BLOG_COMMENT_RECEIVED]: "MessageCircle",
+
+  // Reports
+  [UserActivityType.REPORT_RECIEVED]: "AlertTriangle",
+  [UserActivityType.CONTENT_DELETED]: "Trash2",
 
   // Conference
   [UserActivityType.CONFERENCE_ANNOUNCED]: "Calendar",
