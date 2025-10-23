@@ -628,7 +628,7 @@ export default function BlogPost({ post }: BlogPostProps) {
                       placeholder="Write a thoughtful comment..."
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
-                      className="min-h-[120px] resize-none text-base"
+                      className="min-h-[120px] resize-none text-base bg-background"
                       rows={5}
                     />
                     <div className="flex items-center justify-between">

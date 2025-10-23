@@ -281,7 +281,7 @@ function CommentItem({
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
                 rows={2}
-                className="text-sm"
+                className="text-sm bg-background"
               />
               <div className="flex justify-end space-x-2">
                 <Button
