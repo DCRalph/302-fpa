@@ -126,7 +126,6 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
  */
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
 
-
   if (!ctx.session || !ctx.dbUser) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }

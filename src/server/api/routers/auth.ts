@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server";
 export const authRouter = createTRPCRouter({
   me: publicProcedure.query(async ({ ctx }) => {
     const session = await auth.api.getSession({ headers: ctx.headers });
+    // const session = ctx.session;
 
     if (!session) {
       return {
