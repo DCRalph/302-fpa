@@ -195,7 +195,7 @@ export function BasicInfoTab() {
                 </div>
 
                 {/* User ID */}
-                <div className="group border-border/60 bg-background/50 relative rounded-lg border p-3">
+                <div className="group border-border/60 bg-background/50 relative rounded-lg border p-3 shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
@@ -223,7 +223,7 @@ export function BasicInfoTab() {
                         onClick={() =>
                           navigator.clipboard.writeText(dbUser?.id ?? "")
                         }
-                        className="text-muted-foreground hover:bg-muted/60 rounded-md border border-transparent px-1 py-1 text-[10px]"
+                        className="text-muted-foreground rounded-md border border-transparent px-1 py-1 text-[10px]"
                       >
                         <Copy />
                       </Button>

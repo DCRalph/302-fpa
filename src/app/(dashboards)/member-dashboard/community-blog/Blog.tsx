@@ -48,6 +48,7 @@ import { type RouterOutputs } from "~/trpc/react";
 import { useAuth } from "~/hooks/useAuth";
 
 import CommentItem from "~/components/community-blog/comment-item";
+import { Skeleton } from "~/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -489,7 +490,7 @@ export default function CommunityBlog() {
   const [selectedCategory, setSelectedCategory] = useState("all-posts");
   // const [isSearching, setIsSearching] = useState(false);
 
-  const { data } = api.member.blog.list.useQuery({
+  const { data, isLoading } = api.member.blog.list.useQuery({
     query: searchQuery || undefined,
     categorySlug: selectedCategory !== "all-posts" ? selectedCategory : undefined,
     take: 10,
@@ -594,7 +595,7 @@ export default function CommunityBlog() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-muted-foreground">Active filters:</span>
             {searchQuery && (
-              <Badge variant="secondary" className="gap-1">
+              <Badge variant="secondary" className="gap-1 bg-accent">
                 Search: &quot;{searchQuery}&quot;
                 <Button
                   variant="ghost"
@@ -607,7 +608,7 @@ export default function CommunityBlog() {
               </Badge>
             )}
             {selectedCategory !== "all-posts" && (
-              <Badge variant="secondary" className="gap-1">
+              <Badge variant="secondary" className="gap-1 bg-accent">
                 Category: {categories?.find(c => c.slug === selectedCategory)?.name}
                 <Button
                   variant="ghost"
@@ -626,7 +627,21 @@ export default function CommunityBlog() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Main Content - Blog Posts */}
         <div className="space-y-6 lg:col-span-3">
-          {data?.posts && data.posts.length > 0 ? (
+          {isLoading ? (
+            // Render 3 skeleton placeholder cards while loading
+            Array.from({ length: 3 }).map((_, i) => (
+              <Card key={`skeleton-${i}`}>
+                <CardContent className="py-6">
+                  <Skeleton className="h-6 w-2/3 mb-3" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <div className="mt-4">
+                    <Skeleton className="h-40 w-full" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : data?.posts && data.posts.length > 0 ? (
             data.posts.map((post) => (
               <BlogPostCard key={post.id} post={post} />
             ))
@@ -664,7 +679,7 @@ export default function CommunityBlog() {
               <p className="text-foreground/70 text-base">
                 Share your knowledge with the community
               </p>
-              <div className="pt-4 flex flex-col gap-4">
+              <div className="pt-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <Button asChild className="w-full">
                   <Link href={"/member-dashboard/community-blog/create"}>
                     Create a Post

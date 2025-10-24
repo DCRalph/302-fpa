@@ -11,7 +11,7 @@ export default function Home() {
 
 
   return (
-    <main className="bg-background text-foreground min-h-screen">
+    <main className="bg-background text-foreground min-h-screen overflow-x-hidden">
       <NavBar />
       <HeroSection />
       <BenefitsSection />
