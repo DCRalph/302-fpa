@@ -375,11 +375,11 @@ function BlogPostCard({ post }: { post: BlogPost }) {
         {/* Post Content */}
         <div className="space-y-4">
           <Link href={`/member-dashboard/community-blog/${post.id}`}>
-            <h3 className="text-foreground hover:text-primary cursor-pointer font-semibold transition-colors">
+            <h3 className="text-lg text-foreground hover:text-primary cursor-pointer font-semibold transition-colors">
               {post.title}
             </h3>
           </Link>
-          <div className="prose prose-blog dark:prose-invert text-foreground/70 max-w-full">
+          <div className="mt-1 prose prose-blog dark:prose-invert text-foreground max-w-full">
             <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
           </div>
 
@@ -543,7 +543,7 @@ export default function CommunityBlog() {
           <div className="lg:col-span-3">
             <Label className="py-1 text-sm font-medium">Search Posts</Label>
             <div className="relative">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
               <Input
                 placeholder="Search by title, content, or author..."
                 value={searchQuery}

@@ -548,7 +548,7 @@ export default function BlogPost({ post }: BlogPostProps) {
                   {post.title}
                 </h1>
 
-                <div className="prose prose-lg prose-blog dark:prose-invert text-foreground/80 max-w-full">
+                <div className="prose prose-lg prose-blog dark:prose-invert text-foreground max-w-full">
                   <Markdown remarkPlugins={[remarkGfm]}>
                     {post.content}
                   </Markdown>
