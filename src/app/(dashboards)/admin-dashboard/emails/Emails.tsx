@@ -119,7 +119,7 @@ function EmailModal({ emailId, open, onOpenChange }: EmailModalProps) {
                       className="email-preview w-full"
                       dangerouslySetInnerHTML={{
                         __html:
-                            `<style>
+                          `<style>
                                 /* Force readable colors in dark mode for common text elements without touching backgrounds.
                                    This overrides inline color declarations (via !important) but does NOT set background-color
                                    so CTAs and hero backgrounds in email HTML are preserved. */
@@ -216,53 +216,74 @@ export default function EmailsPage() {
   };
 
   return (
-    <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6">
+    <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-8">
       <div className="mx-auto max-w-7xl">
-        <h2 className="mb-2 text-3xl font-bold">Email Management</h2>
-        <p className="text-muted-foreground">
-          View and manage all emails sent through the system.
-        </p>
+        <div className="flex items-center gap-4">
+          <div className="bg-primary/10 rounded-lg p-2.5">
+            <Mail className="text-primary h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold">Email Management</h2>
+            <p className="text-muted-foreground mt-1">
+              View and manage all emails sent through the system.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards */}
       {stats && (
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-4">
-          <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
+          <Card className="from-gradient-blue via-gradient-purple to-gradient-red border-0 bg-gradient-to-br from-25% via-50% to-75%">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white">
                 Total Emails
               </CardTitle>
-              <Mail className="text-white/80 h-4 w-4 " />
+              <Mail className="h-4 w-4 text-white/80" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{stats.totalEmails}</div>
+              <div className="text-2xl font-bold text-white">
+                {stats.totalEmails}
+              </div>
             </CardContent>
           </Card>
-          <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
+          <Card className="from-gradient-blue via-gradient-purple to-gradient-red border-0 bg-gradient-to-br from-25% via-50% to-75%">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white">Today</CardTitle>
-              <Calendar className="text-white/80 h-4 w-4" />
+              <CardTitle className="text-sm font-medium text-white">
+                Today
+              </CardTitle>
+              <Calendar className="h-4 w-4 text-white/80" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{stats.emailsToday}</div>
+              <div className="text-2xl font-bold text-white">
+                {stats.emailsToday}
+              </div>
             </CardContent>
           </Card>
-          <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
+          <Card className="from-gradient-blue via-gradient-purple to-gradient-red border-0 bg-gradient-to-br from-25% via-50% to-75%">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white">This Week</CardTitle>
-              <Calendar className="text-white/80 h-4 w-4" />
+              <CardTitle className="text-sm font-medium text-white">
+                This Week
+              </CardTitle>
+              <Calendar className="h-4 w-4 text-white/80" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{stats.emailsThisWeek}</div>
+              <div className="text-2xl font-bold text-white">
+                {stats.emailsThisWeek}
+              </div>
             </CardContent>
           </Card>
-          <Card className="border-0 bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75%">
+          <Card className="from-gradient-blue via-gradient-purple to-gradient-red border-0 bg-gradient-to-br from-25% via-50% to-75%">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white">This Month</CardTitle>
-              <Calendar className="text-white/80 h-4 w-4" />
+              <CardTitle className="text-sm font-medium text-white">
+                This Month
+              </CardTitle>
+              <Calendar className="h-4 w-4 text-white/80" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{stats.emailsThisMonth}</div>
+              <div className="text-2xl font-bold text-white">
+                {stats.emailsThisMonth}
+              </div>
             </CardContent>
           </Card>
         </div>

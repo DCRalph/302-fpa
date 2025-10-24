@@ -19,20 +19,24 @@ export function SiteFooter() {
                 {[
                   {
                     items: [
-                      "About Us",
-                      "FPA Executives",
-                      "Conference Presentations",
-                      "Publications",
+                      { title: "About Us", url: "https://fijiprincipalsassociation.org.fj/index.php/fpa-history" },
+                      { title: "FPA Executives", url: "https://fijiprincipalsassociation.org.fj/index.php/executives" },
+                      { title: "Conference Presentations", url: "https://fijiprincipalsassociation.org.fj/index.php/presentations/2025-fpa-conference/presidential-address" },
+                      { title: "Publications", url: "https://fijiprincipalsassociation.org.fj/index.php/publications/2022-fpa-conference" },
                     ],
                   },
                   {
-                    items: ["Gallery", "Constitution", "Contact Us"],
+                    items: [
+                      { title: "Gallery", url: "https://fijiprincipalsassociation.org.fj/index.php/gallery" },
+                      { title: "Constitution", url: "https://fijiprincipalsassociation.org.fj/index.php/constitution" },
+                      { title: "Contact Us", url: "https://fijiprincipalsassociation.org.fj/index.php/contact" },
+                    ],
                   },
                 ].map(({ items }, idx) => (
                   <div key={idx}>
                     {items.map((item, i) => (
-                      <li key={i} className="mt-1">
-                        <Link href="#">{item}</Link>
+                      <li key={i} className="mt-1 hover:text-white">
+                        <Link target="_blank" href={item.url}>{item.title}</Link>
                       </li>
                     ))}
                   </div>
@@ -43,13 +47,13 @@ export function SiteFooter() {
           <div>
             <h4 className="font-semibold text-xl">Legal & Support</h4>
             <ul className="mt-3 space-y-2 text-[16px] text-white/70">
-              <li>
+              <li className="hover:text-white">
                 <Link href="#">Privacy Policy</Link>
               </li>
-              <li>
+              <li className="hover:text-white">
                 <Link href="#">Terms & Conditions</Link>
               </li>
-              <li>
+              <li className="hover:text-white">
                 <Link href="#">Help and Support</Link>
               </li>
             </ul>

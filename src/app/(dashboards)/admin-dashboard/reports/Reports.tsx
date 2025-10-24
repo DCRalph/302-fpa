@@ -6,7 +6,7 @@ import { Button } from "~/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Badge } from "~/components/ui/badge";
 import { api } from "~/trpc/react";
-import { Check, Eye } from "lucide-react";
+import { Check, Eye, FileText } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import ResolveDialog from "~/components/reports/resolve-dialog";
@@ -39,9 +39,10 @@ export default function ReportPage() {
     },
   });
 
-  
   const [openResolveDialog, setOpenResolveDialog] = useState(false);
-  const [selectedResolveReport, setSelectedResolveReport] = useState<string | null>(null);
+  const [selectedResolveReport, setSelectedResolveReport] = useState<
+    string | null
+  >(null);
   const [resolveNote, setResolveNote] = useState("");
   const [resolveAction, setResolveAction] = useState<ReportAction | null>(null);
 
@@ -60,7 +61,7 @@ export default function ReportPage() {
           adminNote: resolveNote,
         }),
       "Report resolved successfully.",
-      "Error resolving report."
+      "Error resolving report.",
     );
     setOpenResolveDialog(false);
     setSelectedResolveReport(null);
@@ -69,7 +70,8 @@ export default function ReportPage() {
 
   // View details dialog state
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
-  const [selectedDetailsReport, setSelectedDetailsReport] = useState<BlogReport | null>(null);
+  const [selectedDetailsReport, setSelectedDetailsReport] =
+    useState<BlogReport | null>(null);
 
   const handleViewDetails = (report: BlogReport) => {
     setSelectedDetailsReport(report);
@@ -79,10 +81,17 @@ export default function ReportPage() {
   return (
     <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-8">
       <div className="mx-auto max-w-7xl">
-        <h2 className="text-3xl font-bold">Reports</h2>
-        <p className="text-muted-foreground">
-          Reports submitted about posts or comments.
-        </p>
+        <div className="flex items-center gap-4">
+          <div className="bg-primary/10 rounded-lg p-2.5">
+            <FileText className="text-primary h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold">Reports</h2>
+            <p className="text-muted-foreground mt-1">
+              Reports submitted about posts or comments.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="mx-auto max-w-7xl">
