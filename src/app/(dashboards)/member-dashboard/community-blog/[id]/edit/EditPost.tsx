@@ -186,16 +186,12 @@ export default function EditPostPage({ post }: BlogPostProps) {
 
     setIsSubmitting(true);
 
-    // NOTE: image upload is not wired to the backend yet. If you have an
-    // endpoint for uploads, upload `imageFile` first and include the image URL
-    // in the mutation payload. For now we send the basic post data only.
     updatePostMutation.mutate({
       id: postId,
       title: editTitle ?? "",
       content: editContent ?? "",
       published: editPublished ?? true,
       categoryId: editCategoryId,
-      // coverImageUrl: coverImageUrl ?? undefined,
     });
   };
 

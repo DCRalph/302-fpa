@@ -24,8 +24,9 @@ import {
   MoreVertical,
   Flag,
 } from "lucide-react";
-import { useRouter } from 'nextjs-toploader/app';
-import React, { useState } from "react";
+import { useRouter } from "nextjs-toploader/app";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { Label } from "@radix-ui/react-dropdown-menu";
 import {
@@ -216,8 +217,10 @@ function BlogPostCard({ post }: { post: BlogPost }) {
   } | null>(null);
 
   // Submit a report
-  const handleReportSubmit = async (payload: { reason: string, details?: string }) => {
-
+  const handleReportSubmit = async (payload: {
+    reason: string;
+    details?: string;
+  }) => {
     if (!reportTarget) return;
 
     const { id, type } = reportTarget;
@@ -235,7 +238,7 @@ function BlogPostCard({ post }: { post: BlogPost }) {
   };
 
   return (
-    <Card className="overflow-hidden" >
+    <Card className="overflow-hidden">
       <CardContent className="">
         {/* Author Info */}
         <div className="mb-4 flex items-center space-x-3">
@@ -375,18 +378,18 @@ function BlogPostCard({ post }: { post: BlogPost }) {
         {/* Post Content */}
         <div className="space-y-4">
           <Link href={`/member-dashboard/community-blog/${post.id}`}>
-            <h3 className="text-lg text-foreground hover:text-primary cursor-pointer font-semibold transition-colors">
+            <h3 className="text-foreground hover:text-primary cursor-pointer text-lg font-semibold transition-colors">
               {post.title}
             </h3>
           </Link>
-          <div className="mt-1 prose prose-blog dark:prose-invert text-foreground max-w-full">
+          <div className="prose prose-blog dark:prose-invert text-foreground mt-1 max-w-full">
             <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
           </div>
 
           {/* Cover Image */}
           {post.coverImageUrl && (
             <div className="mt-6 overflow-hidden rounded-lg">
-              <div className="relative w-full h-64 sm:h-80 lg:h-64">
+              <div className="relative h-64 w-full sm:h-80 lg:h-64">
                 <Image
                   src={post.coverImageUrl}
                   alt="Post cover"
@@ -481,18 +484,29 @@ function BlogPostCard({ post }: { post: BlogPost }) {
           )}
         </div>
       </CardContent>
-    </Card >
+    </Card>
   );
 }
 
 export default function CommunityBlog() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all-posts");
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const preset = searchParams.get("preset");
+    if (preset) {
+      setSearchQuery("Your posts");
+      setSelectedCategory("all-posts");
+    }
+  }, [searchParams]);
+
   // const [isSearching, setIsSearching] = useState(false);
 
   const { data, isLoading } = api.member.blog.list.useQuery({
     query: searchQuery || undefined,
-    categorySlug: selectedCategory !== "all-posts" ? selectedCategory : undefined,
+    categorySlug:
+      selectedCategory !== "all-posts" ? selectedCategory : undefined,
     take: 10,
   });
 
@@ -543,12 +557,12 @@ export default function CommunityBlog() {
           <div className="lg:col-span-3">
             <Label className="py-1 text-sm font-medium">Search Posts</Label>
             <div className="relative">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
               <Input
                 placeholder="Search by title, content, or author..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-background py-3 pl-10 pr-10"
+                className="bg-background py-3 pr-10 pl-10"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     handleSearch();
@@ -559,7 +573,7 @@ export default function CommunityBlog() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 transform p-0"
+                  className="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 transform p-0"
                   onClick={handleClearSearch}
                 >
                   <X className="h-4 w-4" />
@@ -568,8 +582,13 @@ export default function CommunityBlog() {
             </div>
           </div>
           <div className="lg:col-span-1">
-            <Label className="py-1 text-sm font-medium">Filter by Category</Label>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <Label className="py-1 text-sm font-medium">
+              Filter by Category
+            </Label>
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
+            >
               <SelectTrigger className="bg-background w-full py-3">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
@@ -593,9 +612,11 @@ export default function CommunityBlog() {
         {/* Active Filters Display */}
         {(searchQuery || selectedCategory !== "all-posts") && (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-muted-foreground">Active filters:</span>
+            <span className="text-muted-foreground text-sm">
+              Active filters:
+            </span>
             {searchQuery && (
-              <Badge variant="secondary" className="gap-1 bg-accent">
+              <Badge variant="secondary" className="bg-accent gap-1">
                 Search: &quot;{searchQuery}&quot;
                 <Button
                   variant="ghost"
@@ -608,8 +629,9 @@ export default function CommunityBlog() {
               </Badge>
             )}
             {selectedCategory !== "all-posts" && (
-              <Badge variant="secondary" className="gap-1 bg-accent">
-                Category: {categories?.find(c => c.slug === selectedCategory)?.name}
+              <Badge variant="secondary" className="bg-accent gap-1">
+                Category:{" "}
+                {categories?.find((c) => c.slug === selectedCategory)?.name}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -632,9 +654,9 @@ export default function CommunityBlog() {
             Array.from({ length: 3 }).map((_, i) => (
               <Card key={`skeleton-${i}`}>
                 <CardContent className="py-6">
-                  <Skeleton className="h-6 w-2/3 mb-3" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="mb-3 h-6 w-2/3" />
+                  <Skeleton className="mb-2 h-4 w-full" />
+                  <Skeleton className="mb-2 h-4 w-full" />
                   <div className="mt-4">
                     <Skeleton className="h-40 w-full" />
                   </div>
@@ -642,14 +664,12 @@ export default function CommunityBlog() {
               </Card>
             ))
           ) : data?.posts && data.posts.length > 0 ? (
-            data.posts.map((post) => (
-              <BlogPostCard key={post.id} post={post} />
-            ))
+            data.posts.map((post) => <BlogPostCard key={post.id} post={post} />)
           ) : (
             <Card>
               <CardContent className="py-12 text-center">
                 <div className="mx-auto max-w-md">
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                  <h3 className="text-foreground mb-2 text-lg font-semibold">
                     No posts found
                   </h3>
                   <p className="text-muted-foreground mb-4">
@@ -679,13 +699,17 @@ export default function CommunityBlog() {
               <p className="text-foreground/70 text-base">
                 Share your knowledge with the community
               </p>
-              <div className="pt-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 pt-4 xl:grid-cols-2">
                 <Button asChild className="w-full">
                   <Link href={"/member-dashboard/community-blog/create"}>
                     Create a Post
                   </Link>
                 </Button>
-                <Button variant={"outline"} onClick={handleYourPosts} className="flex-1">
+                <Button
+                  variant={"outline"}
+                  onClick={handleYourPosts}
+                  className="flex-1"
+                >
                   Your Posts
                 </Button>
               </div>
