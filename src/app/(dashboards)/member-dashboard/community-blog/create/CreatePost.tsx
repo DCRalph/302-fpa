@@ -31,7 +31,7 @@ export default function CreatePostPage() {
   const router = useRouter();
 
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  // individual form state
+  // Individual form state
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [published, setPublished] = useState(true);
@@ -46,6 +46,8 @@ export default function CreatePostPage() {
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
 
   const utils = api.useUtils();
+
+  const attachToBlogPostMutation = api.member.files.attachToBlogPost.useMutation();
 
   // Upload image mutation
   const uploadImageMutation = api.member.files.uploadBlogImage.useMutation({
@@ -62,12 +64,26 @@ export default function CreatePostPage() {
   });
 
   const createPostMutation = api.member.blog.createPost.useMutation({
-    onSuccess: async () => {
-      // Invalidate profile and auth.me cache so UI updates
-      await utils.member.blog.invalidate()
+    onSuccess: async (post) => {
+      // If an image was uploaded before creating the post, attach it to the newly-created post
+      try {
+        if (uploadedImageId) {
+          await attachToBlogPostMutation.mutateAsync({
+            fileId: uploadedImageId,
+            postId: post.id,
+          });
+        }
 
-      toast.success("Post created successfully");
-      router.push("/member-dashboard/community-blog");
+        // Invalidate blog list so UI updates
+        await utils.member.blog.invalidate();
+
+        toast.success("Post created successfully");
+        router.push("/member-dashboard/community-blog");
+      } catch (e) {
+        // If attach fails, still navigate but show an error toast
+        toast.error(`Post created but failed to attach image: ${e as string}`);
+        router.push("/member-dashboard/community-blog");
+      }
     },
     onError: (err) => {
       toast.error(err.message ?? "Failed to create post");

@@ -263,7 +263,7 @@ export default function ActivityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-7xl">
         <div className="p-8">
           {/* Header */}
@@ -294,7 +294,7 @@ export default function ActivityPage() {
           </div>
 
           {/* Filters */}
-          <div className="mb-4 rounded-md border bg-card p-3 text-card-foreground">
+          <div className="mb-4 rounded-md border bg-card p-3 text-card-foreground shadow-sm">
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Limit to</span>
@@ -464,7 +464,7 @@ export default function ActivityPage() {
           </div>
 
           {/* Compact list */}
-          <div className="overflow-hidden rounded-md border bg-card">
+          <div className="overflow-hidden rounded-md border bg-card shadow-sm">
             {/* Top status bar */}
             <div className="flex items-center justify-between border-b bg-muted/30 px-3 py-2 text-sm">
               <div className="text-muted-foreground">

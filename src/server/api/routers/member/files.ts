@@ -375,5 +375,69 @@ export const memberFilesRouter = createTRPCRouter({
         downloadUrl,
       };
     }),
+
+  // Attach an existing uploaded blog image file to a blog post
+  attachToBlogPost: protectedProcedure
+    .input(
+      z.object({
+        fileId: z.string(),
+        postId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { fileId, postId } = input;
+
+      // Verify file exists and belongs to current user
+      const file = await ctx.db.file.findUnique({ where: { id: fileId } });
+      if (!file) {
+        throw new Error("File not found");
+      }
+      if (file.userId !== ctx.dbUser.id) {
+        throw new Error("Not authorized to attach this file");
+      }
+
+      // Verify post exists and belongs to current user
+      const post = await ctx.db.blogPost.findUnique({ where: { id: postId } });
+      if (!post) {
+        throw new Error("Post not found");
+      }
+      if (post.authorId !== ctx.dbUser.id) {
+        throw new Error("Not authorized to attach image to this post");
+      }
+
+      // Update the file to set the blogPostId
+      await ctx.db.file.update({ where: { id: fileId }, data: { blogPostId: postId } });
+
+      // Update blog post cover image url
+      const downloadUrl = `/api/files/blog-image/${fileId}?fileId=${fileId}`;
+      await ctx.db.blogPost.update({ where: { id: postId }, data: { coverImageUrl: downloadUrl } });
+
+      // Log activity
+      await Promise.all([
+        logUserActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          title: `Attached image to post: ${post.title}`,
+          description: "Your uploaded image has been attached to your blog post",
+          icon: getActivityIcon(UserActivityType.FILE_UPLOADED),
+          type: UserActivityType.FILE_UPLOADED,
+          metadata: { fileId, postId },
+        }),
+        logAppActivity(ctx.db, {
+          userId: ctx.dbUser.id,
+          userName: ctx.dbUser.name ?? undefined,
+          userEmail: ctx.dbUser.email ?? undefined,
+          type: AppActivityType.FILE_UPLOADED,
+          action: ActivityActionEnum.UPDATED,
+          entity: ActivityEntity.BLOG_POST,
+          entityId: postId,
+          title: `Attached image ${file.filename} to post ${post.title}`,
+          category: ActivityCategory.CONTENT,
+          severity: Severity.INFO,
+          metadata: { fileId, postId },
+        }),
+      ]);
+
+      return { success: true };
+    }),
 });
 

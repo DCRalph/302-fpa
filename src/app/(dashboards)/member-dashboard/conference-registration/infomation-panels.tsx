@@ -54,7 +54,7 @@ export default function InformationPanels({ conference }: { conference: Conferen
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <div className="border-border/60 bg-background/50 rounded-lg border p-3 cursor-pointer">
+                                        <div className="border-border/60 bg-background/50 rounded-lg border p-3 cursor-pointer shadow-sm">
                                             <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
                                                 Registration Fee
                                             </div>
@@ -74,7 +74,7 @@ export default function InformationPanels({ conference }: { conference: Conferen
 
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <div className="border-border/60 bg-background/50 rounded-lg border p-3 cursor-pointer">
+                                        <div className="border-border/60 bg-background/50 rounded-lg border p-3 cursor-pointer shadow-sm">
                                             <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
                                                 Account Name
                                             </div>
@@ -90,7 +90,7 @@ export default function InformationPanels({ conference }: { conference: Conferen
 
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <div className="border-border/60 bg-background/50 rounded-lg border p-3 cursor-pointer">
+                                        <div className="border-border/60 bg-background/50 rounded-lg border p-3 cursor-pointer shadow-sm">
                                             <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase">
                                                 Bank & Branch
                                             </div>
@@ -106,7 +106,7 @@ export default function InformationPanels({ conference }: { conference: Conferen
 
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <div className="border-border/60 bg-background/50 rounded-lg border p-3 cursor-pointer">
+                                        <div className="border-border/60 bg-background/50 rounded-lg border p-3 cursor-pointer shadow-sm">
                                             <div className="text-muted-foreground mb-1 text-xs tracking-wide uppercase ">
                                                 Account Number
                                             </div>

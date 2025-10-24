@@ -10,7 +10,12 @@ import { DynamicIcon } from "~/components/DynamicIcon";
 import { Spinner } from "~/components/ui/spinner";
 import { DashboardStatsCard } from "~/components/dash-stat-card";
 import Link from "next/link";
-import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import { Archive, Download, FileText, Trash2, User } from "lucide-react";
 import { format } from "date-fns";
 import { Masonry } from "~/components/Masonry";
 import { z } from "zod";
@@ -18,7 +23,13 @@ import { z } from "zod";
 type ActivityActionButton = {
   label: string;
   href: string;
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
 };
 
 type RecentActivityItem = {
@@ -31,12 +42,43 @@ type RecentActivityItem = {
   actions?: ActivityActionButton[];
 };
 
+const getFileTypeInfo = (type: string) => {
+  switch (type) {
+    case "PROFILE_IMAGE":
+      return {
+        label: "Profile Image",
+        icon: User,
+        variant: "default" as const,
+      };
+    case "REGISTRATION_ATTACHMENT":
+      return {
+        label: "Registration",
+        icon: FileText,
+        variant: "secondary" as const,
+      };
+    case "BLOG_IMAGE":
+      return { label: "Blog Image", icon: Image, variant: "outline" as const };
+    case "OTHER":
+      return { label: "Other", icon: Archive, variant: "outline" as const };
+    default:
+      return { label: "Unknown", icon: File, variant: "outline" as const };
+  }
+};
+
 export default function MemberDashboardPage() {
   const { dbUser } = useAuth();
 
   const { data: memberDashboard } =
     api.member.dashboard.getMemberDashboard.useQuery();
   const { data: blogPosts } = api.member.blog.list.useQuery();
+  const { data: files } = api.member.files.list.useQuery();
+  const utils = api.useUtils();
+
+  const delFile = api.member.files.delete.useMutation({
+    onSuccess: () => {
+      void utils.member.files.list.invalidate();
+    },
+  });
 
   return (
     <main className="text-foreground flex">
@@ -79,7 +121,7 @@ export default function MemberDashboardPage() {
 
           {/* <div className="mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:gap-4 md:gap-6 lg:grid-cols-2"> */}
 
-          <Masonry cols={{ base: 1, md: 2, xl: 2 }} gap="gap-4">
+          <Masonry cols={{ base: 1, lg: 2, xl: 2 }} gap="gap-4">
             {/* Conference Registration Status */}
 
             <MemberDashboardRegistrationStatusCard
@@ -95,7 +137,11 @@ export default function MemberDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {(memberDashboard?.recentActivity as unknown as RecentActivityItem[] | undefined)?.map((activity: RecentActivityItem, index: number) => (
+                  {(
+                    memberDashboard?.recentActivity as unknown as
+                      | RecentActivityItem[]
+                      | undefined
+                  )?.map((activity: RecentActivityItem, index: number) => (
                     <div key={index} className="flex items-start gap-3">
                       {activity.icon ? (
                         <DynamicIcon
@@ -106,13 +152,22 @@ export default function MemberDashboardPage() {
                       ) : null}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between">
-                          <p className="text-md text-foreground font-medium">{activity.title}</p>
+                          <p className="text-md text-foreground font-medium">
+                            {activity.title}
+                          </p>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <p className="text-muted-foreground text-xs w-fit">{activity.time}</p>
+                              <p className="text-muted-foreground w-fit text-xs">
+                                {activity.time}
+                              </p>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {activity.createdAtISO ? format(new Date(activity.createdAtISO), "MMM d yyyy h:mmaaa").toLowerCase() : ""}
+                              {activity.createdAtISO
+                                ? format(
+                                    new Date(activity.createdAtISO),
+                                    "MMM d yyyy h:mmaaa",
+                                  ).toLowerCase()
+                                : ""}
                             </TooltipContent>
                           </Tooltip>
                         </div>
@@ -121,20 +176,30 @@ export default function MemberDashboardPage() {
                             {activity.description}
                           </p>
                         )}
-                        {activity.metaLines && activity.metaLines.length > 0 && (
-                          <ul className="text-muted-foreground mt-2 list-disc space-y-1 pl-5 text-xs">
-                            {activity.metaLines.map((line: string, i: number) => (
-                              <li key={i}>{line}</li>
-                            ))}
-                          </ul>
-                        )}
+                        {activity.metaLines &&
+                          activity.metaLines.length > 0 && (
+                            <ul className="text-muted-foreground mt-2 list-disc space-y-1 pl-5 text-xs">
+                              {activity.metaLines.map(
+                                (line: string, i: number) => (
+                                  <li key={i}>{line}</li>
+                                ),
+                              )}
+                            </ul>
+                          )}
                         {activity.actions && activity.actions.length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-2">
-                            {activity.actions.map((a: ActivityActionButton, i: number) => (
-                              <Button key={i} size="sm" variant={(a.variant ?? "outline")} asChild>
-                                <Link href={a.href}>{a.label}</Link>
-                              </Button>
-                            ))}
+                            {activity.actions.map(
+                              (a: ActivityActionButton, i: number) => (
+                                <Button
+                                  key={i}
+                                  size="sm"
+                                  variant={a.variant ?? "outline"}
+                                  asChild
+                                >
+                                  <Link href={a.href}>{a.label}</Link>
+                                </Button>
+                              ),
+                            )}
                           </div>
                         )}
                       </div>
@@ -151,6 +216,11 @@ export default function MemberDashboardPage() {
                   <div className="flex w-full items-center justify-between">
                     <span className="text-2xl">Recent Blog Posts</span>
                     <div className="flex items-center space-x-2">
+                      <Button variant={"outline"} asChild>
+                        <Link href="/member-dashboard/community-blog?preset=your-posts">
+                          View All
+                        </Link>
+                      </Button>
                       <Button asChild>
                         <Link href={"/member-dashboard/community-blog/create"}>
                           Create Post
@@ -163,7 +233,10 @@ export default function MemberDashboardPage() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="text-muted-foreground space-y-4">
-                    {!blogPosts?.posts || blogPosts.posts.filter((post) => post.authorId === dbUser?.id).length === 0 ? (
+                    {!blogPosts?.posts ||
+                    blogPosts.posts.filter(
+                      (post) => post.authorId === dbUser?.id,
+                    ).length === 0 ? (
                       <p className="text-muted-foreground">
                         You haven&apos;t created any posts yet.
                       </p>
@@ -194,9 +267,20 @@ export default function MemberDashboardPage() {
                                 {post.published ? (
                                   <>
                                     <Badge>Published</Badge>
-                                    <span title={post.publishedAt ? format(new Date(post.publishedAt), "MMM d yyyy h:mmaaa") : undefined}>
+                                    <span
+                                      title={
+                                        post.publishedAt
+                                          ? format(
+                                              new Date(post.publishedAt),
+                                              "MMM d yyyy h:mmaaa",
+                                            )
+                                          : undefined
+                                      }
+                                    >
                                       {post.publishedAt
-                                        ? new Date(post.publishedAt).toLocaleDateString()
+                                        ? new Date(
+                                            post.publishedAt,
+                                          ).toLocaleDateString()
                                         : "—"}
                                     </span>
                                   </>
@@ -220,21 +304,92 @@ export default function MemberDashboardPage() {
                   <div className="flex w-full items-center justify-between">
                     <span className="text-2xl">Recent Files</span>
                     <div className="flex items-center space-x-2">
-                      <Button variant={"outline"}>View All</Button>
-                      <Button>Upload File</Button>
+                      <Button variant={"outline"} asChild>
+                        <Link href="/member-dashboard/my-files">View All</Link>
+                      </Button>
                     </div>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <p className="text-muted-foreground">No files uploaded yet</p>
+                  {!files ||
+                  (files ?? []).filter((f) => f.user.id === dbUser?.id)
+                    .length === 0 ? (
+                    <p className="text-muted-foreground">
+                      No files uploaded yet
+                    </p>
+                  ) : (
+                    (files ?? [])
+                      .filter((f) => f.user.id === dbUser?.id)
+                      .slice(0, 3)
+                      .map((file) => {
+                        const typeInfo = getFileTypeInfo(file.type);
+                        return (
+                          <div
+                            key={file.id}
+                            className="flex items-center rounded-lg border p-3"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <Link
+                                href={
+                                  file.blogPost
+                                    ? `/member-dashboard/community-blog/${file.blogPost.id}`
+                                    : `/member-dashboard/my-files`
+                                }
+                                className="text-foreground line-clamp-1 font-semibold hover:underline"
+                              >
+                                {file.filename}
+                              </Link>
+                              <div className="flex items-center gap-4 mt-1">
+                                <div>
+                                  <p className="text-muted-foreground text-xs">
+                                    {(file.sizeBytes / 1024).toFixed(1)} KB •{" "}
+                                    {new Date(
+                                      file.createdAt,
+                                    ).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Badge
+                                    variant={typeInfo.variant}
+                                    className="text-xs"
+                                  >
+                                    {typeInfo.label}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="ml-4 flex items-center gap-2">
+                              <Button variant="ghost" asChild>
+                                <Link
+                                  href={`/api/files/${file.id}/download`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-muted-foreground hover:text-foreground"
+                                  title="Download"
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Link>
+                              </Button>
+
+                              <Button
+                                variant={"ghost"}
+                                onClick={() => delFile.mutate({ id: file.id })}
+                                className="text-destructive hover:text-destructive/80"
+                                title="Delete"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })
+                  )}
                 </div>
               </CardContent>
             </Card>
-
-
-
           </Masonry>
           {/* </div> */}
         </main>
@@ -245,14 +400,14 @@ export default function MemberDashboardPage() {
 
 type RegistrationStatus = {
   state:
-  | "no_conference"
-  | "not_registered"
-  | "pending"
-  | "cancelled"
-  | "confirmed_unpaid"
-  | "confirmed_paid"
-  | "confirmed_partial"
-  | "refunded";
+    | "no_conference"
+    | "not_registered"
+    | "pending"
+    | "cancelled"
+    | "confirmed_unpaid"
+    | "confirmed_paid"
+    | "confirmed_partial"
+    | "refunded";
   title: string;
   description: string;
   icon: {
@@ -315,8 +470,8 @@ function MemberDashboardRegistrationStatusCard({
     }),
   });
 
-  let actionPrimary: { text: string; href: string } | null = null
-  let actionSecondary: { text: string; href: string } | null = null
+  let actionPrimary: { text: string; href: string } | null = null;
+  let actionSecondary: { text: string; href: string } | null = null;
   const { success, data: actions } = actionsSchema.safeParse(stat.actions);
 
   if (success) {
@@ -449,30 +604,15 @@ function MemberDashboardRegistrationStatusCard({
             <Separator />
             <div className="flex space-x-2">
               {actionSecondary && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="flex-1"
-                >
-                  <Link
-                    href={actionSecondary?.href ?? ""}
-                    className="flex-1"
-                  >
+                <Button variant="outline" size="sm" asChild className="flex-1">
+                  <Link href={actionSecondary?.href ?? ""} className="flex-1">
                     {actionSecondary.text}
                   </Link>
                 </Button>
               )}
               {actionPrimary && (
-                <Button
-                  size="sm"
-                  asChild
-                  className="flex-1"
-                >
-                  <Link
-                    href={actionPrimary?.href ?? ""}
-                    className="flex-1"
-                  >
+                <Button size="sm" asChild className="flex-1">
+                  <Link href={actionPrimary?.href ?? ""} className="flex-1">
                     {actionPrimary.text}
                   </Link>
                 </Button>
@@ -481,6 +621,6 @@ function MemberDashboardRegistrationStatusCard({
           </>
         )}
       </CardContent>
-    </Card >
+    </Card>
   );
 }
