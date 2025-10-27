@@ -181,8 +181,8 @@ export default function AdminDashboardPage() {
                   </CardTitle>
                   {adminDashboard?.totalConferences && adminDashboard.totalConferences > 0 && (
                     <Link href="/admin-dashboard/manage-conferences">
-                      <Button variant="outline" size="sm">
-                        View All Conferences
+                      <Button variant="outline" size="sm" className="mt-2 md:mt-0">
+                        View All
                       </Button>
                     </Link>
                   )}

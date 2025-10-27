@@ -50,27 +50,27 @@ export default function MyFilesPage() {
                 const TypeIcon = typeInfo.icon;
 
                 return (
-                  <div key={file.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-3 flex-1 min-w-0">
+                  <div key={file.id} className="border rounded-lg p-3 sm:p-4 hover:bg-muted/50 transition-colors">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
                         <TypeIcon className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <h4 className="font-medium text-sm truncate">{file.filename}</h4>
-                            <Badge variant={typeInfo.variant} className="text-xs">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <h4 className="font-medium text-sm truncate max-w-full">{file.filename}</h4>
+                            <Badge variant={typeInfo.variant} className="text-[10px] sm:text-xs">
                               {typeInfo.label}
                             </Badge>
                           </div>
-                          <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
-                            <div className="flex items-center space-x-1">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
                               <HardDrive className="h-3 w-3" />
                               <span>{(file.sizeBytes / 1024).toFixed(1)} KB</span>
                             </div>
-                            <div className="flex items-center space-x-1">
+                            <div className="flex items-center gap-1 min-w-0">
                               <Tag className="h-3 w-3" />
-                              <span>{file.mimeType}</span>
+                              <span className="truncate max-w-[200px] sm:max-w-none">{file.mimeType}</span>
                             </div>
-                            <div className="flex items-center space-x-1">
+                            <div className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
                               <span>{new Date(file.createdAt).toLocaleDateString()}</span>
                             </div>
@@ -152,12 +152,12 @@ export default function MyFilesPage() {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2 ml-4">
+                      <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:space-x-2 sm:ml-4">
                         <Button
                           variant="outline"
                           size="sm"
                           asChild
-                          className="flex items-center space-x-1"
+                          className="flex items-center justify-center gap-1 w-full sm:w-auto"
                         >
                           <a href={`/api/files/${file.id}/download`} target="_blank" rel="noreferrer">
                             <Download className="h-3 w-3" />
@@ -168,7 +168,7 @@ export default function MyFilesPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => del.mutate({ id: file.id })}
-                          className="text-destructive hover:text-destructive"
+                          className="w-full sm:w-auto text-destructive hover:text-destructive"
                         >
                           Delete
                         </Button>

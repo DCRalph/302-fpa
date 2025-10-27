@@ -265,7 +265,7 @@ export default function ActivityPage() {
   return (
     <div className="min-h-screen">
       <div className="mx-auto max-w-7xl">
-        <div className="p-8">
+        <div className="p-3 sm:p-4 md:p-8">
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
