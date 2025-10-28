@@ -154,7 +154,7 @@ model ConferenceContact {
   fields Json
 
   conferenceId String
-  conference Conference @relation(fields: [conferenceId], references: [id])
+  conference Conference @relation(fields: [conferenceId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -175,10 +175,10 @@ model Registration {
   status           String      @default("pending") // pending, confirmed, cancelled
   // Optional association to an authenticated user
   userId           String?
-  user             User?       @relation(fields: [userId], references: [id])
+  user             User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   // Optional association to a ticket type for pricing/management
   ticketTypeId     String?
-  ticketType       TicketType? @relation(fields: [ticketTypeId], references: [id])
+  ticketType       TicketType? @relation(fields: [ticketTypeId], references: [id], onDelete: Cascade)
   // Pricing snapshot at time of registration
   priceCents       Int?
   currency         String      @default("FJD")
@@ -197,7 +197,7 @@ model Registration {
   attachments   File[]
 
   conferenceId String?
-  conference   Conference? @relation(fields: [conferenceId], references: [id])
+  conference   Conference? @relation(fields: [conferenceId], references: [id], onDelete: Cascade)
 
   @@index([email])
   @@index([registrationType])
@@ -216,13 +216,13 @@ model BlogPost {
   coverImageUrl String?
   published     Boolean   @default(false)
   publishedAt   DateTime?
-  author        User      @relation(fields: [authorId], references: [id])
+  author        User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId      String
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
 
-  category   BlogCategory @relation(fields: [categoryId], references: [id])
+  category   BlogCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId String
 
   likes      BlogPostLike[]
@@ -276,7 +276,7 @@ model AdminNote {
   registrationId String
   registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
   authorId       String?
-  author         User?        @relation("UserAdminNotes", fields: [authorId], references: [id])
+  author         User?        @relation("UserAdminNotes", fields: [authorId], references: [id], onDelete: Cascade)
   body           String
   createdAt      DateTime     @default(now())
 
@@ -292,7 +292,7 @@ model RegistrationStatusHistory {
   previousStatus String?
   newStatus      String
   changedById    String?
-  changedBy      User?        @relation("UserStatusChanges", fields: [changedById], references: [id])
+  changedBy      User?        @relation("UserStatusChanges", fields: [changedById], references: [id], onDelete: Cascade)
   reason         String?
   createdAt      DateTime     @default(now())
 
@@ -429,10 +429,10 @@ model BlogPostLike {
   id        String   @id @default(cuid())
 
   postId    String
-  post      BlogPost @relation(fields: [postId], references: [id])
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -443,7 +443,7 @@ model BlogComment {
   post        BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId      String
   authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   content     String
   approved    Boolean  @default(false)
   createdAt   DateTime @default(now())
@@ -452,7 +452,7 @@ model BlogComment {
   subComments BlogComment[] @relation("ParentComment")
 
   parentCommentId String?
-  parentComment   BlogComment? @relation("ParentComment", fields: [parentCommentId], references: [id])
+  parentComment   BlogComment? @relation("ParentComment", fields: [parentCommentId], references: [id], onDelete: Cascade)
 
   reports BlogReport[]
 
@@ -496,20 +496,20 @@ model BlogReport {
   updatedAt DateTime @updatedAt
 
   postId    String?
-  post      BlogPost? @relation(fields: [postId], references: [id])
+  post      BlogPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   commentId    String?
-  comment      BlogComment? @relation(fields: [commentId], references: [id])
+  comment      BlogComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   userId    String
-  user      User     @relation("UserBlogReports", fields: [userId], references: [id])
+  user      User     @relation("UserBlogReports", fields: [userId], references: [id], onDelete: Cascade)
 
   reason      String
   details     String?
 
   resolvedAt  DateTime? 
   resolvedById  String?
-  resolvedByUser User?     @relation("UserBlogReportsResolved", fields: [resolvedById], references: [id])
+  resolvedByUser User?     @relation("UserBlogReportsResolved", fields: [resolvedById], references: [id], onDelete: Cascade)
   action ReportAction? @default(OTHER)
   adminNote   String?
 
@@ -527,7 +527,7 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([token])

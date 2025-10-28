@@ -28,8 +28,6 @@ import { headers } from "next/headers";
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
 
-  console.log('trpc ctx', opts)
-
   const session = await auth.api.getSession({
     headers: opts.headers
   })
