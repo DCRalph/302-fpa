@@ -33,6 +33,13 @@ export const auth = betterAuth({
   //     },
   //   }
   // },
+  advanced: {
+    cookies: {
+      session_token: {
+        name: "auth_token",
+      },
+    }
+  },
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url, token: _token }, _request) => {

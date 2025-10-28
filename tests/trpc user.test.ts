@@ -1,6 +1,7 @@
 import { expect, test, beforeAll } from 'vitest';
 import { randomUUID } from 'crypto';
 import { auth } from '~/lib/auth';
+import { authClient } from '~/lib/auth-client';
 import { db } from '~/server/db';
 import { makeCaller } from '~/server/api/test-helper';
 
@@ -36,24 +37,29 @@ test('trpc test: auth.me endpoint', async () => {
   // Perform sign-in
   const signInRes = await auth.api.signInEmail({
     body: { email: 'test@test.com', password: passwordRaw },
+    returnHeaders: true,
   });
 
-  // Prefer Set-Cookie if auth.api.signInEmail returns a Response-like or provides headers.
-  // If your function returns a plain object, use signInRes.token and recreate the cookie.
-  // Better Auth default cookie name is "better-auth.session_token" (check your config).
-  const cookieValue = `better-auth.session_token=${signInRes.token}; Path=/; HttpOnly; SameSite=Lax`;
+  const signInHeaders = new Headers(signInRes.headers);
+  const signInCookie = signInHeaders.get('Set-Cookie');
+  const signInCookieAuthToken = signInCookie?.split(';').find(cookie => cookie.trim().startsWith('auth_token='));
+  const signInCookieAuthTokenValue = signInCookieAuthToken?.split('=')[1];
 
+
+
+  const cookieValue = `auth_token=${signInCookieAuthTokenValue};`;
   // Provide headers to getSession. Some implementations accept { headers } or a Request.
   const headers = new Headers();
-  headers.set('cookie', cookieValue);
-
+  headers.set('Cookie', cookieValue);
   console.log('headers', headers);
 
   const session = await auth.api.getSession({ headers });
 
   console.log('session', session);
 
-  // expect(session?.user?.email ?? session?.email).toBe('test@test.com');
+  expect(session).not.toBeNull();
+  expect(session?.user.email).toBe('test@test.com');
+
 
   const caller = makeCaller({
     dbUser: user,
