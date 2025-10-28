@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from 'nextjs-toploader/app';
+import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 import {
   Card,
@@ -47,7 +47,8 @@ export default function CreatePostPage() {
 
   const utils = api.useUtils();
 
-  const attachToBlogPostMutation = api.member.files.attachToBlogPost.useMutation();
+  const attachToBlogPostMutation =
+    api.member.files.attachToBlogPost.useMutation();
 
   // Upload image mutation
   const uploadImageMutation = api.member.files.uploadBlogImage.useMutation({
@@ -155,7 +156,7 @@ export default function CreatePostPage() {
 
     if (file) {
       // Validate file type
-      if (!file.type.startsWith('image/')) {
+      if (!file.type.startsWith("image/")) {
         toast.error("Please select an image file");
         return;
       }
@@ -177,7 +178,7 @@ export default function CreatePostPage() {
       const reader = new FileReader();
       reader.onload = () => {
         const base64 = reader.result as string;
-        const base64Data = base64.split(',')[1]; // Remove data:image/...;base64, prefix
+        const base64Data = base64.split(",")[1]; // Remove data:image/...;base64, prefix
 
         uploadImageMutation.mutate({
           filename: file.name,
@@ -200,8 +201,8 @@ export default function CreatePostPage() {
     setUploadedImageId(null);
     setCoverImageUrl(null);
     // Reset file input
-    const fileInput = document.getElementById('image') as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
+    const fileInput = document.getElementById("image") as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
   };
 
   return (
@@ -220,7 +221,7 @@ export default function CreatePostPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 space-y-2 space-x-4">
+              <div className="grid grid-cols-1 space-y-4 space-x-0 md:grid-cols-3 md:space-x-4 md:space-y-2">
                 {/* Post Title */}
                 <div className="col-span-2 space-y-2">
                   <Label htmlFor="title">
@@ -287,7 +288,9 @@ export default function CreatePostPage() {
 
                 {/* Upload Status */}
                 {isUploadingImage && (
-                  <p className="text-sm text-muted-foreground">Uploading image...</p>
+                  <p className="text-muted-foreground text-sm">
+                    Uploading image...
+                  </p>
                 )}
 
                 {/* Image Preview */}
@@ -313,7 +316,9 @@ export default function CreatePostPage() {
                       height={100}
                     />
                     {uploadedImageId && (
-                      <p className="text-xs text-green-600">✓ Image uploaded successfully</p>
+                      <p className="text-xs text-green-600">
+                        ✓ Image uploaded successfully
+                      </p>
                     )}
                   </div>
                 )}
@@ -323,8 +328,8 @@ export default function CreatePostPage() {
                   <Checkbox
                     id="published"
                     checked={!published} // inverse: checked means "draft"
-                    onCheckedChange={(checked) =>
-                      handleInputChange("published", !checked) // invert the value
+                    onCheckedChange={
+                      (checked) => handleInputChange("published", !checked) // invert the value
                     }
                   />
                   <Label htmlFor="published">Mark as draft</Label>

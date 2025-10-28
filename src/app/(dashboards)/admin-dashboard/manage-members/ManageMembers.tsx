@@ -46,8 +46,8 @@ export default function ManageMembersPage() {
           <Users className="text-primary h-6 w-6" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold">Manage Members</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">Manage Members</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             View and manage all registered members
           </p>
         </div>

@@ -277,7 +277,7 @@ export default function EditPostPage({ post }: BlogPostProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 space-y-2 space-x-4">
+              <div className="grid grid-cols-1 space-y-4 space-x-0 md:grid-cols-3 md:space-x-4 md:space-y-2">
                 {/* Post Title */}
                 <div className="col-span-2 space-y-2">
                   <Label htmlFor="title">

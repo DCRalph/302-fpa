@@ -52,7 +52,7 @@ export function DashboardHeader() {
         <div className="flex items-center gap-3">
           <SidebarTrigger size={"icon"} className="" />
           <Separator orientation="vertical" className="!h-8" />
-          <h1 className={`${cabin.className} text-2xl`}>{pageName}</h1>
+          <h1 className={`${cabin.className} text-2xl mr-5 truncate`}>{pageName}</h1>
         </div>
 
         <UserDropdown detailed />

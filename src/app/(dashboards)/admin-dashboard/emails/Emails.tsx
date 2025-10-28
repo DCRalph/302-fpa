@@ -223,8 +223,8 @@ export default function EmailsPage() {
             <Mail className="text-primary h-6 w-6" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold">Email Management</h2>
-            <p className="text-muted-foreground mt-1">
+            <h2 className="text-2xl sm:text-3xl font-bold">Email Management</h2>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
               View and manage all emails sent through the system.
             </p>
           </div>
