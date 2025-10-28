@@ -72,16 +72,16 @@ export const memberProfileRouter = createTRPCRouter({
   update: protectedProcedure
     .input(
       z.object({
-        name: z.string().min(1).optional(),
-        email: z.string().email().optional(),
+        name: z.string().min(1).max(100).optional(),
+        email: z.string().email().max(255).optional(),
         phone: z.string().optional().nullable(),
-        school: z.string().optional().nullable(),
-        professionalPosition: z.string().optional().nullable(),
-        professionalYears: z.string().optional().nullable(),
-        professionalQualification: z.string().optional().nullable(),
-        professionalSpecialisation: z.string().optional().nullable(),
-        professionalBio: z.string().optional().nullable(),
-        image: z.string().optional().nullable(),
+        school: z.string().max(255).optional().nullable(),
+        professionalPosition: z.string().max(255).optional().nullable(),
+        professionalYears: z.string().max(255).optional().nullable(),
+        professionalQualification: z.string().max(255).optional().nullable(),
+        professionalSpecialisation: z.string().max(255).optional().nullable(),
+        professionalBio: z.string().max(255).optional().nullable(),
+        image: z.string().max(255).optional().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

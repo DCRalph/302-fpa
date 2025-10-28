@@ -322,7 +322,7 @@ export const memberBlogRouter = createTRPCRouter({
         where: { id: input.id },
         select: { authorId: true, title: true },
       });
-      if (!post || post.authorId !== ctx.dbUser.id) {
+      if (!post || post.authorId != ctx.dbUser.id) {
         throw new Error("Not authorized to delete this post");
       }
 
