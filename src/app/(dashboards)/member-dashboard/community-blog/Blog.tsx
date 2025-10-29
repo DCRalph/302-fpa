@@ -689,59 +689,61 @@ export default function CommunityBlog() {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="relative h-full">
           {/* My Posts */}
-          <Card className="gap-0">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold">My Posts</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-foreground/70 text-base">
-                Share your knowledge with the community
-              </p>
-              <div className="grid grid-cols-1 gap-4 pt-4 xl:grid-cols-2">
-                <Button asChild className="w-full">
-                  <Link href={"/member-dashboard/community-blog/create"}>
-                    Create a Post
-                  </Link>
-                </Button>
-                <Button
-                  variant={"outline"}
-                  onClick={handleYourPosts}
-                  className="flex-1"
-                >
-                  Your Posts
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Guidelines */}
-          <Card className="gap-2">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold">Guidelines</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {guidelines.map((guideline, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  {guideline.type === "allowed" ? (
-                    <Check
-                      className="w-4 flex-shrink-0 text-[#198754]"
-                      size={24}
-                    />
-                  ) : (
-                    <X
-                      className="text-destructive w-4 flex-shrink-0"
-                      size={24}
-                    />
-                  )}
-                  <span className="text-foreground text-sm">
-                    {guideline.text}
-                  </span>
+          <div className="sticky top-20 space-y-6">
+            <Card className="gap-0">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold">My Posts</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-foreground/70 text-base">
+                  Share your knowledge with the community
+                </p>
+                <div className="grid grid-cols-1 gap-4 pt-4 xl:grid-cols-2">
+                  <Button asChild className="w-full">
+                    <Link href={"/member-dashboard/community-blog/create"}>
+                      Create a Post
+                    </Link>
+                  </Button>
+                  <Button
+                    variant={"outline"}
+                    onClick={handleYourPosts}
+                    className="flex-1"
+                  >
+                    Your Posts
+                  </Button>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            {/* Guidelines */}
+            <Card className="gap-2">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold">Guidelines</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {guidelines.map((guideline, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    {guideline.type === "allowed" ? (
+                      <Check
+                        className="w-4 flex-shrink-0 text-[#198754]"
+                        size={24}
+                      />
+                    ) : (
+                      <X
+                        className="text-destructive w-4 flex-shrink-0"
+                        size={24}
+                      />
+                    )}
+                    <span className="text-foreground text-sm">
+                      {guideline.text}
+                    </span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
