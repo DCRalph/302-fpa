@@ -123,30 +123,12 @@ function EmailModal({ emailId, open, onOpenChange }: EmailModalProps) {
                                 /* Force readable colors in dark mode for common text elements without touching backgrounds.
                                    This overrides inline color declarations (via !important) but does NOT set background-color
                                    so CTAs and hero backgrounds in email HTML are preserved. */
-                                .dark .email-preview, .email-preview.dark { color: #e5e7eb !important; }
+                                .dark .email-preview, .email-preview.dark { color: #1a1a1a !important; }
 
-                                /* Common text-bearing elements */
-                                .dark .email-preview p,
-                                .dark .email-preview div,
-                                .dark .email-preview span,
-                                .dark .email-preview td,
-                                .dark .email-preview th,
-                                .dark .email-preview li,
-                                .dark .email-preview small,
-                                .dark .email-preview strong,
-                                .dark .email-preview b,
-                                .dark .email-preview em { color: #e5e7eb !important; }
+                                
 
                                 /* Links */
                                 .dark .email-preview a { color: #60a5fa !important; }
-
-                                /* Headings retain stronger contrast */
-                                .dark .email-preview h1,
-                                .dark .email-preview h2,
-                                .dark .email-preview h3,
-                                .dark .email-preview h4,
-                                .dark .email-preview h5,
-                                .dark .email-preview h6 { color: #ffffff !important; }
 
                                 /* Blockquote and code/table treatment */
                                 .dark .email-preview blockquote { border-left-color: rgba(255,255,255,0.06) !important; color: #d1d5db !important; }
