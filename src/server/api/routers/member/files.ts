@@ -439,5 +439,17 @@ export const memberFilesRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
+  getById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const file = await ctx.db.file.findUnique({ where: { id: input.id, userId: ctx.dbUser.id } });
+      if (!file) {
+        throw new Error("File not found");
+      }
+      return file;
+    }),
+
+
 });
 

@@ -1,7 +1,8 @@
-import { ReportAction, Severity } from "@prisma/client";
+import { ReportAction, Severity, UserRole } from "@prisma/client";
 import { z } from "zod";
 import { protectedProcedure } from "~/server/api/trpc";
 import { logAppActivity, logUserActivity, AppActivityType, ActivityActionEnum, ActivityEntity, ActivityCategory, getActivityIcon, UserActivityType } from "~/server/api/lib/activity-logger";
+import { TRPCError } from "@trpc/server";
 
 export const resolveReport = protectedProcedure.input(
   z.object({
@@ -10,6 +11,22 @@ export const resolveReport = protectedProcedure.input(
     adminNote: z.string().optional().nullable(),
   })
 ).mutation(async ({ ctx, input }) => {
+
+  // check if admin
+  if (ctx.dbUser.role !== UserRole.ADMIN) {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not authorized to resolve reports" });
+  }
+
+  const initialReport = await ctx.db.blogReport.findUnique({
+    where: { id: input.id, resolvedAt: null },
+  });
+
+  if (!initialReport) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Report not found" });
+  }
+
+
+
   const report = await ctx.db.blogReport.update({
     where: { id: input.id },
     data: {
