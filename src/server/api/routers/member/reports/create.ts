@@ -7,7 +7,8 @@ import {
   AppActivityType,
   ActivityCategory
 } from "~/server/api/lib/activity-logger";
-import { Severity } from "@prisma/client";
+import { Severity, UserRole } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 
 export const createReport = protectedProcedure
   .input(
@@ -19,6 +20,34 @@ export const createReport = protectedProcedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
+
+    // check if post or comment exists
+    if (input.type === "post") {
+      const post = await ctx.db.blogPost.findUnique({
+        where: { id: input.id },
+      });
+      if (!post) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Post not found" });
+      }
+    }
+
+    if (input.type === "comment") {
+      const comment = await ctx.db.blogComment.findUnique({
+        where: { id: input.id },
+      });
+      if (!comment) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Comment not found" });
+      }
+    }
+
+    // check if user has already reported this content
+    const existingReport = await ctx.db.blogReport.findFirst({
+      where: { userId: ctx.dbUser.id, postId: input.type === "post" ? input.id : undefined, commentId: input.type === "comment" ? input.id : undefined },
+    });
+    if (existingReport) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: "You have already reported this content" });
+    }
+
 
     const report = await ctx.db.blogReport.create({
       data: {

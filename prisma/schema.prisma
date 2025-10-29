@@ -319,13 +319,13 @@ model File {
   type FileType @default(OTHER)
 
   userId String
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   registrationId String?
   registration   Registration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
 
   blogPostId String? @unique
-  blogPost BlogPost? @relation(fields: [blogPostId], references: [id])
+  blogPost BlogPost? @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
 
   @@index([registrationId])
 }
