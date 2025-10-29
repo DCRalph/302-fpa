@@ -24,8 +24,13 @@ export const adminFilesRouter = createTRPCRouter({
         });
       }
 
-      const { page, limit, search, sortBy, sortOrder, mimeType } = input;
+      const { page, limit, search, sortBy, sortOrder } = input;
+      let { mimeType } = input;
       const skip = (page - 1) * limit;
+
+      if (mimeType === "all") {
+        mimeType = undefined;
+      }
 
       // Build where clause for search and filtering
       const where: {
