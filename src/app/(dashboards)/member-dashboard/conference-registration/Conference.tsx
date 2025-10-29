@@ -689,7 +689,7 @@ export default function ConferenceRegistration() {
       )}
 
       {!existingRegistration && (
-        <div className="relative grid h-full grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Left Column - Registration Form */}
           <div className="space-y-6 lg:col-span-2">
             <form onSubmit={handleSubmit} className="space-y-6">

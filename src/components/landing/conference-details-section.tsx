@@ -33,14 +33,14 @@ export async function ConferenceDetailsSection() {
               <h3 className="text-primary text-center text-2xl font-semibold">
                 {details.conferenceTitle}
               </h3>
-              <div className="mt-8 grid gap-px overflow-hidden rounded-lg border text-[16px] shadow-md md:grid-cols-1">
+              <div className="mt-8 grid gap-px overflow-hidden rounded-lg border text-[16px] shadow-md md:grid-cols-1 overflow-x-auto">
                 {details.rows.map(({ label, value }, i) => (
                   <div
                     key={i}
                     className="grid grid-cols-[180px_1fr] items-start gap-4 border-b p-4 last:border-b-0 md:border-r md:last:border-r-0"
                   >
                     <div className="text-foreground font-bold">{label}</div>
-                    <div className="text-foreground">{value}</div>
+                    <div className="text-foreground w-75 sm:w-full text-wrap">{value}</div>
                   </div>
                 ))}
               </div>
@@ -72,25 +72,33 @@ export async function ConferenceDetailsSection() {
               <div className="rounded-lg border p-4 shadow-md">
                 <h3 className="font-bold">Contact Information:</h3>
                 <ul className="text-foreground mt-3 space-y-2 text-sm">
-                  {(details?.contacts ?? []).map((c, idx) => (
-                    <li key={idx}>
-                      <span className="text-foreground font-bold">{c.role}:</span>{" "}
-                      {c.email ? (
-                        <Link
-                          target="_blank"
-                          href={`mailto:${c.email}`}
-                          className="text-blue-500 underline hover:text-blue-800"
-                        >
-                          {c.email}
-                        </Link>
-                      ) : (
-                        <>
-                          {c.name}
-                          {c.phone ? ` (${c.phone})` : ""}
-                        </>
-                      )}
-                    </li>
-                  ))}
+                  {(details?.contacts ?? []).length > 0 ? (
+                    <ul className="text-foreground mt-3 space-y-2 text-sm">
+                      {(details?.contacts ?? []).map((c, idx) => (
+                        <li key={idx}>
+                          <span className="text-foreground font-bold">{c.role}:</span>{" "}
+                          {c.email ? (
+                            <Link
+                              target="_blank"
+                              href={`mailto:${c.email}`}
+                              className="text-blue-500 underline hover:text-blue-800"
+                            >
+                              {c.email}
+                            </Link>
+                          ) : (
+                            <>
+                              {c.name}
+                              {c.phone ? ` (${c.phone})` : ""}
+                            </>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-muted-foreground mt-3 text-sm">
+                      No contact information available.
+                    </p>
+                  )}
                 </ul>
               </div>
             </div>
