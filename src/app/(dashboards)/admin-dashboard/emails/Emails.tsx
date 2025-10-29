@@ -291,14 +291,14 @@ export default function EmailsPage() {
                   />
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 ">
                 <Select
                   value={sortBy}
                   onValueChange={(value: "createdAt" | "to" | "subject") =>
                     setSortBy(value)
                   }
                 >
-                  <SelectTrigger className="w-[140px]">
+                  <SelectTrigger className="w-[75%] sm:w-[140px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -311,7 +311,7 @@ export default function EmailsPage() {
                   value={sortOrder}
                   onValueChange={(value: "asc" | "desc") => setSortOrder(value)}
                 >
-                  <SelectTrigger className="w-[100px]">
+                  <SelectTrigger className="w-[50%] sm:w-[100px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -374,7 +374,7 @@ export default function EmailsPage() {
             {/* Pagination */}
             {emailsData && emailsData.pagination.totalPages > 1 && (
               <div className="flex items-center justify-between pt-4">
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-muted-foreground">
                   Showing {(page - 1) * 20 + 1} to{" "}
                   {Math.min(page * 20, emailsData.pagination.totalCount)} of{" "}
                   {emailsData.pagination.totalCount} emails

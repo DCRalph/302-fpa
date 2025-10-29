@@ -24,7 +24,6 @@ import { format } from "date-fns";
 import {
   Search,
   File,
-  FolderOpen,
   Eye,
   Calendar,
   User,
@@ -669,34 +668,36 @@ export default function FilesPage() {
                     )}
                   </SelectContent>
                 </Select>
-                <Select
-                  value={sortBy}
-                  onValueChange={(
-                    value: "createdAt" | "filename" | "sizeBytes" | "mimeType",
-                  ) => setSortBy(value)}
-                >
-                  <SelectTrigger className="w-full sm:w-[140px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="createdAt">Date</SelectItem>
-                    <SelectItem value="filename">Name</SelectItem>
-                    <SelectItem value="sizeBytes">Size</SelectItem>
-                    <SelectItem value="mimeType">Type</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={sortOrder}
-                  onValueChange={(value: "asc" | "desc") => setSortOrder(value)}
-                >
-                  <SelectTrigger className="w-full sm:w-[100px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="desc">Desc</SelectItem>
-                    <SelectItem value="asc">Asc</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex space-x-2">
+                  <Select
+                    value={sortBy}
+                    onValueChange={(
+                      value: "createdAt" | "filename" | "sizeBytes" | "mimeType",
+                    ) => setSortBy(value)}
+                  >
+                    <SelectTrigger className="w-full sm:w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="createdAt">Date</SelectItem>
+                      <SelectItem value="filename">Name</SelectItem>
+                      <SelectItem value="sizeBytes">Size</SelectItem>
+                      <SelectItem value="mimeType">Type</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={sortOrder}
+                    onValueChange={(value: "asc" | "desc") => setSortOrder(value)}
+                  >
+                    <SelectTrigger className="w-full sm:w-[100px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="desc">Desc</SelectItem>
+                      <SelectItem value="asc">Asc</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 

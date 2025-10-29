@@ -31,14 +31,6 @@ export default function ManageMembersPage() {
   });
   const { data: stats } = api.admin.members.getStats.useQuery();
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Spinner className="size-10" />
-      </div>
-    );
-  }
-
   return (
     <main className="flex-1 space-y-6 p-3 sm:p-4 md:p-8">
       <div className="mb-6 flex items-center gap-4 max-w-7xl mx-auto">
@@ -143,7 +135,11 @@ export default function ManageMembersPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!members || members.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <Spinner className="size-10" />
+            </div>
+          ) : !members || members.length === 0 ? (
             <div className="py-12 text-center">
               <User2 className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
               <h3 className="mb-2 text-xl font-semibold">No members found</h3>
@@ -158,12 +154,12 @@ export default function ManageMembersPage() {
               {members.map((member) => (
                 <Card key={member.id} className="border-muted">
                   <CardContent>
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                      <div className="flex-1 space-y-2 min-w-0">
                         <div className="flex items-center gap-3">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="text-lg font-semibold">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="text-base sm:text-lg font-semibold truncate">
                                 {member.name ?? "Unnamed User"}
                               </h3>
                               <Badge
@@ -199,8 +195,8 @@ export default function ManageMembersPage() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-4 text-sm">
-                          <div>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                          <div className="flex items-center gap-1">
                             <span className="text-muted-foreground">
                               Joined:
                             </span>{" "}
@@ -208,7 +204,7 @@ export default function ManageMembersPage() {
                               {new Date(member.createdAt).toLocaleDateString()}
                             </span>
                           </div>
-                          <div>
+                          <div className="flex items-center gap-1">
                             <span className="text-muted-foreground">
                               Registrations:
                             </span>{" "}
@@ -216,7 +212,7 @@ export default function ManageMembersPage() {
                               {member._count.registrations}
                             </span>
                           </div>
-                          <div>
+                          <div className="flex items-center gap-1">
                             <span className="text-muted-foreground">
                               Blog Posts:
                             </span>{" "}
@@ -227,14 +223,14 @@ export default function ManageMembersPage() {
                         </div>
                       </div>
 
-                      <div className="flex flex-col gap-2">
+                      <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-col sm:items-end sm:gap-2 min-w-[140px]">
                         <Link
                           href={`/admin-dashboard/manage-members/${member.id}/edit`}
                         >
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full gap-2"
+                            className="w-full sm:w-auto gap-2"
                           >
                             <Edit className="h-4 w-4" />
                             Edit

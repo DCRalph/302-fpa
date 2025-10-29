@@ -682,8 +682,11 @@ export default function ConferenceRegistration() {
               </CardContent>
             </Card>
           </div>
-
-          {conference && (<InformationPanels conference={conference} />)}
+          <div className="h-full">
+            <div className="lg:sticky lg:top-20">
+              {conference && (<InformationPanels conference={conference} />)}
+            </div>
+          </div>
 
         </div>
       )}
@@ -1181,7 +1184,11 @@ export default function ConferenceRegistration() {
             </form>
 
           </div>
-          {conference && (<InformationPanels conference={conference} />)}
+          <div className="h-full">
+            <div className="lg:sticky lg:top-20">
+              {conference && (<InformationPanels conference={conference} />)}
+            </div>
+          </div>
         </div>
       )}
     </div>
