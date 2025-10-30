@@ -23,11 +23,6 @@ export async function ConferenceDetailsSection() {
           Conference Details
         </h2>
         <div className="bg-card mx-auto mt-12 max-w-5xl rounded-xl border p-8 shadow-sm">
-          {isAdmin && (
-            <div className="mb-4 flex justify-end">
-              <EditDetails />
-            </div>
-          )}
           {details ? (
             <>
               <h3 className="text-primary text-center text-2xl font-semibold">
