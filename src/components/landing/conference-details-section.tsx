@@ -5,6 +5,8 @@ import { montserrat } from "../fonts";
 import { Check } from "lucide-react";
 import Link from "next/link";
 
+import { Separator } from "../ui/separator";
+
 export async function ConferenceDetailsSection() {
   const data = await api.home.getConferenceDetails();
 
@@ -29,7 +31,7 @@ export async function ConferenceDetailsSection() {
                 {details.rows.map(({ label, value }, i) => (
                   <div
                     key={i}
-                    className="grid grid-cols-[180px_1fr] items-start gap-4 border-b p-4 last:border-b-0 md:border-r md:last:border-r-0"
+                    className="grid grid-cols-[180px_1fr] items-start gap-4 border-b p-4 last:border-b-0 md:last:border-r-0"
                   >
                     <div className="text-foreground font-bold">{label}</div>
                     <div className="text-foreground w-75 sm:w-full text-wrap">{value}</div>
@@ -91,6 +93,21 @@ export async function ConferenceDetailsSection() {
                       No contact information available.
                     </p>
                   )}
+
+                  <Separator orientation="horizontal" className="my-2" />
+                  <div className="flex space-x-2">
+                    <h3 className="font-bold">Email:</h3>
+                    <p className="text-foreground text-sm">
+                      <Link
+                        target="_blank"
+                        href="mailto:fijiprincipalassociation@gmail.com"
+                        className="text-blue-800 hover:underline dark:text-blue-400"
+                      >
+                        fijiprincipalassociation@gmail.com
+                      </Link>
+
+                    </p>
+                  </div>
                 </ul>
               </div>
             </div>
