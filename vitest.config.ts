@@ -12,7 +12,7 @@ export default defineConfig({
     testTimeout: 30000, // 30 seconds for database operations
     hookTimeout: 30000, // 30 seconds for setup/teardown
 
-    // reporters: ['html', 'verbose'],
+    // reporters: ['tree'],
   },
   plugins: [tsconfigPaths()],
 })

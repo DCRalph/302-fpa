@@ -7,7 +7,7 @@ import {
   AppActivityType,
   ActivityCategory
 } from "~/server/api/lib/activity-logger";
-import { Severity, UserRole } from "@prisma/client";
+import { Severity } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 
 export const createReport = protectedProcedure

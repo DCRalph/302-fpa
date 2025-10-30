@@ -14,7 +14,7 @@ export async function NavBar() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-6">
         {/* Logo Section */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="grid size-11 place-items-center rounded-4xl bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75% to text-primary-foreground shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+          <div className="grid size-11 place-items-center rounded-4xl  bg-gradient-to-br from-gradient-blue from-25% via-gradient-purple via-50% to-gradient-red to-75% to text-primary-foreground shadow-lg group-hover:shadow-xl transition-shadow duration-300">
             <GraduationCap size={24} className="drop-shadow-sm" />
           </div>
           <div className="leading-tight">

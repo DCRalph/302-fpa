@@ -24,7 +24,6 @@ import { format } from "date-fns";
 import {
   Search,
   File,
-  FolderOpen,
   Eye,
   Calendar,
   User,

@@ -12,7 +12,6 @@ import { ZodError } from "zod";
 
 import { db } from "~/server/db";
 import { auth } from "~/lib/auth";
-import { headers } from "next/headers";
 
 /**
  * 1. CONTEXT
