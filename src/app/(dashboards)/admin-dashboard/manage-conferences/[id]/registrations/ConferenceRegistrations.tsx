@@ -289,22 +289,23 @@ export default function ConferenceRegistrationsPage() {
                   editedValues.paymentStatus !== (registration.paymentStatus as "unpaid" | "pending" | "paid" | "refunded" | "partial");
 
                 return (
-                  <Card key={registration.id} className="border-muted">
+                      <Card key={registration.id} className="border-muted">
                     <CardContent>
-                      <div className="flex items-start justify-between gap-4">
+                      {/* Stack on small screens, side-by-side on sm+ */}
+                      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                         <div className="flex-1 space-y-2">
                           <div className="flex items-start gap-3">
                             <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-semibold text-lg">{registration.name}</h3>
-                                <Badge variant={getStatusBadgeVariant(registration.status)}>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="font-semibold text-lg truncate">{registration.name}</h3>
+                                <Badge className="shrink-0" variant={getStatusBadgeVariant(registration.status)}>
                                   {registration.status}
                                 </Badge>
-                                <Badge variant={getPaymentStatusBadgeVariant(registration.paymentStatus)}>
+                                <Badge className="shrink-0" variant={getPaymentStatusBadgeVariant(registration.paymentStatus)}>
                                   {registration.paymentStatus}
                                 </Badge>
                                 {registration.attachments && registration.attachments.length > 0 && (
-                                  <Badge variant="outline" className="flex items-center gap-1">
+                                  <Badge variant="outline" className="flex items-center gap-1 shrink-0">
                                     <FileText className="h-3 w-3" />
                                     {registration.attachments.length} Document{registration.attachments.length > 1 ? 's' : ''}
                                   </Badge>
@@ -327,14 +328,14 @@ export default function ConferenceRegistrationsPage() {
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-4 text-sm">
-                            <div>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
+                            <div className="w-full sm:w-auto">
                               <span className="text-muted-foreground">Registered:</span>{" "}
                               <span className="font-medium">
                                 {new Date(registration.createdAt).toLocaleDateString()}
                               </span>
                             </div>
-                            <div>
+                            <div className="w-full sm:w-auto">
                               <span className="text-muted-foreground">Amount Paid:</span>{" "}
                               <span className="font-medium">
                                 {registration.conference?.currency ?? "FJD"} $
@@ -342,7 +343,7 @@ export default function ConferenceRegistrationsPage() {
                               </span>
                             </div>
                             {amountDue > 0 && (
-                              <div>
+                              <div className="w-full sm:w-auto">
                                 <span className="text-muted-foreground">Amount Due:</span>{" "}
                                 <span className="font-medium text-destructive">
                                   {registration.conference?.currency ?? "FJD"} $
@@ -353,7 +354,7 @@ export default function ConferenceRegistrationsPage() {
                           </div>
 
                           <div className="flex flex-wrap items-center gap-3 pt-1">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
                               <span className="text-muted-foreground text-xs">Status</span>
                               <Select
                                 value={editedValues.status}
@@ -368,7 +369,7 @@ export default function ConferenceRegistrationsPage() {
                                   }));
                                 }}
                               >
-                                <SelectTrigger size="sm" aria-label="Change registration status">
+                                <SelectTrigger size="sm" aria-label="Change registration status" className="w-full sm:w-auto">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -379,7 +380,7 @@ export default function ConferenceRegistrationsPage() {
                               </Select>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
                               <span className="text-muted-foreground text-xs">Payment</span>
                               <Select
                                 value={editedValues.paymentStatus}
@@ -399,7 +400,7 @@ export default function ConferenceRegistrationsPage() {
                                   }));
                                 }}
                               >
-                                <SelectTrigger size="sm" aria-label="Change payment status">
+                                <SelectTrigger size="sm" aria-label="Change payment status" className="w-full sm:w-auto">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -412,7 +413,7 @@ export default function ConferenceRegistrationsPage() {
                               </Select>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
                               <span className="text-muted-foreground text-xs">Add Payment</span>
                               <Select
                                 disabled={addingPaymentId === registration.id && addPaymentMutation.isPending}
@@ -428,7 +429,7 @@ export default function ConferenceRegistrationsPage() {
                                   handleAddPayment(registration.id, amountCents, currency, registration.name);
                                 }}
                               >
-                                <SelectTrigger size="sm" aria-label="Add payment amount">
+                                <SelectTrigger size="sm" aria-label="Add payment amount" className="w-full sm:w-auto">
                                   <SelectValue placeholder="Quick payment" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -493,7 +494,7 @@ export default function ConferenceRegistrationsPage() {
 
                           {/* Row-level Save/Cancel controls */}
                           {isDirty && (
-                            <div className="flex items-center gap-2 pt-1">
+                            <div className="flex items-center gap-2 pt-1 w-full sm:w-auto justify-end">
                               <Button
                                 size="sm"
                                 onClick={() => {
@@ -505,6 +506,7 @@ export default function ConferenceRegistrationsPage() {
                                   });
                                 }}
                                 disabled={savingId === registration.id && updateStatusMutation.isPending}
+                                className="w-full sm:w-auto"
                               >
                                 {savingId === registration.id && updateStatusMutation.isPending ? "Saving…" : "Save"}
                               </Button>
@@ -519,6 +521,7 @@ export default function ConferenceRegistrationsPage() {
                                   });
                                 }}
                                 disabled={savingId === registration.id && updateStatusMutation.isPending}
+                                className="w-full sm:w-auto"
                               >
                                 Cancel
                               </Button>
@@ -526,11 +529,11 @@ export default function ConferenceRegistrationsPage() {
                           )}
                         </div>
 
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="gap-2"
+                            className="gap-2 w-full sm:w-auto"
                             onClick={() => handleViewDetails(registration.id)}
                           >
                             <Eye className="h-4 w-4" />

@@ -675,7 +675,7 @@ export default function FilesPage() {
                       value: "createdAt" | "filename" | "sizeBytes" | "mimeType",
                     ) => setSortBy(value)}
                   >
-                    <SelectTrigger className="w-full sm:w-[140px]">
+                    <SelectTrigger className="w-[75%] sm:w-[140px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -689,7 +689,7 @@ export default function FilesPage() {
                     value={sortOrder}
                     onValueChange={(value: "asc" | "desc") => setSortOrder(value)}
                   >
-                    <SelectTrigger className="w-full sm:w-[100px]">
+                    <SelectTrigger className="w-[50%] sm:w-[100px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -706,9 +706,6 @@ export default function FilesPage() {
               <div className="flex items-center justify-center py-12">
                 <div className="flex flex-col items-center gap-2">
                   <Spinner />
-                  <p className="text-muted-foreground text-sm">
-                    Loading files...
-                  </p>
                 </div>
               </div>
             ) : filesData?.files.length === 0 ? (

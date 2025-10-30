@@ -530,7 +530,7 @@ export default function BlogPost({ post }: BlogPostProps) {
                   />
                 </div>
 
-                {/* Edit Published Status */}
+                {/* Edit Published Status */}1
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="edit-published"
@@ -573,7 +573,7 @@ export default function BlogPost({ post }: BlogPostProps) {
             )}
 
             {/* Post Footer */}
-            <div className="flex items-center justify-between border-t pt-6">
+            <div className="flex items-center justify-between border-t pt-4 mb-0">
               <div className="flex items-center space-x-4">
                 <Button
                   variant={"ghost"}
@@ -587,7 +587,7 @@ export default function BlogPost({ post }: BlogPostProps) {
                   <span className="text-base">{localLikeCount}</span>
                 </Button>
               </div>
-              <div className="mt-2 flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <p className="text-muted-foreground text-sm">
                   {new Date(post.createdAt).toLocaleDateString()}
                 </p>
@@ -600,7 +600,7 @@ export default function BlogPost({ post }: BlogPostProps) {
             </div>
 
             {/* Comments Section */}
-            <div className="mt-8 space-y-6">
+            <div className="mt-4 space-y-6">
               {/* Comments Header */}
               <div className="border-t pt-8">
                 <div className="mb-6">
