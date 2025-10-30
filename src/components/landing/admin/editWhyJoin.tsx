@@ -17,6 +17,16 @@ import {
 import { api } from "~/trpc/react";
 import { type ConferenceWhyJoin } from "~/server/api/routers/home";
 import { handleTRPCMutation } from "~/lib/toast";
+import { Textarea } from "~/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { DynamicIcon } from "~/components/DynamicIcon";
+import { Label } from "~/components/ui/label";
 
 // Common Lucide icon names for the dropdown
 const ICON_OPTIONS = [
@@ -108,7 +118,7 @@ export default function EditWhyJoin({
     );
   };
 
-  const handelSave = () => {
+  const handleSave = () => {
     void handleTRPCMutation(
       () => changeConferenceWhyJoin({ items }),
       "Why Join saved successfully",
@@ -160,7 +170,7 @@ export default function EditWhyJoin({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Title</label>
+                <Label htmlFor="title" className="text-sm font-medium">Title</Label>
                 <Input
                   value={item.title}
                   onChange={(e) => updateItem(index, "title", e.target.value)}
@@ -169,8 +179,8 @@ export default function EditWhyJoin({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
-                <textarea
+                <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+                <Textarea
                   value={item.description}
                   onChange={(e) =>
                     updateItem(index, "description", e.target.value)
@@ -181,18 +191,27 @@ export default function EditWhyJoin({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Icon</label>
-                <select
+                <Label htmlFor="icon" className="text-sm font-medium">Icon</Label>
+                <Select
                   value={item.icon.name}
-                  onChange={(e) => updateIcon(index, e.target.value)}
-                  className="bg-background border-input focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 h-9 w-full rounded-md border px-3 text-sm focus-visible:ring-[3px]"
+                  onValueChange={(val) => updateIcon(index, val)}
                 >
-                  {ICON_OPTIONS.map((iconName) => (
-                    <option key={iconName} value={iconName}>
-                      {iconName}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="bg-background border-input focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 h-9 w-full rounded-md border px-3 text-sm focus-visible:ring-[3px]">
+                    <div className="flex items-center gap-2">
+                      <SelectValue />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ICON_OPTIONS.map((iconName) => (
+                      <SelectItem key={iconName} value={iconName}>
+                        <div className="flex items-center gap-2">
+                          <DynamicIcon type="lucide" name={iconName} props={{ className: 'h-4 w-4 text-muted-foreground' }} />
+                          <span>{iconName}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           ))}
@@ -215,7 +234,7 @@ export default function EditWhyJoin({
         </div>
 
         <SheetFooter className="px-4 pb-4">
-          <Button onClick={handelSave} disabled={isPending}>
+          <Button onClick={handleSave} disabled={isPending}>
             {isPending ? "Saving..." : "Save"}
           </Button>
         </SheetFooter>

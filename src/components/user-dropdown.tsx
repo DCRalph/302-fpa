@@ -205,7 +205,7 @@ export function UserDropdown({ detailed = false }) {
 
                 <DropdownMenuItem asChild>
                   <Link
-                    href="/admin-dashboard"
+                    href="/admin-dashboard/manage-conferences"
                     className="flex items-center gap-3 py-2"
                   >
                     <ExternalLink className="text-muted-foreground size-4" />
