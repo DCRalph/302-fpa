@@ -1,0 +1,597 @@
+✓ tests/member-files.test.ts (25 tests) 12013ms 
+
+   ✓ Member Files Router Tests (25) 
+
+     ✓ member.files.list (4) 
+
+       ✓ should return files for authenticated user  322ms 
+
+       ✓ should only return files for current user  534ms 
+
+       ✓ should work for admin users 174ms 
+
+       ✓ should include related data when available  517ms 
+
+     ✓ member.files.delete (4) 
+
+       ✓ should validate file ID 239ms 
+
+       ✓ should prevent deleting non-existent file 128ms 
+
+       ✓ should prevent deleting other users files  482ms 
+
+       ✓ should return success when file is deleted 286ms 
+
+     ✓ member.files.upload (7) 
+
+       ✓ should validate file type 119ms 
+
+       ✓ should validate file size  482ms 
+
+       ✓ should validate file type parameter  501ms 
+
+       ✓ should require file  436ms 
+
+       ✓ should require file type  475ms 
+
+       ✓ should validate registration ID when provided  345ms 
+
+       ✓ should validate blog post ID when provided  497ms 
+
+     ✓ member.files.getById (4) 
+
+       ✓ should return file details for authenticated user  406ms 
+
+       ✓ should prevent accessing other users files  439ms 
+
+       ✓ should return 404 for non-existent file  312ms 
+
+       ✓ should validate file ID 184ms 
+
+     ✓ Files Router Integration (3) 
+
+       ✓ should maintain data consistency across file operations 236ms 
+
+       ✓ should handle concurrent file operations  525ms 
+
+       ✓ should work for different user types  1435ms 
+
+     ✓ File Type Validation (3) 
+
+       ✓ should validate PROFILE_IMAGE file types  746ms 
+
+       ✓ should validate REGISTRATION_DOCUMENT file types  699ms 
+
+       ✓ should validate BLOG_IMAGE file types  703ms 
+
+✓ tests/admin-conference.test.ts (25 tests) 12636ms 
+
+   ✓ Admin Conference Router Tests (25) 
+
+     ✓ admin.conference.getAll (4) 
+
+       ✓ should return all conferences for admin user  373ms 
+
+       ✓ should be ordered by creation date (latest first) 243ms 
+
+       ✓ should reject access for regular users  415ms 
+
+       ✓ should include contact information  333ms 
+
+     ✓ admin.conference.getById (4) 
+
+       ✓ should return conference details for admin  726ms 
+
+       ✓ should return 404 for non-existent conference  508ms 
+
+       ✓ should validate conference ID  520ms 
+
+       ✓ should reject access for regular users 135ms 
+
+     ✓ admin.conference.create (7) 
+
+       ✓ should create a new conference for admin  521ms 
+
+       ✓ should validate required fields 203ms 
+
+       ✓ should validate date ranges  444ms 
+
+       ✓ should validate registration date ranges 168ms 
+
+       ✓ should validate price 260ms 
+
+       ✓ should validate max registrations 220ms 
+
+       ✓ should reject access for regular users  428ms 
+
+     ✓ admin.conference.update (4) 
+
+       ✓ should update conference details for admin  914ms 
+
+       ✓ should return 404 for non-existent conference  446ms 
+
+       ✓ should validate conference ID  337ms 
+
+       ✓ should reject access for regular users  316ms 
+
+     ✓ admin.conference.delete (4) 
+
+       ✓ should delete conference for admin  877ms 
+
+       ✓ should return 404 for non-existent conference 166ms 
+
+       ✓ should validate conference ID  437ms 
+
+       ✓ should reject access for regular users 271ms 
+
+     ✓ Conference Router Integration (2) 
+
+       ✓ should maintain data consistency across conference operations  2062ms 
+
+       ✓ should handle concurrent conference operations  522ms 
+
+✓ tests/auth.test.ts (13 tests) 8971ms 
+
+   ✓ Auth Router Tests (13) 
+
+     ✓ auth.me endpoint (5) 
+
+       ✓ should return user session and dbUser for authenticated admin 236ms 
+
+       ✓ should return user session and dbUser for authenticated regular user  496ms 
+
+       ✓ should return user session and dbUser for verified user  532ms 
+
+       ✓ should return user session and dbUser for unverified user 210ms 
+
+       ✓ should return user session and dbUser for professional user 279ms 
+
+     ✓ auth.requestPasswordReset endpoint (3) 
+
+       ✓ should successfully request password reset for existing user  1960ms 
+
+       ✓ should handle password reset request for non-existing user gracefully  472ms 
+
+       ✓ should validate email format  465ms 
+
+     ✓ auth.resetPassword endpoint (2) 
+
+       ✓ should validate password requirements 270ms 
+
+       ✓ should validate token format 234ms 
+
+     ✓ Authentication state consistency (3) 
+
+       ✓ all test users should have consistent session and dbUser data  1715ms 
+
+       ✓ admin users should have ADMIN role  349ms 
+
+       ✓ regular users should have USER role  1355ms 
+
+✓ tests/member.test.ts (23 tests) 21800ms 
+
+   ✓ Member Router Tests (23) 
+
+     ✓ member.dashboard.getMemberDashboard (3) 
+
+       ✓ should return dashboard data for regular user  587ms 
+
+       ✓ should return dashboard data for admin user  392ms 
+
+       ✓ should include user-specific statistics  523ms 
+
+     ✓ member.blog.getCategories (2) 
+
+       ✓ should return blog categories for authenticated user  354ms 
+
+       ✓ should work for admin users  478ms 
+
+     ✓ member.blog.list (5) 
+
+       ✓ should return published blog posts for authenticated user  515ms 
+
+       ✓ should support pagination  563ms 
+
+       ✓ should support search query  542ms 
+
+       ✓ should support category filtering  528ms 
+
+       ✓ should filter "Your posts" correctly 230ms 
+
+     ✓ member.blog.createPost (3) 
+
+       ✓ should create a new blog post for authenticated user  975ms 
+
+       ✓ should create a draft post  1037ms 
+
+       ✓ should validate required fields  436ms 
+
+     ✓ member.blog.updatePost (2) 
+
+       ✓ should update own blog post  1471ms 
+
+       ✓ should prevent updating other users posts  905ms 
+
+     ✓ member.blog.deletePost (2) 
+
+       ✓ should delete own blog post  1186ms 
+
+       ✓ should prevent deleting other users posts  1400ms 
+
+     ✓ member.blog.getById (2) 
+
+       ✓ should return blog post by id  1187ms 
+
+       ✓ should return 404 for non-existent post  324ms 
+
+     ✓ member.blog.likePost and unlikePost (2) 
+
+       ✓ should like and unlike a post  2291ms 
+
+       ✓ should handle double liking gracefully  1108ms 
+
+     ✓ member.blog comments (2) 
+
+       ✓ should add comment to post  2030ms 
+
+       ✓ should get comments for post  1846ms 
+✓ tests/integration.test.ts (13 tests) 22257ms 
+
+   ✓ Integration Tests - Cross-Router Functionality (13) 
+
+     ✓ User Role-Based Access Control (2) 
+
+       ✓ admin users should have access to both admin and member routes  1526ms 
+
+       ✓ regular users should only have access to member routes  1229ms 
+
+     ✓ User Activity Logging Integration (2) 
+
+       ✓ blog post creation should log user activity  1393ms 
+
+       ✓ blog post update should log user activity  1765ms 
+
+     ✓ Multi-User Blog Interactions (2) 
+
+       ✓ multiple users should be able to interact with the same blog post  1758ms 
+
+       ✓ users should not be able to modify each others posts  1296ms 
+
+     ✓ Admin-Member Workflow Integration (2) 
+
+       ✓ admin should be able to manage members and see their activities  1301ms 
+
+       ✓ admin should be able to update member details  1000ms 
+
+     ✓ Authentication State Consistency (1) 
+
+       ✓ all users should have consistent authentication state across routers  6507ms 
+
+     ✓ Error Handling Integration (2) 
+
+       ✓ should handle invalid IDs gracefully across routers  403ms 
+
+       ✓ should handle unauthorized access consistently  706ms 
+
+     ✓ Data Consistency Across Routers (2) 
+
+       ✓ user data should be consistent between auth and member routers  992ms 
+
+       ✓ blog post counts should be consistent  1560ms 
+
+✓ tests/admin.test.ts (23 tests) 9626ms 
+
+   ✓ Admin Router Tests (23) 
+
+     ✓ admin.dashboard.getAdminDashboard (3) 
+
+       ✓ should return dashboard data for admin user  545ms 
+
+       ✓ should include user statistics 275ms 
+
+       ✓ should reject access for regular users  448ms 
+
+     ✓ admin.dashboard.getAllActivities (3) 
+
+       ✓ should return paginated activities for admin  811ms 
+
+       ✓ should handle different page sizes  514ms 
+
+       ✓ should reject access for regular users 262ms 
+
+     ✓ admin.members.getAll (4) 
+
+       ✓ should return all members for admin  302ms 
+
+       ✓ should filter by role  1016ms 
+
+       ✓ should search by name and email 298ms 
+
+       ✓ should reject access for regular users 183ms 
+
+     ✓ admin.members.getById (3) 
+
+       ✓ should return member details for admin 252ms 
+
+       ✓ should return 404 for non-existent member  403ms 
+
+       ✓ should reject access for regular users 250ms 
+
+     ✓ admin.members.update (4) 
+
+       ✓ should update member details for admin  900ms 
+
+       ✓ should prevent admin from demoting themselves 207ms 
+
+       ✓ should prevent duplicate email updates  387ms 
+
+       ✓ should reject access for regular users 225ms 
+
+     ✓ admin.members.getStats (2) 
+
+       ✓ should return member statistics for admin 228ms 
+
+       ✓ should reject access for regular users  406ms 
+
+     ✓ admin.members.delete (2) 
+
+       ✓ should prevent admin from deleting themselves 289ms 
+
+       ✓ should reject access for regular users 149ms 
+
+     ✓ admin.dashboard.getConferenceAnalytics (2) 
+
+       ✓ should return conference analytics for admin  346ms 
+
+       ✓ should reject access for regular users  411ms 
+
+✓ tests/error-scenarios.test.ts (21 tests) 24148ms 
+
+   ✓ Error Scenarios Tests (21) 
+
+     ✓ Authentication Errors (3) 
+
+       ✓ should handle invalid session gracefully  310ms 
+
+       ✓ should reject unauthorized access to admin routes  1820ms 
+
+       ✓ should allow admin access to member routes  457ms 
+
+     ✓ Input Validation Errors (6) 
+
+       ✓ should validate email format across all endpoints  5075ms 
+
+       ✓ should validate required fields  612ms 
+
+       ✓ should validate string length limits  879ms 
+
+       ✓ should validate numeric ranges  380ms 
+
+       ✓ should validate date ranges 264ms 
+
+       ✓ should validate enum values  319ms 
+
+     ✓ Resource Not Found Errors (2) 
+
+       ✓ should return 404 for non-existent resources  3718ms 
+
+       ✓ should handle empty ID parameters  1396ms 
+
+     ✓ Permission Errors (3) 
+
+       ✓ should prevent users from accessing other users resources  988ms 
+
+       ✓ should prevent self-destructive actions  344ms 
+
+       ✓ should prevent duplicate resource creation  717ms 
+
+     ✓ System Error Handling (4) 
+
+       ✓ should handle database connection errors gracefully  377ms 
+
+       ✓ should handle malformed JSON in requests 193ms 
+
+       ✓ should handle concurrent operations gracefully  527ms 
+
+       ✓ should handle timeout scenarios  316ms 
+
+     ✓ Edge Case Error Handling (3) 
+
+       ✓ should handle very large input values  729ms 
+
+       ✓ should handle special characters in input  2261ms 
+
+       ✓ should handle boundary date values  1853ms 
+
+✓ tests/user test.test.ts (17 tests) 2443ms 
+
+   ✓ Test User Generator Usage Examples (4) 
+
+     ✓ should generate 5 different test users 0ms 
+
+     ✓ should have different roles 0ms 
+
+     ✓ should have different email verification status 0ms 
+
+     ✓ should have working sessions and callers  2053ms 
+
+   ✓ Helper Functions Usage (7) 
+
+     ✓ getTestUser should return specific user 0ms 
+
+     ✓ getTestUsers should return multiple users 2ms 
+
+     ✓ getAllTestUsers should return all users 0ms 
+
+     ✓ getAdminUsers should return only admin users 1ms 
+
+     ✓ getRegularUsers should return only regular users 0ms 
+
+     ✓ getVerifiedUsers should return only verified users 0ms 
+
+     ✓ getUnverifiedUsers should return only unverified users 0ms 
+
+   ✓ Testing Different Scenarios (4) 
+
+     ✓ should test admin-only functionality 0ms 
+
+     ✓ should test user-only functionality 0ms 
+
+     ✓ should test unverified user restrictions 0ms 
+
+     ✓ should test professional user with detailed profile 0ms 
+
+   ✓ Testing with Multiple Users (2) 
+
+     ✓ should test interactions between different users 0ms 
+
+     ✓ should test bulk operations with multiple users 1ms 
+✓ tests/home.test.ts (11 tests) 3920ms 
+
+   ✓ Home Router Tests (11) 
+
+     ✓ home.getConferenceTitle (3) 
+
+       ✓ should return conference title for public access  370ms 
+
+       ✓ should create default title if none exists 253ms 
+
+       ✓ should work without authentication  333ms 
+
+     ✓ home.getConferenceWhyJoin (3) 
+
+       ✓ should return conference why join data for public access 258ms 
+
+       ✓ should create default why join data if none exists 173ms 
+
+       ✓ should work without authentication  526ms 
+
+     ✓ home.getConferenceDetails (3) 
+
+       ✓ should return conference details for public access 289ms 
+
+       ✓ should return null when no active conference exists 249ms 
+
+       ✓ should work without authentication 212ms 
+
+     ✓ Home Router Integration (2) 
+
+       ✓ all home endpoints should work together  525ms 
+
+       ✓ should handle concurrent requests  301ms 
+
+✓ tests/blog-reports.test.ts (22 tests) 28952ms 
+
+   ✓ Blog Reports Router Tests (22) 
+
+     ✓ member.blog.getReports (3) 
+
+       ✓ should return reports created by current user  346ms 
+
+       ✓ should work for admin users 205ms 
+
+       ✓ should only return reports created by the current user  1021ms 
+
+     ✓ member.blog.createReport (7) 
+
+       ✓ should create a new report for authenticated user  1062ms 
+
+       ✓ should validate required fields  457ms 
+
+       ✓ should validate blog post ID  357ms 
+
+       ✓ should validate reason enum 226ms 
+
+       ✓ should prevent reporting non-existent blog post  460ms 
+
+       ✓ should prevent duplicate reports on same post  1590ms 
+
+       ✓ should work for different report reasons  5557ms 
+
+     ✓ member.blog.resolveReport (7) 
+
+       ✓ should resolve a report for admin user  1361ms 
+
+       ✓ should validate report ID 287ms 
+
+       ✓ should validate action enum  450ms 
+
+       ✓ should return 404 for non-existent report 192ms 
+
+       ✓ should prevent resolving already resolved reports  1900ms 
+
+       ✓ should work for different resolution actions  5001ms 
+
+       ✓ should reject access for regular users  366ms 
+
+     ✓ Blog Reports Integration (3) 
+
+       ✓ should maintain data consistency across report operations  2524ms 
+
+       ✓ should handle concurrent report operations  592ms 
+
+       ✓ should work for different user types  1143ms 
+
+     ✓ Report Status and Workflow (2) 
+
+       ✓ should track report status changes  2145ms 
+
+       ✓ should include proper timestamps  888ms 
+
+✓ tests/member-profile.test.ts (21 tests) 8549ms 
+
+   ✓ Member Profile Router Tests (21) 
+
+     ✓ member.profile.get (4) 
+
+       ✓ should return current user profile for authenticated user 235ms 
+
+       ✓ should work for admin users  360ms 
+
+       ✓ should work for verified users  471ms 
+
+       ✓ should work for professional users 216ms 
+
+     ✓ member.profile.update (6) 
+
+       ✓ should update basic profile fields  536ms 
+
+       ✓ should update professional fields  317ms 
+
+       ✓ should validate required fields 162ms 
+
+       ✓ should validate email format  340ms 
+
+       ✓ should prevent duplicate email updates 279ms 
+
+       ✓ should allow updating to same email  458ms 
+
+     ✓ member.profile.changePassword (4) 
+
+       ✓ should validate password requirements  327ms 
+
+       ✓ should validate current password  309ms 
+
+       ✓ should require current password 266ms 
+
+       ✓ should require new password  335ms 
+
+     ✓ member.profile.setPassword (3) 
+
+       ✓ should set password for OAuth users  426ms 
+
+       ✓ should validate password requirements 273ms 
+
+       ✓ should require password 232ms 
+
+     ✓ member.profile.getAccounts (2) 
+
+       ✓ should return connected auth accounts 235ms 
+
+       ✓ should work for different user types  888ms 
+
+     ✓ Profile Router Integration (2) 
+
+       ✓ should maintain data consistency across profile operations  838ms 
+
+       ✓ should handle concurrent profile updates  544ms 
