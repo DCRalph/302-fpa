@@ -2,15 +2,12 @@ import { api } from "~/trpc/server";
 import { type ConferenceDetails } from "~/server/api/routers/home";
 
 import { montserrat } from "../fonts";
-import EditDetails from "./admin/editDetails";
 import { Check } from "lucide-react";
 import Link from "next/link";
 
 export async function ConferenceDetailsSection() {
-  const { dbUser } = await api.auth.me();
   const data = await api.home.getConferenceDetails();
 
-  const isAdmin = dbUser?.role === "ADMIN";
   const detailsJson = data?.value ?? "";
   const details = (detailsJson ? JSON.parse(detailsJson) : null) as ConferenceDetails | null;
 
@@ -23,11 +20,6 @@ export async function ConferenceDetailsSection() {
           Conference Details
         </h2>
         <div className="bg-card mx-auto mt-12 max-w-5xl rounded-xl border p-8 shadow-sm">
-          {isAdmin && (
-            <div className="mb-4 flex justify-end">
-              <EditDetails />
-            </div>
-          )}
           {details ? (
             <>
               <h3 className="text-primary text-center text-2xl font-semibold">

@@ -11,36 +11,49 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "~/components/ui/sheet";
 import { api } from "~/trpc/react";
 import { type ConferenceTitle } from "~/server/api/routers/home";
 import { handleTRPCMutation } from "~/lib/toast";
 
-export function EditYear({ titleObject }: { titleObject: ConferenceTitle | null }) {
-  const [open, setOpen] = useState(false);
+export function EditTitle({
+  titleObject,
+  open: controlledOpen,
+  onOpenChange,
+}: {
+  titleObject: ConferenceTitle | null;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined && onOpenChange !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? onOpenChange : setInternalOpen;
+
   const [title, setTitle] = useState(titleObject?.title ?? "");
   const [subtitle, setSubtitle] = useState(titleObject?.subtitle ?? "");
 
-
   const utils = api.useUtils();
+  
   const { mutateAsync: changeTitle, isPending } =
     api.admin.editHome.changeConferenceTitle.useMutation({
       onSuccess: async () => {
         await utils.home.getConferenceTitle.invalidate();
+        await utils.home.invalidate();
         setOpen(false);
       },
     });
 
-  const handelSave = () => {
-    void handleTRPCMutation(() => changeTitle({ title, subtitle }), "Title saved successfully", "Failed to save title");
+  const handleSave = () => {
+    void handleTRPCMutation(
+      () => changeTitle({ title, subtitle }),
+      "Title saved successfully",
+      "Failed to save title",
+    );
   };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline">Edit Title</Button>
-      </SheetTrigger>
       <SheetContent side="right">
         <SheetHeader>
           <SheetTitle>Conference Title</SheetTitle>
@@ -49,7 +62,7 @@ export function EditYear({ titleObject }: { titleObject: ConferenceTitle | null 
           </SheetDescription>
         </SheetHeader>
 
-        <div className="p-4 space-y-2">
+        <div className="space-y-2 p-4">
           <label className="text-sm font-medium" htmlFor="title">
             Title
           </label>
@@ -61,7 +74,7 @@ export function EditYear({ titleObject }: { titleObject: ConferenceTitle | null 
           />
         </div>
 
-        <div className="p-4 space-y-2">
+        <div className="space-y-2 p-4">
           <label className="text-sm font-medium" htmlFor="subtitle">
             Subtitle
           </label>
@@ -75,7 +88,7 @@ export function EditYear({ titleObject }: { titleObject: ConferenceTitle | null 
 
         <SheetFooter>
           <Button
-            onClick={handelSave}
+            onClick={handleSave}
             disabled={!title || !subtitle || isPending}
           >
             {isPending ? "Saving..." : "Save"}
@@ -86,6 +99,4 @@ export function EditYear({ titleObject }: { titleObject: ConferenceTitle | null 
   );
 }
 
-export default EditYear;
-
-
+export default EditTitle;

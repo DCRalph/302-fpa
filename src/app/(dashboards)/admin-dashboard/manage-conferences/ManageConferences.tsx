@@ -58,20 +58,20 @@ export default function ManageConferencesPage() {
 
   return (
     <main className="flex-1 space-y-6 p-3 sm:p-4 md:p-8">
-      <div className="mb-6 flex items-center justify-between max-w-7xl mx-auto">
+      <div className="mb-6 sm:flex space-y-4 sm:space-y-0 items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center gap-4">
           <div className="bg-primary/10 rounded-lg p-2.5">
             <Calendar className="text-primary h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Manage Conferences</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-2xl sm:text-3xl font-bold">Manage Conferences</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
               Create, view, and manage conference details
             </p>
           </div>
         </div>
         <Link href="/admin-dashboard/manage-conferences/create">
-          <Button className="gap-2">
+          <Button className="gap-2 w-full sm:w-auto">
             <Plus className="h-4 w-4" />
             Create Conference
           </Button>
@@ -170,7 +170,7 @@ export default function ManageConferencesPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-4 sm:gap-2">
                 <Link
                   href={`/admin-dashboard/manage-conferences/${latestConference.id}`}
                 >

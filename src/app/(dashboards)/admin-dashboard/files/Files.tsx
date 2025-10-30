@@ -668,34 +668,36 @@ export default function FilesPage() {
                     )}
                   </SelectContent>
                 </Select>
-                <Select
-                  value={sortBy}
-                  onValueChange={(
-                    value: "createdAt" | "filename" | "sizeBytes" | "mimeType",
-                  ) => setSortBy(value)}
-                >
-                  <SelectTrigger className="w-full sm:w-[140px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="createdAt">Date</SelectItem>
-                    <SelectItem value="filename">Name</SelectItem>
-                    <SelectItem value="sizeBytes">Size</SelectItem>
-                    <SelectItem value="mimeType">Type</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={sortOrder}
-                  onValueChange={(value: "asc" | "desc") => setSortOrder(value)}
-                >
-                  <SelectTrigger className="w-full sm:w-[100px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="desc">Desc</SelectItem>
-                    <SelectItem value="asc">Asc</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex space-x-2">
+                  <Select
+                    value={sortBy}
+                    onValueChange={(
+                      value: "createdAt" | "filename" | "sizeBytes" | "mimeType",
+                    ) => setSortBy(value)}
+                  >
+                    <SelectTrigger className="w-[75%] sm:w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="createdAt">Date</SelectItem>
+                      <SelectItem value="filename">Name</SelectItem>
+                      <SelectItem value="sizeBytes">Size</SelectItem>
+                      <SelectItem value="mimeType">Type</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={sortOrder}
+                    onValueChange={(value: "asc" | "desc") => setSortOrder(value)}
+                  >
+                    <SelectTrigger className="w-[50%] sm:w-[100px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="desc">Desc</SelectItem>
+                      <SelectItem value="asc">Asc</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
@@ -704,9 +706,6 @@ export default function FilesPage() {
               <div className="flex items-center justify-center py-12">
                 <div className="flex flex-col items-center gap-2">
                   <Spinner />
-                  <p className="text-muted-foreground text-sm">
-                    Loading files...
-                  </p>
                 </div>
               </div>
             ) : filesData?.files.length === 0 ? (

@@ -6,32 +6,40 @@ import { montserrat } from "~/components/fonts";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import EditTitle from "./admin/editTitle";
 
 import { useState, useEffect } from "react";
 import type { CarouselApi } from "~/components/ui/carousel";
 
+import { api } from "~/trpc/react";
+
 const images = ["/images/hero-img.webp", "/images/hero-img2.webp"];
 
 
-export function HeroSectionContent({ titleObject, isAdmin }: { titleObject: ConferenceTitle | null, isAdmin: boolean }) {
+export function HeroSectionContent({ titleObject: initialTitleObject = null }: { titleObject?: ConferenceTitle | null }) {
 
-  const [api, setApi] = useState<CarouselApi | null>(null);
+  const [carouselApi, setApi] = useState<CarouselApi | null>(null);
 
   const [current, setCurrent] = useState(0);
 
+  const titleQuery = api.home.getConferenceTitle.useQuery();
+
+  const remoteValue = titleQuery.data?.value ?? null;
+  const parsedTitleObject = remoteValue
+    ? (JSON.parse(remoteValue) as ConferenceTitle)
+    : initialTitleObject;
+
   useEffect(() => {
-    if (!api) return;
+    if (!carouselApi) return;
 
     const handler = () => {
-      setCurrent(api.selectedScrollSnap() ?? 0);
+      setCurrent(carouselApi.selectedScrollSnap() ?? 0);
     };
 
-    api.on("select", handler);
+    carouselApi.on("select", handler);
     return () => {
-      api.off("select", handler);
+      carouselApi.off("select", handler);
     };
-  }, [api]);
+  }, [carouselApi]);
 
   return (
     <section id="home" className="relative w-full bg-black">
@@ -40,7 +48,7 @@ export function HeroSectionContent({ titleObject, isAdmin }: { titleObject: Conf
         <h1
           className={`${montserrat.className} text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl`}
         >
-          {titleObject?.title}
+          {parsedTitleObject?.title}
         </h1>
         {/* <p
           className={`${montserrat.className} from-primary mt-3 bg-gradient-to-r from-15% to-primary-tint to-70% bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl`}
@@ -48,7 +56,7 @@ export function HeroSectionContent({ titleObject, isAdmin }: { titleObject: Conf
           Conference {conferenceTitle ?? "20.."}
         </p> */}
         <p className="mt-10 max-w-3xl text-base leading-7 text-gray-300 md:text-lg">
-          {titleObject?.subtitle}
+          {parsedTitleObject?.subtitle}
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-4">
           <Button size="lg" variant={"primary"} className="flex" asChild>
@@ -63,7 +71,6 @@ export function HeroSectionContent({ titleObject, isAdmin }: { titleObject: Conf
               <ArrowRight />
             </Link>
           </Button>
-          {isAdmin && <EditTitle titleObject={titleObject} />}
         </div>
 
         <div className="mt-8 flex justify-center gap-2">
@@ -75,9 +82,9 @@ export function HeroSectionContent({ titleObject, isAdmin }: { titleObject: Conf
               className={`h-3 w-3 rounded-full p-2 transition-all border-none ${index === current ? "!bg-primary w-6" : "bg-muted-foreground dark:bg-muted"
                 }`}
               onClick={() => {
-                if (api) {
-                  api.scrollTo(index);
-                  api.plugins().autoplay.reset();
+                if (carouselApi) {
+                  carouselApi.scrollTo(index);
+                  carouselApi.plugins().autoplay.reset();
                 }
               }}
             >

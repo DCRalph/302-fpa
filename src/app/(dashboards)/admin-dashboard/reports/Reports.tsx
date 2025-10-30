@@ -21,6 +21,7 @@ import {
 
 import type { BlogReport, ReportAction } from "@prisma/client";
 import { handleTRPCMutation } from "~/lib/toast";
+import { Spinner } from "~/components/ui/spinner";
 
 export default function ReportPage() {
   const [take] = useState(20);
@@ -31,7 +32,7 @@ export default function ReportPage() {
 
   const utils = api.useUtils();
 
-  const { data } = api.member.blog.getReports.useQuery({ take });
+  const { data, isLoading } = api.member.blog.getReports.useQuery({ take });
 
   const resolveReport = api.member.blog.resolveReport.useMutation({
     onSuccess: () => {
@@ -156,6 +157,18 @@ export default function ReportPage() {
 
               return true;
             });
+
+            if (isLoading) {
+              return (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <div className="flex items-center justify-center py-8">
+                     <Spinner />
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            }
 
             if (filteredReports.length === 0) {
               return (

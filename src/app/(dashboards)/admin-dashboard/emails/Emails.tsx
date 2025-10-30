@@ -154,9 +154,9 @@ function EmailModal({ emailId, open, onOpenChange }: EmailModalProps) {
               <TabsContent value="text" className="mt-4">
                 <div className="bg-background/60 rounded-lg border p-4">
                   <h3 className="mb-4 font-semibold">Plain Text Content</h3>
-                  <pre className="bg-background max-h-96 overflow-auto rounded border p-4 font-mono text-sm whitespace-pre-wrap">
+                  <p className="bg-background max-h-96 overflow-auto rounded border p-4 font-mono text-sm whitespace-pre-wrap">
                     {email.text}
-                  </pre>
+                  </p>
                 </div>
               </TabsContent>
             </Tabs>
@@ -205,8 +205,8 @@ export default function EmailsPage() {
             <Mail className="text-primary h-6 w-6" />
           </div>
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold">Email Management</h2>
-            <p className="text-sm sm:text-base text-muted-foreground mt-1">
+            <h2 className="text-2xl font-bold sm:text-3xl">Email Management</h2>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
               View and manage all emails sent through the system.
             </p>
           </div>
@@ -215,7 +215,7 @@ export default function EmailsPage() {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto">
           <Card className="from-gradient-blue via-gradient-purple to-gradient-red border-0 bg-gradient-to-br from-25% via-50% to-75%">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white">
@@ -298,7 +298,7 @@ export default function EmailsPage() {
                     setSortBy(value)
                   }
                 >
-                  <SelectTrigger className="w-[140px]">
+                  <SelectTrigger className="w-[75%] sm:w-[140px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -311,7 +311,7 @@ export default function EmailsPage() {
                   value={sortOrder}
                   onValueChange={(value: "asc" | "desc") => setSortOrder(value)}
                 >
-                  <SelectTrigger className="w-[100px]">
+                  <SelectTrigger className="w-[50%] sm:w-[100px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -374,7 +374,7 @@ export default function EmailsPage() {
             {/* Pagination */}
             {emailsData && emailsData.pagination.totalPages > 1 && (
               <div className="flex items-center justify-between pt-4">
-                <div className="text-sm text-gray-500">
+                <div className="text-muted-foreground text-sm">
                   Showing {(page - 1) * 20 + 1} to{" "}
                   {Math.min(page * 20, emailsData.pagination.totalCount)} of{" "}
                   {emailsData.pagination.totalCount} emails

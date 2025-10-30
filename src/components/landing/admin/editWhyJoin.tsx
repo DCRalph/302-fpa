@@ -12,11 +12,20 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "~/components/ui/sheet";
 import { api } from "~/trpc/react";
 import { type ConferenceWhyJoin } from "~/server/api/routers/home";
 import { handleTRPCMutation } from "~/lib/toast";
+import { Textarea } from "~/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { DynamicIcon } from "~/components/DynamicIcon";
+import { Label } from "~/components/ui/label";
 
 // Common Lucide icon names for the dropdown
 const ICON_OPTIONS = [
@@ -34,25 +43,37 @@ const ICON_OPTIONS = [
   "GraduationCap",
   "Heart",
   "Star",
-  "Zap"
+  "Zap",
 ];
 
-export default function EditWhyJoin({ whyJoinItems }: { whyJoinItems: ConferenceWhyJoin[] }) {
-  const [open, setOpen] = useState(false);
+export default function EditWhyJoin({
+  whyJoinItems,
+  open: controlledOpen,
+  onOpenChange,
+}: {
+  whyJoinItems: ConferenceWhyJoin[];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined && onOpenChange !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? onOpenChange : setInternalOpen;
 
   const [items, setItems] = useState<ConferenceWhyJoin[]>(whyJoinItems);
   useEffect(() => setItems(whyJoinItems), [whyJoinItems, open]);
 
   const utils = api.useUtils();
-  const { mutateAsync: changeConferenceWhyJoin, isPending } = api.admin.editHome.changeConferenceWhyJoin.useMutation({
-    onSuccess: async () => {
-      await utils.home.getConferenceWhyJoin.invalidate();
-      setOpen(false);
-    },
-  });
+  const { mutateAsync: changeConferenceWhyJoin, isPending } =
+    api.admin.editHome.changeConferenceWhyJoin.useMutation({
+      onSuccess: async () => {
+        await utils.home.getConferenceWhyJoin.invalidate();
+        setOpen(false);
+      },
+    });
 
   const addItem = () => {
-    setItems(prev => [
+    setItems((prev) => [
       ...prev,
       {
         title: "",
@@ -60,47 +81,56 @@ export default function EditWhyJoin({ whyJoinItems }: { whyJoinItems: Conference
         icon: {
           type: "lucide",
           name: "Users",
-          props: { className: "mx-auto mb-8 mt-4 h-10 w-10 text-[#667EEA]" }
-        }
-      }
+          props: { className: "mx-auto mb-8 mt-4 h-10 w-10 text-[#667EEA]" },
+        },
+      },
     ]);
   };
 
   const removeItem = (index: number) => {
-    setItems(prev => prev.filter((_, i) => i !== index));
+    setItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const updateItem = (index: number, field: keyof ConferenceWhyJoin, value: string) => {
-    setItems(prev => prev.map((item, i) =>
-      i === index ? { ...item, [field]: value } : item
-    ));
+  const updateItem = (
+    index: number,
+    field: keyof ConferenceWhyJoin,
+    value: string,
+  ) => {
+    setItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
+    );
   };
 
   const updateIcon = (index: number, iconName: string) => {
-    setItems(prev => prev.map((item, i) =>
-      i === index
-        ? {
-          ...item,
-          icon: {
-            ...item.icon,
-            name: iconName
-          }
-        }
-        : item
-    ));
+    setItems((prev) =>
+      prev.map((item, i) =>
+        i === index
+          ? {
+              ...item,
+              icon: {
+                ...item.icon,
+                name: iconName,
+              },
+            }
+          : item,
+      ),
+    );
   };
 
-
-  const handelSave = () => {
-    void handleTRPCMutation(() => changeConferenceWhyJoin({ items }), "Why Join saved successfully", "Failed to save why join");
+  const handleSave = () => {
+    void handleTRPCMutation(
+      () => changeConferenceWhyJoin({ items }),
+      "Why Join saved successfully",
+      "Failed to save why join",
+    );
   };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline">Edit Why Join</Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+      <SheetContent
+        side="right"
+        className="w-full overflow-y-auto sm:max-w-2xl"
+      >
         <SheetHeader>
           <SheetTitle>Why Join Cards</SheetTitle>
           <SheetDescription>
@@ -108,21 +138,24 @@ export default function EditWhyJoin({ whyJoinItems }: { whyJoinItems: Conference
           </SheetDescription>
         </SheetHeader>
 
-        <div className="p-4 space-y-4">
+        <div className="space-y-4 p-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {items.length} {items.length === 1 ? 'card' : 'cards'}
+            <p className="text-muted-foreground text-sm">
+              {items.length} {items.length === 1 ? "card" : "cards"}
             </p>
             <Button onClick={addItem} size="sm" variant="outline">
-              <Plus className="h-4 w-4 mr-1" />
+              <Plus className="mr-1 h-4 w-4" />
               Add Card
             </Button>
           </div>
 
           {items.map((item, index) => (
-            <div key={index} className="p-4 border rounded-lg space-y-3 bg-card">
+            <div
+              key={index}
+              className="bg-card space-y-3 rounded-lg border p-4"
+            >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
+                <span className="text-muted-foreground text-sm font-medium">
                   Card {index + 1}
                 </span>
                 <Button
@@ -136,60 +169,71 @@ export default function EditWhyJoin({ whyJoinItems }: { whyJoinItems: Conference
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Title</label>
+                <Label htmlFor="title" className="text-sm font-medium">Title</Label>
                 <Input
                   value={item.title}
-                  onChange={(e) => updateItem(index, 'title', e.target.value)}
+                  onChange={(e) => updateItem(index, "title", e.target.value)}
                   placeholder="e.g., Professional Development"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
-                <textarea
+                <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+                <Textarea
                   value={item.description}
-                  onChange={(e) => updateItem(index, 'description', e.target.value)}
+                  onChange={(e) =>
+                    updateItem(index, "description", e.target.value)
+                  }
                   placeholder="Brief description of the benefit..."
-                  className="bg-background border-input focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] dark:bg-input/30 w-full min-h-[80px] rounded-md border p-3 text-sm resize-none"
+                  className="bg-background border-input focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 min-h-[80px] w-full resize-none rounded-md border p-3 text-sm focus-visible:ring-[3px]"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Icon</label>
-                <select
+                <Label htmlFor="icon" className="text-sm font-medium">Icon</Label>
+                <Select
                   value={item.icon.name}
-                  onChange={(e) => updateIcon(index, e.target.value)}
-                  className="bg-background border-input focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] dark:bg-input/30 w-full h-9 rounded-md border px-3 text-sm"
+                  onValueChange={(val) => updateIcon(index, val)}
                 >
-                  {ICON_OPTIONS.map(iconName => (
-                    <option key={iconName} value={iconName}>
-                      {iconName}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="bg-background border-input focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 h-9 w-full rounded-md border px-3 text-sm focus-visible:ring-[3px]">
+                    <div className="flex items-center gap-2">
+                      <SelectValue />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ICON_OPTIONS.map((iconName) => (
+                      <SelectItem key={iconName} value={iconName}>
+                        <div className="flex items-center gap-2">
+                          <DynamicIcon type="lucide" name={iconName} props={{ className: 'h-4 w-4 text-muted-foreground' }} />
+                          <span>{iconName}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           ))}
 
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {items.length} {items.length === 1 ? 'card' : 'cards'}
+            <p className="text-muted-foreground text-sm">
+              {items.length} {items.length === 1 ? "card" : "cards"}
             </p>
             <Button onClick={addItem} size="sm" variant="outline">
-              <Plus className="h-4 w-4 mr-1" />
+              <Plus className="mr-1 h-4 w-4" />
               Add Card
             </Button>
           </div>
 
           {items.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-muted-foreground py-8 text-center">
               No cards yet. Click &quot;Add Card&quot; to create one.
             </div>
           )}
         </div>
 
         <SheetFooter className="px-4 pb-4">
-          <Button onClick={handelSave} disabled={isPending}>
+          <Button onClick={handleSave} disabled={isPending}>
             {isPending ? "Saving..." : "Save"}
           </Button>
         </SheetFooter>
@@ -197,5 +241,3 @@ export default function EditWhyJoin({ whyJoinItems }: { whyJoinItems: Conference
     </Sheet>
   );
 }
-
-
