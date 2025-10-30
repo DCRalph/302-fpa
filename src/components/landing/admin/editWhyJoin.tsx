@@ -12,7 +12,6 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "~/components/ui/sheet";
 import { api } from "~/trpc/react";
 import { type ConferenceWhyJoin } from "~/server/api/routers/home";
@@ -59,7 +58,7 @@ export default function EditWhyJoin({
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = controlledOpen !== undefined && onOpenChange !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
-  const setOpen = isControlled ? onOpenChange! : setInternalOpen;
+  const setOpen = isControlled ? onOpenChange : setInternalOpen;
 
   const [items, setItems] = useState<ConferenceWhyJoin[]>(whyJoinItems);
   useEffect(() => setItems(whyJoinItems), [whyJoinItems, open]);

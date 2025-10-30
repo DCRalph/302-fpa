@@ -28,7 +28,7 @@ export function EditTitle({
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = controlledOpen !== undefined && onOpenChange !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
-  const setOpen = isControlled ? onOpenChange! : setInternalOpen;
+  const setOpen = isControlled ? onOpenChange : setInternalOpen;
 
   const [title, setTitle] = useState(titleObject?.title ?? "");
   const [subtitle, setSubtitle] = useState(titleObject?.subtitle ?? "");

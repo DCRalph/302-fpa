@@ -4,16 +4,14 @@ import { HeroSectionContent } from "./hero-section-content";
 
 
 export async function HeroSection() {
-  const { dbUser } = await api.auth.me();
   const conferenceTitle = await api.home.getConferenceTitle();
-  const isAdmin = dbUser?.role === "ADMIN";
 
 
   const title = conferenceTitle?.value ?? null;
   const titleObject = title ? JSON.parse(title) as ConferenceTitle : null;
 
   return (
-    <HeroSectionContent titleObject={titleObject} isAdmin={isAdmin} />
+    <HeroSectionContent titleObject={titleObject} />
   );
 }
 

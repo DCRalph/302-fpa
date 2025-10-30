@@ -6,7 +6,6 @@ import { montserrat } from "~/components/fonts";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import EditTitle from "./admin/editTitle";
 
 import { useState, useEffect } from "react";
 import type { CarouselApi } from "~/components/ui/carousel";
@@ -16,7 +15,7 @@ import { api } from "~/trpc/react";
 const images = ["/images/hero-img.webp", "/images/hero-img2.webp"];
 
 
-export function HeroSectionContent({ titleObject: initialTitleObject = null, isAdmin }: { titleObject?: ConferenceTitle | null, isAdmin: boolean }) {
+export function HeroSectionContent({ titleObject: initialTitleObject = null }: { titleObject?: ConferenceTitle | null }) {
 
   const [carouselApi, setApi] = useState<CarouselApi | null>(null);
 

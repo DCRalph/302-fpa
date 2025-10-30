@@ -36,7 +36,6 @@ import { useAuth } from "~/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { SignOut } from "~/components/sign-out";
-import { Button } from "./ui/button";
 
 import { api } from "~/trpc/react";
 import EditTitle from "./landing/admin/editTitle";
@@ -56,9 +55,17 @@ export function UserDropdown({ detailed = false }) {
   const titleObject = title ? (JSON.parse(title) as ConferenceTitle) : null;
 
   const conferenceWhyJoin = api.home.getConferenceWhyJoin.useQuery();
-  const whyJoinArray = conferenceWhyJoin.data
-    ? JSON.parse(conferenceWhyJoin.data.value ?? "[]")
-    : ([] as ConferenceWhyJoin[]);
+  const whyJoinArray: ConferenceWhyJoin[] = (() => {
+    const raw = conferenceWhyJoin.data?.value;
+    if (!raw) return [];
+    try {
+      return JSON.parse(raw) as ConferenceWhyJoin[];
+    } catch (err) {
+      // fallback on parse error
+      console.warn("Failed to parse conference why-join value:", err);
+      return [];
+    }
+  })();
 
   const [editTitleOpen, setEditTitleOpen] = useState(false);
   const [editWhyJoinOpen, setEditWhyJoinOpen] = useState(false);
