@@ -8,17 +8,17 @@ import { BenefitsSection } from "~/components/landing/benefits-section";
 
 
 export default function Home() {
-
-
   return (
-    <main className="bg-background text-foreground min-h-screen">
-      <NavBar />
-      <HeroSection />
-      <BenefitsSection />
-      <ConferenceDetailsSection />
-      <HowToRegisterSection />
-      <SystemFeaturesSection />
-      <SiteFooter />
+    <main className="w-screen h-screen overflow-y-scroll">
+      <div className="bg-background text-foreground min-h-screen">
+        <NavBar />
+        <HeroSection />
+        <BenefitsSection />
+        <ConferenceDetailsSection />
+        <HowToRegisterSection />
+        <SystemFeaturesSection />
+        <SiteFooter />
+      </div>
     </main>
   );
 }
