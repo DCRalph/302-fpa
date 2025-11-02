@@ -1,5 +1,8 @@
 "use client";
 
+// Admin reports page: lists reports for posts/comments, supports filtering (type + status),
+// viewing details and resolving reports with an admin note and action. Keep UI behaviour
+// consistent with other dashboard pages (badges, cards, dialogs).
 import { useState } from "react";
 import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -144,6 +147,9 @@ export default function ReportPage() {
 
         <div className="grid gap-4">
           {(() => {
+            // Apply local filters (type + status) to the server-provided list.
+            // We intentionally filter client-side here because the server query is
+            // currently paginated/take-based; client filters keep the UI snappy.
             const filteredReports = (data?.reports ?? []).filter((r) => {
               // type filter
               if (filter !== "all") {
@@ -158,6 +164,7 @@ export default function ReportPage() {
               return true;
             });
 
+            // Show a centered spinner while the server query is loading.
             if (isLoading) {
               return (
                 <Card>
@@ -285,7 +292,7 @@ export default function ReportPage() {
         </div>
       </div>
 
-      {/* Resolve dialog (admin note) */}
+  {/* Resolve dialog (admin note) - controlled by `openResolveDialog` and `selectedResolveReport` */}
       <ResolveDialog
         open={openResolveDialog}
         onOpenChange={setOpenResolveDialog}

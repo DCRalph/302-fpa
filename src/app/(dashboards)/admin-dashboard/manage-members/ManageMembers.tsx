@@ -1,5 +1,8 @@
 "use client";
 
+// Admin manage members page. Shows stats and a searchable list of members.
+// Handles loading, empty and list states so the spinner and 'no members' UI never show together.
+
 import {
   Card,
   CardContent,
@@ -135,6 +138,7 @@ export default function ManageMembersPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* loading vs empty: show spinner while loading, otherwise show empty state or the list */}
           {isLoading ? (
             <div className="flex items-center justify-center p-8">
               <Spinner className="size-10" />

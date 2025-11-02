@@ -1,5 +1,9 @@
 "use client"
 
+// Dropdown menu wrapper around Radix primitives with app-specific styling.
+// Keep this file small — it only adapts Radix's API and applies consistent classNames
+// used across the app's dropdowns, items, separators and sub-menus.
+
 import * as React from "react"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
@@ -68,6 +72,9 @@ function DropdownMenuItem({
   inset?: boolean
   variant?: "default" | "destructive"
 }) {
+  // Note: we use focus styles (keyboard) to provide the highlighted state. If you'd like
+  // pointer hover highlighting to match, add styles using Radix's data-[highlighted] attribute
+  // (e.g. `data-[highlighted]:bg-accent`). This keeps keyboard and pointer states in sync.
   return (
     <DropdownMenuPrimitive.Item
       data-slot="dropdown-menu-item"
