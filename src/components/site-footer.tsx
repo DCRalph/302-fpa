@@ -48,13 +48,13 @@ export function SiteFooter() {
             <h4 className="font-semibold text-xl">Legal & Support</h4>
             <ul className="mt-3 space-y-2 text-[16px] text-white/70">
               <li className="hover:text-white">
-                <Link href="#">Privacy Policy</Link>
+                <Link href="/legal?tab=privacy">Privacy Policy</Link>
               </li>
               <li className="hover:text-white">
-                <Link href="#">Terms & Conditions</Link>
+                <Link href="/legal?tab=terms">Terms & Conditions</Link>
               </li>
               <li className="hover:text-white">
-                <Link href="#">Help and Support</Link>
+                <Link href="/support">Help and Support</Link>
               </li>
             </ul>
           </div>
