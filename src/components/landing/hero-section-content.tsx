@@ -48,13 +48,17 @@ export function HeroSectionContent({ titleObject: initialTitleObject = null }: {
         <h1
           className={`${montserrat.className} text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl`}
         >
-          {parsedTitleObject?.title}
+          {parsedTitleObject?.titleLine1}
+          <br />
+          <span className="from-primary mt-3 bg-gradient-to-r from-15% to-primary-tint to-70% bg-clip-text text-transparent">
+            {parsedTitleObject?.titleLine2}
+          </span>
         </h1>
-        {/* <p
+        {/* <h1
           className={`${montserrat.className} from-primary mt-3 bg-gradient-to-r from-15% to-primary-tint to-70% bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl`}
         >
-          Conference {conferenceTitle ?? "20.."}
-        </p> */}
+          Conference System
+        </h1> */}
         <p className="mt-10 max-w-3xl text-base leading-7 text-gray-300 md:text-lg">
           {parsedTitleObject?.subtitle}
         </p>

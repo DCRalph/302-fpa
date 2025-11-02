@@ -5,13 +5,14 @@ import { createTRPCRouter, adminProcedure } from "~/server/api/trpc";
 export const editHomeRouter = createTRPCRouter({
   changeConferenceTitle: adminProcedure
     .input(z.object({
-      title: z.string(),
+      titleLine1: z.string(),
+      titleLine2: z.string(),
       subtitle: z.string()
     }))
     .mutation(async ({ ctx, input }) => {
       const updated = await ctx.db.siteSettings.upsert({
         where: { key: "conferenceTitle" },
-        create: { key: "conferenceTitle", value: JSON.stringify(input) },
+        create: { key: "conferenceTitle", value: JSON.stringify({ titleLine1: input.titleLine1, titleLine2: input.titleLine2, subtitle: input.subtitle }) },
         update: { value: JSON.stringify(input) },
       });
       return updated.value;

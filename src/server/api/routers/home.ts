@@ -2,7 +2,8 @@
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export type ConferenceTitle = {
-  title: string;
+  titleLine1: string;
+  titleLine2: string;
   subtitle: string;
 };
 
@@ -33,7 +34,8 @@ export const homeRouter = createTRPCRouter({
     });
     if (!conferenceTitle) {
       const defualtValue: ConferenceTitle = {
-        title: "Fiji Principals Association Conference 2025",
+        titleLine1: "Fiji Principals Association",
+        titleLine2: "Conference System",
         subtitle: "Join educational leaders from across the Pacific for three days of inspiring sessions, networking, and professional development in the heart of Fiji.",
       };
       conferenceTitle = await ctx.db.siteSettings.create({
