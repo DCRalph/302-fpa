@@ -30,6 +30,7 @@ export const adminActivityRouter = createTRPCRouter({
         });
       }
 
+      // Destructure and set defaults for pagination and filters
       const {
         page = 1,
         limit = 50,
@@ -43,8 +44,10 @@ export const adminActivityRouter = createTRPCRouter({
         endDate,
       } = input ?? {};
 
+      // Calculate skip value for pagination
       const skip = (page - 1) * limit;
 
+      // Fetch activities with filters and pagination
       const [activities, total] = await Promise.all([
         ctx.db.appActivity.findMany({
           where: {
@@ -95,8 +98,10 @@ export const adminActivityRouter = createTRPCRouter({
         }),
       ]);
 
+      // Calculate total pages
       const totalPages = Math.ceil(total / limit);
 
+      // Return activities with pagination info
       return {
         activities,
         pagination: {

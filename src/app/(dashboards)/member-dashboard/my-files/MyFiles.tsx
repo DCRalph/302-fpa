@@ -1,5 +1,7 @@
 "use client";
 
+// Member files list page. Shows uploaded files and context-aware actions (download, delete).
+// UI is responsive: items stack on small screens and actions become full-width for touch devices.
 import { api } from "~/trpc/react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -152,6 +154,7 @@ export default function MyFilesPage() {
                           )}
                         </div>
                       </div>
+                      {/* Actions: on mobile use a 2-column grid; on larger screens show inline buttons aligned to the right */}
                       <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:space-x-2 sm:ml-4">
                         <Button
                           variant="outline"
