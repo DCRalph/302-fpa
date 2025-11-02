@@ -100,7 +100,7 @@ export function EditTitle({
                   <div className="space-y-2">
                     <h4 className="font-semibold text-sm">Line 1 (Title)</h4>
                     <p className="text-sm text-muted-foreground">
-                      The first line appears as <span className="text-white font-medium">normal white text</span> on the hero section.
+                      The first line appears as <span className="text-white font-medium bg-black rounded-md p-1">normal white text</span> on the hero section.
                     </p>
                   </div>
                   <div className="space-y-2">
