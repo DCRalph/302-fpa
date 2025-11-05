@@ -262,6 +262,11 @@ function BlogPostCard({ post }: { post: BlogPost }) {
             </p>
           </div>
           <div className="flex items-center space-x-2">
+            {(post.authorId == dbUser?.id && !post.published) && (
+            <Badge variant="secondary" className="text-xs">
+              Draft
+            </Badge>
+            )}
             <Badge variant="secondary" className="text-xs">
               {post.category?.name ?? "General"}
             </Badge>

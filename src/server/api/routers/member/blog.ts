@@ -70,7 +70,6 @@ export const memberBlogRouter = createTRPCRouter({
           categorySlug
             ? { category: { slug: categorySlug } }
             : {},
-          { published: true },
         ],
       };
 
@@ -86,8 +85,10 @@ export const memberBlogRouter = createTRPCRouter({
         },
       });
 
+      const filteredPosts = posts.filter((post) => post.published || post.authorId === ctx.dbUser.id);
+
       // Check which posts are liked by the current user
-      const postIds = posts.map((p) => p.id);
+      const postIds = filteredPosts.map((p) => p.id);
       const userLikes = await ctx.db.blogPostLike.findMany({
         where: {
           userId: ctx.dbUser.id,
@@ -98,7 +99,7 @@ export const memberBlogRouter = createTRPCRouter({
 
       const likedPostIds = new Set(userLikes.map((like) => like.postId));
 
-      const postsWithLikeStatus = posts.map((post) => ({
+      const postsWithLikeStatus = filteredPosts.map((post) => ({
         ...post,
         isLikedByUser: likedPostIds.has(post.id),
       }));
