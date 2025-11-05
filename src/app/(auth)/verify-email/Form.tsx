@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '~/components/ui/button';
 import { Alert, AlertDescription } from '~/components/ui/alert';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { api } from '~/trpc/react';
 
 export default function VerifyEmailForm() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -14,8 +13,6 @@ export default function VerifyEmailForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token') ?? '';
   const error = searchParams.get('error') ?? '';
-
-  const utils = api.useUtils();
 
   useEffect(() => {
     // Check if verification was successful or failed via query params
@@ -26,29 +23,14 @@ export default function VerifyEmailForm() {
         : 'Email verification failed. Please try again.');
     } else if (token) {
       // Token is present, Better Auth should have handled verification
-      // Refresh user data to check if email is now verified
-      setTimeout(() => {
-        void utils.auth.me.invalidate();
-        setStatus('success');
-        setMessage('Your email has been verified successfully!');
-      }, 1000);
+      setStatus('success');
+      setMessage('Your email has been verified successfully!');
     } else {
-      // No token, might be a direct visit or already verified
-      setTimeout(() => {
-        void (async () => {
-          await utils.auth.me.invalidate();
-          const { dbUser } = await utils.auth.me.fetch();
-          if (dbUser?.emailVerified) {
-            setStatus('success'); 
-            setMessage('Your email is already verified.');
-          } else {
-            setStatus('error');
-            setMessage('No verification token provided. Please request a new verification email.');
-          }
-        })();
-      }, 1000);
+      // No token - show error message without requiring authentication
+      setStatus('error');
+      setMessage('No verification token provided. Please check your email for the verification link or request a new verification email.');
     }
-  }, [token, error, utils.auth.me]);
+  }, [token, error]);
 
   if (status === 'loading') {
     return (

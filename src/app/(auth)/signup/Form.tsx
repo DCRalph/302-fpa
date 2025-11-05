@@ -72,11 +72,16 @@ export default function SignUpForm() {
     setIsLoading(true);
 
     try {
-      await authClient.signUp.email({
+      const res = await authClient.signUp.email({
         email,
         password,
         name,
       });
+
+      if(res.error) {
+        toast.error(res.error.message);
+        return;
+      }
 
       toast.success("Account created successfully!");
       router.push("/onboarding");
