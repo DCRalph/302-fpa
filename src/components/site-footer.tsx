@@ -1,6 +1,11 @@
 import Link from "next/link";
 
-export function SiteFooter() {
+import { api } from "~/trpc/server";
+import { type ConferenceDetails } from "~/server/api/routers/home";
+
+export async function SiteFooter() {
+  const data = await api.home.getPreviousConferences();
+
   return (
     <footer className="border-t border-white/10 bg-gradient-to-b from-[#10182B] to-[#131D33] py-12 text-white">
       <div className="px-4">
@@ -43,6 +48,26 @@ export function SiteFooter() {
                 ))}
               </ul>
             </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-xl">Previous Conferences</h4>
+            <p className="mt-3 max-w-100 text-[16px] text-white/70">
+              {data.length > 1 ? (data.length !== 0 && (
+                <>
+                  {data.map((conference, idx) => (
+                    <Link
+                      key={idx}
+                      href={`/previous-conferences/${conference.id}`}
+                      className="block hover:text-white"
+                    >
+                      {conference.name} ({new Date(conference.startDate).getFullYear()})
+                    </Link>
+                  ))}
+                </>
+              )) : (
+                <span className="mt-3 space-y-2 text-[16px] text-white/70">No previous conferences found.</span>
+              )}
+            </p>
           </div>
           <div>
             <h4 className="font-semibold text-xl">Legal & Support</h4>

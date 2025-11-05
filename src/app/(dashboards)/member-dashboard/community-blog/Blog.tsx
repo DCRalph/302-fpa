@@ -263,7 +263,7 @@ function BlogPostCard({ post }: { post: BlogPost }) {
           </div>
           <div className="flex items-center space-x-2">
             {(post.authorId == dbUser?.id && !post.published) && (
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="outline" className="text-xs">
               Draft
             </Badge>
             )}
