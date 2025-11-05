@@ -12,6 +12,7 @@ import {
 } from "~/server/api/lib/activity-logger";
 import { sendConferenceRegistrationSuccessEmail } from "~/lib/email-resend";
 import { Severity } from "@prisma/client";
+import { env } from "~/env";
 
 export const memberRegistrationRouter = createTRPCRouter({
   getLatestConference: protectedProcedure.query(async ({ ctx }) => {
@@ -182,7 +183,7 @@ export const memberRegistrationRouter = createTRPCRouter({
           conferenceLocation: conference.location ?? 'TBA',
           registrationId: registration.id,
           paymentMethod: input.paymentMethod,
-          dashboardUrl: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/member-dashboard/conference-registration`,
+          dashboardUrl: `${env.APP_URL ?? "http://localhost:3000"}/member-dashboard/conference-registration`,
         });
       } catch (error: unknown) {
         console.error("Failed to send registration success email:", error instanceof Error ? error.message : String(error));
