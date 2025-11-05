@@ -8,13 +8,15 @@ import {
   createOnboardingWelcomeEmail,
   createConferenceRegistrationSuccessEmail,
   createRegistrationStatusUpdateEmail,
+  createEmailVerificationEmail,
   type WelcomeEmailData,
   type PasswordResetEmailData,
   type ConferenceInvitationEmailData,
   type NotificationEmailData,
   type OnboardingWelcomeEmailData,
   type ConferenceRegistrationSuccessEmailData,
-  type RegistrationStatusUpdateEmailData
+  type RegistrationStatusUpdateEmailData,
+  type EmailVerificationEmailData
 } from './email-templates';
 import { db } from '~/server/db';
 
@@ -150,6 +152,16 @@ export async function sendConferenceRegistrationSuccessEmail(data: ConferenceReg
 
 export async function sendRegistrationStatusUpdateEmail(data: RegistrationStatusUpdateEmailData) {
   const template = createRegistrationStatusUpdateEmail(data);
+  return sendEmail({
+    to: data.email,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+  });
+}
+
+export async function sendEmailVerificationEmail(data: EmailVerificationEmailData) {
+  const template = createEmailVerificationEmail(data);
   return sendEmail({
     to: data.email,
     subject: template.subject,

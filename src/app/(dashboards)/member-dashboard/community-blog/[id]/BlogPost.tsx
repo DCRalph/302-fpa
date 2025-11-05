@@ -17,6 +17,7 @@ import {
   Trash2,
   MoreVertical,
   Flag,
+  FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
@@ -309,7 +310,16 @@ export default function BlogPost({ post }: BlogPostProps) {
         </Button>
       </div>
 
-      <Card className="mx-auto max-w-7xl overflow-hidden p-0">
+      <Card className={`mx-auto max-w-7xl overflow-hidden p-0 relative ${!post.published ? "border-amber-500/60 dark:border-amber-600/60 border-2 shadow-sm" : ""}`}>
+        {!post.published && (
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10 rounded-b-lg bg-gradient-to-b from-amber-500 to-amber-600 dark:from-amber-600 dark:to-amber-700 text-white px-4 py-1.5 shadow-lg border-x border-b border-amber-400/50 border-t-0 backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="text-sm font-semibold tracking-wide">DRAFT</span>
+            </div>
+            <div className="absolute inset-0 rounded-b-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+          </div>
+        )}
         <CardContent className="p-6">
           {/* Author Info */}
           <div className="mb-6 flex items-center space-x-3">
@@ -342,11 +352,13 @@ export default function BlogPost({ post }: BlogPostProps) {
               </p>
             </div>
             <div className="flex items-center space-x-2">
+              {/* {(post.authorId == dbUser?.id && !post.published) && (
+                <Badge variant="secondary" className="text-sm">
               {(post.authorId == dbUser?.id && !post.published) && (
                 <Badge variant="outline" className="text-sm">
                   Draft
                 </Badge>
-              )}
+              )} */}
               <Badge variant="secondary" className="text-sm">
                 {post.category?.name ?? "General"}
               </Badge>

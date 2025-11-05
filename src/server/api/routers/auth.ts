@@ -1,8 +1,9 @@
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 import { auth } from "~/lib/auth";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { env } from "~/env";
 
 export const authRouter = createTRPCRouter({
   me: publicProcedure.query(async ({ ctx }) => {
@@ -36,7 +37,7 @@ export const authRouter = createTRPCRouter({
         await auth.api.requestPasswordReset({
           body: {
             email,
-            redirectTo: `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/reset-password`,
+            redirectTo: `${env.APP_URL ?? 'http://localhost:3000'}/reset-password`,
           },
         });
 
@@ -73,6 +74,43 @@ export const authRouter = createTRPCRouter({
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: 'Invalid or expired reset token',
+        });
+      }
+    }),
+
+  sendVerificationEmail: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      const { dbUser } = ctx;
+
+      if (!dbUser?.email) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'User email not found',
+        });
+      }
+
+      if (dbUser.emailVerified) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Email is already verified',
+        });
+      }
+
+      try {
+        // Use Better Auth's native email verification functionality
+        await auth.api.sendVerificationEmail({
+          body: {
+            email: dbUser.email,
+            callbackURL: `${env.APP_URL ?? 'http://localhost:3000'}/verify-email`,
+          },
+        });
+
+        return { success: true, message: "A verification email has been sent to your email address." };
+      } catch (error) {
+        console.error('Failed to send verification email:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to send verification email',
         });
       }
     }),

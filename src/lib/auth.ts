@@ -52,6 +52,17 @@ export const auth = betterAuth({
       });
     },
   },
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url, token: _token }, _request) => {
+      const { sendEmailVerificationEmail } = await import('./email-resend');
+      await sendEmailVerificationEmail({
+        name: user.name ?? 'User',
+        email: user.email,
+        verificationUrl: url,
+        expiresIn: '24 hours',
+      });
+    },
+  },
   socialProviders: {
     google: {
       clientId: env.GOOGLE_CLIENT_ID,

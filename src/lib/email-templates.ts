@@ -66,6 +66,13 @@ export interface RegistrationStatusUpdateEmailData {
   dashboardUrl: string;
 }
 
+export interface EmailVerificationEmailData {
+  name: string;
+  email: string;
+  verificationUrl: string;
+  expiresIn: string;
+}
+
 // Shared inline styles for consistency
 const baseContainer = `
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
@@ -777,6 +784,88 @@ This is an automated notification. Please keep this email for your records.
 
 Best regards,
 Fiji Principles Association Team
+    `.trim(),
+  };
+}
+
+// Email verification template
+export function createEmailVerificationEmail(
+  data: EmailVerificationEmailData
+): EmailTemplate {
+  const { name, email, verificationUrl, expiresIn } = data;
+
+  return {
+    subject: 'Verify your email address - Fiji Principles Association',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Verify Your Email</title>
+        </head>
+        <body style="${baseContainer}">
+          <div style="${headerBar}">
+            <h1 style="${headerTitle}">Verify your email address</h1>
+          </div>
+
+          <div style="${bodyBlock}">
+            <h2 style="margin: 0 0 12px 0; font-size: 18px;">Hi ${name},</h2>
+
+            <p style="margin: 0 0 12px 0;">
+              Thank you for signing up with Fiji Principles Association! To complete your registration and secure your account, please verify your email address (<strong>${email}</strong>).
+            </p>
+
+            <div style="text-align: left; margin: 20px 0;">
+              <a href="${verificationUrl}" style="${button}">Verify Email Address</a>
+            </div>
+
+            <p style="margin: 0 0 8px 0;"><strong>Note:</strong> This verification link expires in ${expiresIn}.</p>
+            <p style="${muted}; margin: 0 0 12px 0;">For security, this link can be used only once.</p>
+
+            <div style="${card}">
+              <p style="margin: 0 0 12px 0; font-weight: 600;">
+                Why verify your email?
+              </p>
+              <ul style="${list}">
+                <li>Secure your account</li>
+                <li>Receive important notifications</li>
+                <li>Reset your password if needed</li>
+                <li>Access all member features</li>
+              </ul>
+            </div>
+
+            <p style="${muted}; margin: 12px 0 0 0;">
+              If you did not create an account with Fiji Principles Association, you can safely ignore this email.
+            </p>
+
+            <p style="margin: 16px 0 0 0;">Best regards,<br>Fiji Principles Association</p>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+Verify your email address - Fiji Principles Association
+
+Hi ${name},
+
+Thank you for signing up with Fiji Principles Association! To complete your registration and secure your account, please verify your email address (${email}).
+
+Verify your email: ${verificationUrl}
+
+Note: This verification link expires in ${expiresIn}.
+For security, this link can be used only once.
+
+Why verify your email?
+- Secure your account
+- Receive important notifications
+- Reset your password if needed
+- Access all member features
+
+If you did not create an account with Fiji Principles Association, you can safely ignore this email.
+
+Best regards,
+Fiji Principles Association
     `.trim(),
   };
 }

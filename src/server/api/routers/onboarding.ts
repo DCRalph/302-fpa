@@ -13,6 +13,7 @@ import {
 } from "~/server/api/lib/activity-logger";
 import { sendOnboardingWelcomeEmail } from "~/lib/email-resend";
 import { Severity } from "@prisma/client";
+import { env } from "~/env";
 
 
 export const onboardingRouter = createTRPCRouter({
@@ -44,7 +45,7 @@ export const onboardingRouter = createTRPCRouter({
           name: input.name,
           email: ctx.dbUser.email ?? "",
           school: input.school,
-          dashboardUrl: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/member-dashboard`,
+          dashboardUrl: `${env.APP_URL ?? "http://localhost:3000"}/member-dashboard`,
         });
       } catch (error: unknown) {
         console.error("Failed to send onboarding welcome email:", error instanceof Error ? error.message : String(error));

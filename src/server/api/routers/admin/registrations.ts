@@ -13,6 +13,7 @@ import {
 } from "~/server/api/lib/activity-logger";
 import { sendRegistrationStatusUpdateEmail } from "~/lib/email-resend";
 import { Severity } from "@prisma/client";
+import { env } from "~/env";
 
 export const adminRegistrationsRouter = createTRPCRouter({
   // Get all registrations for a conference
@@ -219,7 +220,7 @@ export const adminRegistrationsRouter = createTRPCRouter({
           previousPaymentStatus: currentReg.paymentStatus,
           newPaymentStatus: "unpaid",
           reason: input.note,
-          dashboardUrl: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/member-dashboard/conference-registration`,
+          dashboardUrl: `${env.APP_URL ?? "http://localhost:3000"}/member-dashboard/conference-registration`,
         });
       } catch (error: unknown) {
         console.error("Failed to send registration status update email:", error instanceof Error ? error.message : String(error));
@@ -349,7 +350,7 @@ export const adminRegistrationsRouter = createTRPCRouter({
           previousStatus: currentReg.status,
           newStatus: "cancelled",
           reason: input.reason,
-          dashboardUrl: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/member-dashboard/conference-registration`,
+          dashboardUrl: `${env.APP_URL ?? "http://localhost:3000"}/member-dashboard/conference-registration`,
         });
       } catch (error: unknown) {
         console.error("Failed to send registration status update email:", error instanceof Error ? error.message : String(error));
@@ -482,7 +483,7 @@ export const adminRegistrationsRouter = createTRPCRouter({
             previousPaymentStatus: currentReg.paymentStatus,
             newPaymentStatus: input.paymentStatus ?? currentReg.paymentStatus,
             reason: input.reason,
-            dashboardUrl: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/member-dashboard/conference-registration`,
+            dashboardUrl: `${env.APP_URL ?? "http://localhost:3000"}/member-dashboard/conference-registration`,
           });
         } catch (error: unknown) {
           console.error("Failed to send registration status update email:", error instanceof Error ? error.message : String(error));

@@ -83,6 +83,8 @@ model User {
   accounts  Account[]
   passwordResetTokens PasswordResetToken[]
 
+  signUpApprovedAt DateTime?
+
   phone         String?
   school        String?
   role          UserRole  @default(USER)

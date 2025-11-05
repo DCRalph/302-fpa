@@ -38,6 +38,17 @@ export function BasicInfoTab() {
     },
   });
 
+  const sendVerificationEmailMutation = api.auth.sendVerificationEmail.useMutation({
+    onSuccess: async () => {
+      toast.success("Verification email sent! Please check your inbox.");
+      // Refresh user data to show updated verification status if needed
+      await utils.auth.me.invalidate();
+    },
+    onError: (err) => {
+      toast.error(err.message ?? "Failed to send verification email");
+    },
+  });
+
   const [formData, setFormData] = useState({
     fullName: dbUser?.name,
     phone: dbUser?.phone,
@@ -129,9 +140,28 @@ export function BasicInfoTab() {
                   className="bg-gray-100"
                   disabled
                 />
-                <p className="text-muted-foreground text-sm">
-                  Email cannot be changed. Contact admin if needed.
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-muted-foreground text-sm">
+                    Email cannot be changed. Contact admin if needed.
+                  </p>
+                  {!dbUser?.emailVerified && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => sendVerificationEmailMutation.mutate()}
+                      disabled={sendVerificationEmailMutation.isPending}
+                      className="ml-auto"
+                    >
+                      {sendVerificationEmailMutation.isPending ? "Sending..." : "Verify Email"}
+                    </Button>
+                  )}
+                  {dbUser?.emailVerified && (
+                    <span className="text-green-600 text-sm font-medium ml-auto">
+                      ✓ Verified
+                    </span>
+                  )}
+                </div>
               </div>
 
               <Button type="submit" disabled={isSubmitting}>

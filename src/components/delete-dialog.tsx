@@ -33,17 +33,18 @@ export default function DeleteDialog({ open, title, description, onOpenChange, o
                 <AlertDialogFooter>
                     <AlertDialogCancel
                         onClick={() => onOpenChange(false)}
+                        className="text-foreground font-semibold"
                     >
                         Cancel
                     </AlertDialogCancel>
                     <AlertDialogAction
-                        className="bg-destructive hover:bg-destructive/70"
+                        className="bg-destructive hover:bg-destructive/70 text-foreground font-semibold"
                         onClick={() => {
                             onDelete();
                             onOpenChange(false);
                         }}
                     >
-                        Delete
+                        Confirm
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
