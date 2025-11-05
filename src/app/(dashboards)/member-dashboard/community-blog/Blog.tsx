@@ -23,6 +23,8 @@ import {
   Trash2,
   MoreVertical,
   Flag,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 import { useRouter } from "nextjs-toploader/app";
 import React, { useEffect, useState } from "react";
@@ -229,7 +231,16 @@ function BlogPostCard({ post }: { post: BlogPost }) {
   };
 
   return (
-    <Card className="overflow-hidden">
+    <Card className={`overflow-hidden relative ${!post.published ? "border-amber-500/60 dark:border-amber-600/60 border-2 shadow-sm" : ""}`}>
+      {!post.published && (
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10 rounded-b-lg bg-gradient-to-b from-amber-500 to-amber-600 dark:from-amber-600 dark:to-amber-700 text-white px-4 py-1.5 shadow-lg border-x border-b border-amber-400/50 border-t-0 backdrop-blur-sm">
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span className="text-sm font-semibold tracking-wide">DRAFT</span>
+          </div>
+          <div className="absolute inset-0 rounded-b-lg bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+        </div>
+      )}
       <CardContent className="">
         {/* Author Info */}
         <div className="mb-4 flex items-center space-x-3">
@@ -262,11 +273,11 @@ function BlogPostCard({ post }: { post: BlogPost }) {
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            {(post.authorId == dbUser?.id && !post.published) && (
-            <Badge variant="secondary" className="text-xs">
-              Draft
-            </Badge>
-            )}
+            {/* {(post.authorId == dbUser?.id && !post.published) && (
+              <Badge variant="secondary" className="text-xs">
+                Draft
+              </Badge>
+            )} */}
             <Badge variant="secondary" className="text-xs">
               {post.category?.name ?? "General"}
             </Badge>
@@ -328,24 +339,30 @@ function BlogPostCard({ post }: { post: BlogPost }) {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Report dialog */}
-              <ReportDialog
-                target={reportTarget}
-                open={openReportDialog}
-                onOpenChange={setOpenReportDialog}
-                onSubmit={handleReportSubmit}
-              />
+              <Button variant="ghost" size="icon" asChild>
+                <Link href={`/member-dashboard/community-blog/${post.id}`}>
+                  <ExternalLink className="h-4 w-4" />
+                </Link>
+              </Button>
 
-              {/* Delete dialog */}
-              <DeleteDialog
-                open={openDeleteDialog}
-                onOpenChange={setOpenDeleteDialog}
-                onDelete={handleDeletePost}
-                title="Delete this post?"
-                description="This action cannot be undone. This will permanently delete your post and remove it from the community blog."
-              />
             </div>
           </div>
+          {/* Report dialog */}
+          <ReportDialog
+            target={reportTarget}
+            open={openReportDialog}
+            onOpenChange={setOpenReportDialog}
+            onSubmit={handleReportSubmit}
+          />
+
+          {/* Delete dialog */}
+          <DeleteDialog
+            open={openDeleteDialog}
+            onOpenChange={setOpenDeleteDialog}
+            onDelete={handleDeletePost}
+            title="Delete this post?"
+            description="This action cannot be undone. This will permanently delete your post and remove it from the community blog."
+          />
         </div>
 
         {/* Post Content */}
