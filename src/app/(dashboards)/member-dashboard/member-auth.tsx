@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { useAuth } from "~/hooks/useAuth";
+import { toast } from "sonner";
 
 export function MemberAuth() {
   const { session, dbUser, isPending } = useAuth();
@@ -20,6 +21,11 @@ export function MemberAuth() {
 
   if (!dbUser?.onboardedAt) {
     redirect("/onboarding");
+  }
+
+  if (!dbUser?.signUpApprovedAt) {
+    // toast.error("Your account is not approved yet. Please wait for the admin to approve your account.");
+    redirect("/");
   }
 
   return null;

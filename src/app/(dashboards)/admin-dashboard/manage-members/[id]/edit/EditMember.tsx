@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useRouter } from 'nextjs-toploader/app';
-import { ArrowLeft, Calendar, FileText, User2, Shield } from "lucide-react";
+import { ArrowLeft, Calendar, FileText, User2, Shield, XCircle } from "lucide-react";
 import Link from "next/link";
 import { Spinner } from "~/components/ui/spinner";
 import DeleteDialog from "~/components/delete-dialog";
@@ -50,6 +50,8 @@ export default function EditMemberPage() {
 
   // Delete dialog state
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  // Unapprove dialog state
+  const [openUnapproveDialog, setOpenUnapproveDialog] = useState(false);
 
   // Populate form when member data is loaded
   useEffect(() => {
@@ -88,6 +90,19 @@ export default function EditMemberPage() {
     },
   });
 
+  const unapproveMemberMutation = api.admin.members.unapprove.useMutation({
+    onSuccess: async () => {
+      toast.success("Member unapproved successfully");
+      await utils.admin.members.getAll.invalidate();
+      await utils.admin.members.getById.invalidate({ id: memberId });
+      await utils.admin.members.getStats.invalidate();
+      setOpenUnapproveDialog(false);
+    },
+    onError: (err) => {
+      toast.error(err.message ?? "Failed to unapprove member");
+    },
+  });
+
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -112,6 +127,10 @@ export default function EditMemberPage() {
 
   const handleDelete = () => {
     deleteMemberMutation.mutate({ id: memberId });
+  };
+
+  const handleUnapprove = () => {
+    unapproveMemberMutation.mutate({ id: memberId });
   };
 
   if (isLoading) {
@@ -287,7 +306,43 @@ export default function EditMemberPage() {
               <CardTitle className="text-destructive">Danger Zone</CardTitle>
               <CardDescription>Irreversible actions</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              {member.signUpApprovedAt && (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Unapprove Member</p>
+                    <p className="text-muted-foreground text-sm">
+                      {`Revoke this member's access to the platform. They will need to be re-approved to access platform features.`}
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    disabled={unapproveMemberMutation.isPending}
+                    onClick={() => setOpenUnapproveDialog(true)}
+                    className="gap-2"
+                  >
+                    {unapproveMemberMutation.isPending ? (
+                      <>
+                        <Spinner className="h-4 w-4" />
+                        Unapproving...
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="h-4 w-4" />
+                        Unapprove
+                      </>
+                    )}
+                  </Button>
+                  <DeleteDialog
+                    open={openUnapproveDialog}
+                    onOpenChange={setOpenUnapproveDialog}
+                    onDelete={handleUnapprove}
+                    title="Unapprove this member?"
+                    description="This will revoke the member's access to the platform. They will no longer be able to access platform features until re-approved by an administrator."
+                  />
+                </div>
+              )}
+              {member.signUpApprovedAt && <Separator />}
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Delete Member</p>

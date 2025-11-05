@@ -20,6 +20,7 @@ export const adminMembersRouter = createTRPCRouter({
         .object({
           search: z.string().optional(),
           role: z.enum(["USER", "ADMIN"]).optional(),
+          approved: z.boolean().optional(), // Filter by approval status
         })
         .optional()
     )
@@ -34,6 +35,7 @@ export const adminMembersRouter = createTRPCRouter({
 
       const where: {
         role?: "USER" | "ADMIN";
+        signUpApprovedAt?: { not: null } | null;
         OR?: Array<{
           name?: { contains: string; mode: "insensitive" };
           email?: { contains: string; mode: "insensitive" };
@@ -42,6 +44,15 @@ export const adminMembersRouter = createTRPCRouter({
 
       if (input?.role) {
         where.role = input.role;
+      }
+
+      // Filter by approval status
+      if (input?.approved !== undefined) {
+        if (input.approved) {
+          where.signUpApprovedAt = { not: null };
+        } else {
+          where.signUpApprovedAt = null;
+        }
       }
 
       if (input?.search) {
@@ -310,6 +321,160 @@ export const adminMembersRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  // Approve user signup
+  approve: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is admin
+      if (ctx.dbUser.role !== "ADMIN") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can perform this action",
+        });
+      }
+
+      // Get member details before approval
+      const memberToApprove = await ctx.db.user.findUnique({
+        where: { id: input.id },
+        select: { name: true, email: true, signUpApprovedAt: true },
+      });
+
+      if (!memberToApprove) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Member not found",
+        });
+      }
+
+      if (memberToApprove.signUpApprovedAt) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User is already approved",
+        });
+      }
+
+      const member = await ctx.db.user.update({
+        where: { id: input.id },
+        data: { signUpApprovedAt: new Date() },
+      });
+
+      // Log user activity for the approved member
+      await logUserActivity(ctx.db, {
+        userId: input.id,
+        title: `Account approved`,
+        description: `Your account has been approved by an administrator. You can now access all platform features.`,
+        icon: "CheckCircle",
+        type: UserActivityType.PROFILE_UPDATED,
+        metadata: {
+          approvedBy: ctx.dbUser.name,
+          approvedAt: new Date().toISOString(),
+        },
+      });
+
+      // Log app activity
+      await logAppActivity(ctx.db, {
+        userId: ctx.dbUser.id,
+        userName: ctx.dbUser.name ?? undefined,
+        userEmail: ctx.dbUser.email ?? undefined,
+        type: AppActivityType.MEMBER_UPDATED,
+        action: ActivityActionEnum.APPROVED,
+        entity: ActivityEntity.USER,
+        entityId: input.id,
+        title: `Member signup approved: ${memberToApprove.name ?? "Unknown"}`,
+        description: `Admin approved member signup`,
+        category: ActivityCategory.ADMIN,
+        severity: Severity.GOOD,
+        metadata: {
+          memberId: input.id,
+          memberName: memberToApprove.name,
+          memberEmail: memberToApprove.email,
+        },
+      });
+
+      return member;
+    }),
+
+  // Unapprove user signup
+  unapprove: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is admin
+      if (ctx.dbUser.role !== "ADMIN") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can perform this action",
+        });
+      }
+
+      // Prevent user from unapproving themselves
+      // if (ctx.dbUser.id === input.id) {
+      //   throw new TRPCError({
+      //     code: "BAD_REQUEST",
+      //     message: "You cannot unapprove your own account",
+      //   });
+      // }
+
+      // Get member details before unapproval
+      const memberToUnapprove = await ctx.db.user.findUnique({
+        where: { id: input.id },
+        select: { name: true, email: true, signUpApprovedAt: true },
+      });
+
+      if (!memberToUnapprove) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Member not found",
+        });
+      }
+
+      if (!memberToUnapprove.signUpApprovedAt) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User is not approved",
+        });
+      }
+
+      const member = await ctx.db.user.update({
+        where: { id: input.id },
+        data: { signUpApprovedAt: null },
+      });
+
+      // Log user activity for the unapproved member
+      await logUserActivity(ctx.db, {
+        userId: input.id,
+        title: `Account access revoked`,
+        description: `Your account approval has been revoked by an administrator. You will no longer be able to access platform features until re-approved.`,
+        icon: "XCircle",
+        type: UserActivityType.PROFILE_UPDATED,
+        metadata: {
+          unapprovedBy: ctx.dbUser.name,
+          unapprovedAt: new Date().toISOString(),
+        },
+      });
+
+      // Log app activity
+      await logAppActivity(ctx.db, {
+        userId: ctx.dbUser.id,
+        userName: ctx.dbUser.name ?? undefined,
+        userEmail: ctx.dbUser.email ?? undefined,
+        type: AppActivityType.MEMBER_UPDATED,
+        action: ActivityActionEnum.REJECTED,
+        entity: ActivityEntity.USER,
+        entityId: input.id,
+        title: `Member signup unapproved: ${memberToUnapprove.name ?? "Unknown"}`,
+        description: `Admin revoked member signup approval`,
+        category: ActivityCategory.ADMIN,
+        severity: Severity.WARNING,
+        metadata: {
+          memberId: input.id,
+          memberName: memberToUnapprove.name,
+          memberEmail: memberToUnapprove.email,
+        },
+      });
+
+      return member;
+    }),
+
   // Get member statistics
   getStats: protectedProcedure.query(async ({ ctx }) => {
     // Check if user is admin
@@ -320,7 +485,7 @@ export const adminMembersRouter = createTRPCRouter({
       });
     }
 
-    const [totalMembers, totalAdmins, verifiedMembers, recentMembers] = await Promise.all([
+    const [totalMembers, totalAdmins, verifiedMembers, recentMembers, unapprovedMembers] = await Promise.all([
       ctx.db.user.count({ where: { role: "USER" } }),
       ctx.db.user.count({ where: { role: "ADMIN" } }),
       ctx.db.user.count({ where: { emailVerified: true } }),
@@ -331,6 +496,7 @@ export const adminMembersRouter = createTRPCRouter({
           },
         },
       }),
+      ctx.db.user.count({ where: { signUpApprovedAt: null } }),
     ]);
 
     return {
@@ -338,6 +504,7 @@ export const adminMembersRouter = createTRPCRouter({
       totalAdmins,
       verifiedMembers,
       recentMembers,
+      unapprovedMembers,
     };
   }),
 });
