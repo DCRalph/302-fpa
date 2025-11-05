@@ -7,17 +7,6 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "~/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
 import Image from "next/image";
@@ -38,6 +27,7 @@ import ReportDialog from "./report-dialog";
 
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
+import DeleteDialog from "../delete-dialog";
 
 // Type for comment with author relation
 type Comment = RouterOutputs["member"]["blog"]["getComments"][number];
@@ -226,44 +216,25 @@ function CommentItem({
                         {(isAuthor || dbUser?.role === "ADMIN") && (
                           <>
                             <DropdownMenuSeparator />
-                            <AlertDialog
+
+                            <DropdownMenuItem
+                              variant="destructive"
+                              className="text-destructive focus:text-destructive"
+                              onSelect={(e) => {
+                                e.preventDefault();
+                                setOpenDeleteDialog(true);
+                              }}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            </DropdownMenuItem>
+
+                            <DeleteDialog
                               open={openDeleteDialog}
                               onOpenChange={setOpenDeleteDialog}
-                            >
-                              <AlertDialogTrigger asChild>
-                                <DropdownMenuItem
-                                  variant="destructive"
-                                  className="text-destructive focus:text-destructive"
-                                  onSelect={(e) => e.preventDefault()} // prevent closing immediately
-                                >
-                                  <Trash2 className="text-destructive mr-2 h-4 w-4" />{" "}
-                                  Delete
-                                </DropdownMenuItem>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Delete this comment?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This action cannot be undone. The comment
-                                    will be permanently deleted.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    className="bg-destructive hover:bg-destructive/70"
-                                    onClick={() => {
-                                      onDelete(comment.id);
-                                      setOpenDeleteDialog(false);
-                                    }}
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                              onDelete={() => onDelete(comment.id)}
+                              title="Delete this comment?"
+                              description="This action cannot be undone. This will permanently delete your comment."
+                            />
                           </>
                         )}
                       </>

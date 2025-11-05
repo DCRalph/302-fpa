@@ -8,6 +8,13 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Folder, File, Download, Calendar, HardDrive, Tag, User, Image, FileText, Archive, ExternalLink, BookOpen } from "lucide-react";
 import Link from "next/link";
+import { type RouterOutputs } from "~/trpc/react";
+import { useState } from "react";
+import DeleteDialog from "~/components/delete-dialog";
+
+
+type File = RouterOutputs["member"]["files"]["list"][number];
+
 
 const getFileTypeInfo = (type: string) => {
   switch (type) {
@@ -26,9 +33,17 @@ const getFileTypeInfo = (type: string) => {
 
 export default function MyFilesPage() {
   const { data, refetch, isFetching } = api.member.files.list.useQuery();
-  const del = api.member.files.delete.useMutation({
+  const deleteFileMutation = api.member.files.delete.useMutation({
     onSuccess: () => refetch(),
   });
+
+  // Accept the file object directly (button passes `file`) and guard before mutating.
+  const handleDeleteFile = (file: File) => {
+    deleteFileMutation.mutate({ id: file.id });
+  };
+
+  // Delete dialog state
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   return (
     <div className="flex-1 space-y-6 p-3 sm:p-4 md:p-6">
@@ -170,11 +185,20 @@ export default function MyFilesPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => del.mutate({ id: file.id })}
+                          disabled={deleteFileMutation.isPending}
+                          onClick={() => setDeleteDialogOpen(true)}
                           className="w-full sm:w-auto text-destructive hover:text-destructive"
                         >
-                          Delete
+                          {deleteFileMutation.isPending ? 'Deleting...' : 'Delete'}
                         </Button>
+
+                        <DeleteDialog
+                          open={isDeleteDialogOpen}
+                          onOpenChange={setDeleteDialogOpen}
+                          title="Confirm Delete"
+                          description={`Are you sure you want to delete the file "${file.filename}"? This action cannot be undone.`}
+                          onDelete={() => handleDeleteFile(file)}
+                        />
                       </div>
                     </div>
                   </div>

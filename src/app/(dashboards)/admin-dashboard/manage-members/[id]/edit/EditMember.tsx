@@ -28,17 +28,7 @@ import { useRouter } from 'nextjs-toploader/app';
 import { ArrowLeft, Calendar, FileText, User2, Shield } from "lucide-react";
 import Link from "next/link";
 import { Spinner } from "~/components/ui/spinner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "~/components/ui/alert-dialog";
+import DeleteDialog from "~/components/delete-dialog";
 
 export default function EditMemberPage() {
   const router = useRouter();
@@ -57,6 +47,9 @@ export default function EditMemberPage() {
     role: "USER" as "USER" | "ADMIN",
     emailVerified: false,
   });
+
+  // Delete dialog state
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   // Populate form when member data is loaded
   useEffect(() => {
@@ -303,36 +296,22 @@ export default function EditMemberPage() {
                     be undone.
                   </p>
                 </div>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="destructive"
-                      disabled={deleteMemberMutation.isPending}
-                    >
-                      {deleteMemberMutation.isPending
-                        ? "Deleting..."
-                        : "Delete"}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete this post?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently
-                        delete your post and remove it from the community blog.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-destructive hover:bg-destructive/70"
-                        onClick={handleDelete}
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                  variant="destructive"
+                  disabled={deleteMemberMutation.isPending}
+                  onClick={() => setOpenDeleteDialog(true)}
+                >
+                  {deleteMemberMutation.isPending
+                    ? "Deleting..."
+                    : "Delete"}
+                </Button>
+                <DeleteDialog
+                  open={openDeleteDialog}
+                  onOpenChange={setOpenDeleteDialog}
+                  onDelete={handleDelete}
+                  title="Delete this member?"
+                  description="This action cannot be undone. This will permanently delete the member account and remove it from the system."
+                />
               </div>
             </CardContent>
           </Card>

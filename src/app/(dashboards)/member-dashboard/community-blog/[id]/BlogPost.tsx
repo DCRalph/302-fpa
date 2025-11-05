@@ -31,16 +31,6 @@ import { useAuth } from "~/hooks/useAuth";
 import CommentItem from "~/components/community-blog/comment-item";
 import { type RouterOutputs } from "~/trpc/react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -48,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import ReportDialog from "~/components/community-blog/report-dialog";
+import DeleteDialog from "~/components/delete-dialog";
 
 type BlogPost = NonNullable<RouterOutputs["member"]["blog"]["getById"]>;
 
@@ -422,36 +413,13 @@ export default function BlogPost({ post }: BlogPostProps) {
                 />
 
                 {/* Delete Dialog */}
-                <AlertDialog
+                <DeleteDialog
                   open={openDeleteDialog}
                   onOpenChange={setOpenDeleteDialog}
-                >
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete this post?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently
-                        delete your post and remove it from the community blog.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel
-                        onClick={() => setOpenDeleteDialog(false)}
-                      >
-                        Cancel
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-destructive hover:bg-destructive/70"
-                        onClick={() => {
-                          handleDeletePost();
-                          setOpenDeleteDialog(false);
-                        }}
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                  onDelete={handleDeletePost}
+                  title="Delete this post?"
+                  description="This action cannot be undone. This will permanently delete your post and remove it from the community blog."
+                />
               </div>
             </div>
           </div>
@@ -483,8 +451,8 @@ export default function BlogPost({ post }: BlogPostProps) {
                       <div
                         key={category.id}
                         className={`relative flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-all duration-200 ${editCategoryId === category.id
-                            ? "border-primary bg-primary/5 shadow-sm"
-                            : "border-border bg-background hover:border-primary/50 hover:bg-muted/30"
+                          ? "border-primary bg-primary/5 shadow-sm"
+                          : "border-border bg-background hover:border-primary/50 hover:bg-muted/30"
                           }`}
                       >
                         <RadioGroupItem

@@ -44,6 +44,7 @@ import {
 import Link from "next/link";
 import { Spinner } from "~/components/ui/spinner";
 import { toast } from "sonner";
+import DeleteDialog from "~/components/delete-dialog";
 
 interface FileModalProps {
   fileId: string | null;
@@ -54,6 +55,9 @@ interface FileModalProps {
 function FileModal({ fileId, open, onOpenChange }: FileModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ filename: "", mimeType: "" });
+
+  // Dialogs
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   const { data: file, isLoading } = api.admin.files.getById.useQuery(
     { id: fileId! },
@@ -104,7 +108,7 @@ function FileModal({ fileId, open, onOpenChange }: FileModalProps) {
   };
 
   const handleDelete = () => {
-    if (fileId && confirm("Are you sure you want to delete this file?")) {
+    if (fileId) {
       deleteMutation.mutate({ id: fileId });
     }
   };
@@ -325,8 +329,8 @@ function FileModal({ fileId, open, onOpenChange }: FileModalProps) {
                   </Button>
                   <Button
                     variant="destructive"
-                    onClick={handleDelete}
                     disabled={deleteMutation.isPending}
+                    onClick={() => setOpenDeleteDialog(true)}
                   >
                     {deleteMutation.isPending ? (
                       <Spinner />
@@ -337,6 +341,15 @@ function FileModal({ fileId, open, onOpenChange }: FileModalProps) {
                   </Button>
                 </>
               )}
+
+              {/* Delete dialog */}
+              <DeleteDialog
+                open={openDeleteDialog}
+                title="Delete this File?"
+                description="This action cannot be undone. This will permanently delete your file and remove it from the system."
+                onOpenChange={setOpenDeleteDialog}
+                onDelete={handleDelete}
+              />
             </div>
           </div>
         )}

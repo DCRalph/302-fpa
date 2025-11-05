@@ -50,17 +50,8 @@ import { useAuth } from "~/hooks/useAuth";
 
 import CommentItem from "~/components/community-blog/comment-item";
 import { Skeleton } from "~/components/ui/skeleton";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
 import ReportDialog from "~/components/community-blog/report-dialog";
+import DeleteDialog from "~/components/delete-dialog";
 
 type BlogPost = RouterOutputs["member"]["blog"]["list"]["posts"][number];
 
@@ -341,36 +332,13 @@ function BlogPostCard({ post }: { post: BlogPost }) {
               />
 
               {/* Delete dialog */}
-              <AlertDialog
+              <DeleteDialog
                 open={openDeleteDialog}
                 onOpenChange={setOpenDeleteDialog}
-              >
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete this post?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete
-                      your post and remove it from the community blog.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel
-                      onClick={() => setOpenDeleteDialog(false)}
-                    >
-                      Cancel
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      className="bg-destructive hover:bg-destructive/70"
-                      onClick={() => {
-                        handleDeletePost();
-                        setOpenDeleteDialog(false);
-                      }}
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                onDelete={handleDeletePost}
+                title="Delete this post?"
+                description="This action cannot be undone. This will permanently delete your post and remove it from the community blog."
+              />
             </div>
           </div>
         </div>
