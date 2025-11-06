@@ -146,7 +146,7 @@ export function DashboardSideBar() {
             </div>
           </div>
         </SidebarHeader>
-        <SidebarContent className="no-scrollbar overflow-x-hidden overflow-y-scroll! mt-10">
+        <SidebarContent className={`no-scrollbar overflow-x-hidden overflow-y-scroll! ${isCollapsed ? "mt-10" : "mt-14"}`}>
           <SidebarGroup>
             <SidebarGroupLabel>Application</SidebarGroupLabel>
             <SidebarMenu>
