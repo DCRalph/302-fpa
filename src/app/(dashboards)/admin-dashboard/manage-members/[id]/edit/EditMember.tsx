@@ -24,8 +24,16 @@ import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { useRouter } from 'nextjs-toploader/app';
-import { ArrowLeft, Calendar, FileText, User2, Shield, XCircle } from "lucide-react";
+import { useRouter } from "nextjs-toploader/app";
+import {
+  ArrowLeft,
+  Calendar,
+  FileText,
+  User2,
+  Shield,
+  XCircle,
+  Trash,
+} from "lucide-react";
 import Link from "next/link";
 import { Spinner } from "~/components/ui/spinner";
 import DeleteDialog from "~/components/delete-dialog";
@@ -40,13 +48,11 @@ export default function EditMemberPage() {
     { enabled: !!memberId },
   );
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    role: "USER" as "USER" | "ADMIN",
-    emailVerified: false,
-  });
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [role, setRole] = useState<"USER" | "ADMIN" | undefined>(undefined);
+  const [emailVerified, setEmailVerified] = useState(false);
 
   // Delete dialog state
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -56,13 +62,11 @@ export default function EditMemberPage() {
   // Populate form when member data is loaded
   useEffect(() => {
     if (member) {
-      setFormData({
-        name: member.name ?? "",
-        email: member.email ?? "",
-        phone: member.phone ?? "",
-        role: member.role,
-        emailVerified: member.emailVerified,
-      });
+      setName(member.name ?? "");
+      setEmail(member.email ?? "");
+      setPhone(member.phone ?? "");
+      setRole(member.role);
+      setEmailVerified(member.emailVerified);
     }
   }, [member]);
 
@@ -104,24 +108,41 @@ export default function EditMemberPage() {
   });
 
   const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    switch (field) {
+      case "name":
+        setName(value as string);
+        break;
+      case "email":
+        setEmail(value as string);
+        break;
+      case "phone":
+        setPhone(value as string);
+        break;
+      case "role":
+        setRole(value as "USER" | "ADMIN");
+        break;
+      case "emailVerified":
+        setEmailVerified(value as boolean);
+        break;
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.email) {
+    if (!name || !email) {
       toast.error("Name and email are required");
       return;
     }
 
     updateMemberMutation.mutate({
       id: memberId,
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone || undefined,
-      role: formData.role,
-      emailVerified: formData.emailVerified,
+      name: name,
+      email: email,
+      phone: phone,
+      // ensure we don't send undefined if state hasn't been synced yet
+      role: role ?? member?.role,
+      emailVerified: emailVerified,
     });
   };
 
@@ -192,7 +213,7 @@ export default function EditMemberPage() {
                   <Input
                     id="name"
                     placeholder="Enter member name"
-                    value={formData.name}
+                    value={name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
                     required
                   />
@@ -205,7 +226,7 @@ export default function EditMemberPage() {
                     id="email"
                     type="email"
                     placeholder="member@example.com"
-                    value={formData.email}
+                    value={email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     required
                   />
@@ -216,7 +237,7 @@ export default function EditMemberPage() {
                     id="phone"
                     type="tel"
                     placeholder="+679 1234567"
-                    value={formData.phone}
+                    value={phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
                   />
                 </div>
@@ -235,12 +256,13 @@ export default function EditMemberPage() {
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
                   <Select
-                    value={formData.role}
-                    onValueChange={(value: "USER" | "ADMIN") =>
-                      handleInputChange("role", value)
+                    // show the fetched member role immediately if local state hasn't been set yet
+                    value={role ?? member?.role ?? undefined}
+                    onValueChange={(value: string) =>
+                      handleInputChange("role", value as "USER" | "ADMIN")
                     }
                   >
-                    <SelectTrigger id="role">
+                    <SelectTrigger id="role" className="w-40">
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
@@ -266,7 +288,7 @@ export default function EditMemberPage() {
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="emailVerified"
-                    checked={formData.emailVerified}
+                    checked={emailVerified}
                     onCheckedChange={(checked) =>
                       handleInputChange("emailVerified", checked as boolean)
                     }
@@ -308,8 +330,8 @@ export default function EditMemberPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {member.signUpApprovedAt && (
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex flex-col items-center justify-between sm:flex-row">
+                  <div className="pr-2">
                     <p className="font-medium">Unapprove Member</p>
                     <p className="text-muted-foreground text-sm">
                       {`Revoke this member's access to the platform. They will need to be re-approved to access platform features.`}
@@ -319,7 +341,7 @@ export default function EditMemberPage() {
                     variant="destructive"
                     disabled={unapproveMemberMutation.isPending}
                     onClick={() => setOpenUnapproveDialog(true)}
-                    className="gap-2"
+                    className="mt-2 w-full gap-2 sm:w-auto sm:p-0"
                   >
                     {unapproveMemberMutation.isPending ? (
                       <>
@@ -343,8 +365,8 @@ export default function EditMemberPage() {
                 </div>
               )}
               {member.signUpApprovedAt && <Separator />}
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex flex-col items-center justify-between sm:flex-row">
+                <div className="pr-2">
                   <p className="font-medium">Delete Member</p>
                   <p className="text-muted-foreground text-sm">
                     Permanently delete this member account. This action cannot
@@ -355,10 +377,19 @@ export default function EditMemberPage() {
                   variant="destructive"
                   disabled={deleteMemberMutation.isPending}
                   onClick={() => setOpenDeleteDialog(true)}
+                  className="mt-2 w-full gap-2 sm:w-auto sm:p-0"
                 >
-                  {deleteMemberMutation.isPending
-                    ? "Deleting..."
-                    : "Delete"}
+                  {deleteMemberMutation.isPending ? (
+                    <>
+                      <Spinner className="h-4 w-4" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash className="h-4 w-4" />
+                      Delete
+                    </>
+                  )}
                 </Button>
                 <DeleteDialog
                   open={openDeleteDialog}

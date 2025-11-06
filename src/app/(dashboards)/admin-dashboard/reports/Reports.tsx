@@ -238,11 +238,11 @@ export default function ReportPage() {
                         </Badge>
                         {/* status badge next to type */}
                         {r.resolvedAt ? (
-                          <Badge className="text-foreground bg-green-100 text-xs dark:bg-green-900">
+                          <Badge variant={"resolved"}>
                             Resolved
                           </Badge>
                         ) : (
-                          <Badge className="text-foreground bg-yellow-100 text-xs dark:bg-yellow-900">
+                          <Badge variant={"pending"}>
                             Pending
                           </Badge>
                         )}

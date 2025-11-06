@@ -49,8 +49,6 @@ export default function EditPostPage({ post }: BlogPostProps) {
     post?.categoryId ?? null,
   );
 
-  // const [selectedFilter, setSelectedFilter] = useState("general");
-
   // Load available categories so we can map slug -> id
   const { data: categories } = api.member.blog.getCategories.useQuery();
 

@@ -329,7 +329,7 @@ export default function ManageMembersPage() {
                                   <h3 className="text-base sm:text-lg font-semibold truncate">
                                     {member.name ?? "Unnamed User"}
                                   </h3>
-                                  <Badge variant="destructive">
+                                  <Badge variant="pending">
                                     Pending Approval
                                   </Badge>
                                   {member.emailVerified && (
