@@ -29,8 +29,8 @@ export async function SiteFooter() {
                     {data.map((conference, idx) => (
                       <Link
                         key={idx}
-                        href="#"
-                        className="block hover:text-white"
+                        href={`/conferences/${conference.id}`}
+                        className="block hover:text-white hover:underline"
                       >
                         {conference.name} (
                         {new Date(conference.startDate).getFullYear()})
