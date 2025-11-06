@@ -30,7 +30,7 @@ export async function SiteFooter() {
                       <Link
                         key={idx}
                         href={`/conferences/${conference.id}`}
-                        className="block hover:text-white"
+                        className="block hover:text-white hover:underline"
                       >
                         {conference.name} (
                         {new Date(conference.startDate).getFullYear()})

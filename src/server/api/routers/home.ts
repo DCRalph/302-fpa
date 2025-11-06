@@ -1,5 +1,7 @@
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 
 export type ConferenceTitle = {
   titleLine1: string;
@@ -190,5 +192,53 @@ export const homeRouter = createTRPCRouter({
     });
 
     return previousConferences.filter((x, idx) => idx !== 0);
+  }),
+
+  getConferenceById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const conference = await ctx.db.conference.findUnique({
+        where: { id: input.id },
+        include: {
+          contacts: true,
+          _count: {
+            select: { registrations: true },
+          },
+        },
+      });
+
+      if (!conference) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Conference not found",
+        });
+      }
+
+      // Check if this is the current active conference
+      const currentConference = await ctx.db.conference.findFirst({
+        where: {
+          isActive: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return {
+        ...conference,
+        isCurrent: currentConference?.id === conference.id,
+      };
+    }),
+
+  getCurrentConference: publicProcedure.query(async ({ ctx }) => {
+    const conference = await ctx.db.conference.findFirst({
+      where: {
+        isActive: true,
+      },
+      include: {
+        contacts: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return conference;
   }),
 });
