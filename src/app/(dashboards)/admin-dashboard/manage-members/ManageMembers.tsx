@@ -384,7 +384,7 @@ export default function ManageMembersPage() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-col sm:items-end sm:gap-2 min-w-[140px]">
+                          <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-col xl:flex-row sm:items-end sm:gap-2 min-w-[140px]">
                             <Button
                               variant="default"
                               size="sm"

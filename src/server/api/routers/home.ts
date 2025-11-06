@@ -25,11 +25,6 @@ export type ConferenceDetails = {
   contacts: { role: string; name?: string; phone?: string; email?: string }[];
 };
 
-export type PreviousConferences = {
-  conferenceTitle: string;
-  year: number;
-};
-
 export const homeRouter = createTRPCRouter({
   getConferenceTitle: publicProcedure.query(async ({ ctx }) => {
     let conferenceTitle = await ctx.db.siteSettings.findUnique({
@@ -190,10 +185,8 @@ export const homeRouter = createTRPCRouter({
 
   getPreviousConferences: publicProcedure.query(async ({ ctx }) => {
     const previousConferences = await ctx.db.conference.findMany({
-      where: {
-        isActive: false,
-      },
       orderBy: { createdAt: "desc" },
+      take: 4,
     });
 
     return previousConferences.filter((x, idx) => idx !== 0);
