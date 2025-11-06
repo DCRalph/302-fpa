@@ -100,7 +100,7 @@ const adminMenuItems = [
 export function DashboardSideBar() {
   const { session } = getClientSession();
   const pathname = usePathname();
-  const { state } = useSidebar();
+  const { state, isMobile } = useSidebar();
   const [isCollapsed, setIsCollapsed] = useState(state === "collapsed");
 
   useEffect(() => {
@@ -128,27 +128,25 @@ export function DashboardSideBar() {
       <Sidebar collapsible="icon" className="fixed top-0 left-0 !border-r-0">
         <SidebarHeader>
           <div
-            className={`transition-all duration-300 ${isCollapsed ? "pt-1" : "p-1"} flex items-center gap-2 text-lg font-bold`}
+            className={`transition-all duration-300 ${isCollapsed ? "" : "p-1"} flex items-center gap-2 text-lg font-bold absolute w-60`}
           >
             <div
-              className={`grid ${isCollapsed ? "size-8" : "size-11"} place-items-center ${isCollapsed ? "rounded-lg" : "rounded-2xl"} from-gradient-blue via-gradient-purple to-gradient-red to text-primary-foreground bg-gradient-to-br from-25% via-50% to-75% shadow-lg dark:shadow-glass transition-shadow duration-300`}
+              className={`grid ${isCollapsed && !isMobile ? "size-8" : "size-11"} place-items-center ${isCollapsed && !isMobile ? "rounded-lg" : "rounded-2xl"} from-gradient-blue via-gradient-purple to-gradient-red to text-primary-foreground bg-gradient-to-br from-25% via-50% to-75% shadow-lg dark:shadow-glass transition-all duration-300`}
             >
               <GraduationCap
-                size={isCollapsed ? 16 : 24}
-                className="drop-shadow-sm "
+                size={isCollapsed && !isMobile? 16 : 24}
+                className="drop-shadow-sm transition-all duration-300"
               />
             </div>
-            {!isCollapsed && (
-              <div>
-                <p>FPA Conference</p>
-                <p className="text-sidebar-foreground/70 text-sm font-medium">
-                  {new Date().getFullYear()}
-                </p>
-              </div>
-            )}
+            <div className={`${isCollapsed && !isMobile ? "opacity-0" : "opacity-100"} transition-opacity duration-300`}>
+              <p>FPA Conference</p>
+              <p className="text-sidebar-foreground/70 text-sm font-medium">
+                {new Date().getFullYear()}
+              </p>
+            </div>
           </div>
         </SidebarHeader>
-        <SidebarContent className="no-scrollbar overflow-x-hidden overflow-y-scroll!">
+        <SidebarContent className="no-scrollbar overflow-x-hidden overflow-y-scroll! mt-10">
           <SidebarGroup>
             <SidebarGroupLabel>Application</SidebarGroupLabel>
             <SidebarMenu>
