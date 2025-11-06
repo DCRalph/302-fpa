@@ -29,7 +29,7 @@ export async function SiteFooter() {
                     {data.map((conference, idx) => (
                       <Link
                         key={idx}
-                        href="#"
+                        href={`/conferences/${conference.id}`}
                         className="block hover:text-white"
                       >
                         {conference.name} (
