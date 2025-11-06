@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { useAuth } from "~/hooks/useAuth";
-import { toast } from "sonner";
 
 export function MemberAuth() {
   const { session, dbUser, isPending } = useAuth();

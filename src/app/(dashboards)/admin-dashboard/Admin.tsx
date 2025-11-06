@@ -64,7 +64,7 @@ export default function AdminDashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {adminDashboard?.upcomingConference.title ? (
+                {adminDashboard?.upcomingConference.id ? (
                   <>
                     <div className="py-6 text-center">
                       <h3 className="text-foreground text-lg sm:text-2xl font-semibold">
@@ -104,13 +104,27 @@ export default function AdminDashboardPage() {
                     </div>
                   </>
                 ) : (
-                  <div className="py-8 text-center">
-                    <p className="text-muted-foreground mb-4">
-                      No active conference found
-                    </p>
-                    <Link href="/admin-dashboard/manage-conferences/create">
-                      <Button size="sm">Create Conference</Button>
-                    </Link>
+                  <div className="pt-6">
+                    <div className="flex flex-col items-center text-center gap-4">
+                      <DynamicIcon
+                        type="lucide"
+                        name="Calendar"
+                        props={{ className: "h-12 w-12 text-muted-foreground" }}
+                      />
+                      <h3 className="text-foreground text-lg sm:text-xl font-semibold">No active conference</h3>
+                      <p className="text-muted-foreground max-w-[60ch]">
+                        There are no active conferences right now. You can create a new conference to make it available to members, or review existing conferences.
+                      </p>
+                      <Separator />
+                      <div className="flex gap-2 w-full">
+                        <Link href="/admin-dashboard/manage-conferences/create" className="flex-1">
+                          <Button size="sm" className="w-full">Create Conference</Button>
+                        </Link>
+                        <Link href="/admin-dashboard/manage-conferences" className="flex-1">
+                          <Button variant="outline" size="sm" className="w-full">View Conferences</Button>
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 )}
               </CardContent>
