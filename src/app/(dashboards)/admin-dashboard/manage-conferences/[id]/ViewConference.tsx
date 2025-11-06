@@ -107,7 +107,7 @@ export default function ViewConferencePage() {
                 {conference.isActive ? "Active" : "Inactive"}
               </Badge>
               {isRegistrationOpen && (
-                <Badge variant="default" className="bg-green-500">
+                <Badge variant="default" className="bg-green-500 dark:bg-green-700">
                   Registration Open
                 </Badge>
               )}
