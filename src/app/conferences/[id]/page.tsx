@@ -25,16 +25,18 @@ export default async function ConferencePage({
   const isCurrent = conference.isCurrent;
 
   return (
-    <main className="bg-background text-foreground min-h-screen">
-      <NavBar />
-      <div className="container mx-auto px-4 py-12 md:py-20">
-        {isCurrent ? (
-          <CurrentConferenceView conference={conference} />
-        ) : (
-          <PastConferenceView conference={conference} />
-        )}
+    <main className="w-screen h-screen overflow-y-scroll">
+      <div className="bg-background text-foreground min-h-screen">
+        <NavBar />
+        <div className="container mx-auto px-4 py-12 md:py-20">
+          {isCurrent ? (
+            <CurrentConferenceView conference={conference} />
+          ) : (
+            <PastConferenceView conference={conference} />
+          )}
+        </div>
+        <SiteFooter />
       </div>
-      <SiteFooter />
     </main>
   );
 }

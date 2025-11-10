@@ -7,11 +7,7 @@ export function MemberAuth() {
   const { session, dbUser, isPending } = useAuth();
 
   if (isPending) {
-    return (
-      <div className="flex items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    )
+    return null;
   }
 
   if (!session) {

@@ -10,11 +10,7 @@ export function AdminAuth() {
   // const { session, isPending } = getClientSession();
 
   if (isPending) {
-    return (
-      <div className="flex items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    )
+    return null;
   }
 
   if (!session) {
