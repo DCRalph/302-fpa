@@ -11,6 +11,7 @@ import Link from "next/link";
 import { type RouterOutputs } from "~/trpc/react";
 import { useState } from "react";
 import DeleteDialog from "~/components/delete-dialog";
+import { Spinner } from "~/components/ui/spinner";
 
 type File = RouterOutputs["member"]["files"]["list"][number];
 
@@ -195,8 +196,7 @@ export default function MyFilesPage() {
                           onClick={() => setDeleteDialogOpen(true)}
                           className="w-full sm:w-auto text-destructive hover:text-destructive"
                         >
-                          <Trash className="h-3 w-3" />
-                          {deleteFileMutation.isPending ? 'Deleting...' : 'Delete'}
+                          {deleteFileMutation.isPending ? (<><Spinner className="h-3 w-3" /> Deleting...</>) : (<><Trash className="h-3 w-3" /> Delete</>)}
                         </Button>
 
                         <DeleteDialog
