@@ -12,7 +12,6 @@ import { type RouterOutputs } from "~/trpc/react";
 import { useState } from "react";
 import DeleteDialog from "~/components/delete-dialog";
 
-
 type File = RouterOutputs["member"]["files"]["list"][number];
 
 
@@ -32,9 +31,16 @@ const getFileTypeInfo = (type: string) => {
 };
 
 export default function MyFilesPage() {
+  const utils = api.useUtils();
   const { data, refetch, isFetching } = api.member.files.list.useQuery();
   const deleteFileMutation = api.member.files.delete.useMutation({
-    onSuccess: () => refetch(),
+    onSuccess: async () => {
+      await Promise.all([
+        utils.member.files.list.invalidate(),
+        utils.member.registration.getRegistrationFiles.invalidate(),
+        refetch()
+      ]);
+    },
   });
 
   // Accept the file object directly (button passes `file`) and guard before mutating.
