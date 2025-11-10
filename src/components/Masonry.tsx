@@ -1,5 +1,10 @@
 import React from "react";
 
+// Masonry (responsive grid)
+// Lightweight helper that renders children into a responsive CSS grid with
+// break-inside avoidance to keep items from splitting across columns. `cols`
+// accepts breakpoint keys (base/sm/md/...) and maps them to Tailwind grid classes.
+// Keep the implementation simple to avoid runtime layout calculations.
 type ResponsiveMasonryProps = {
   children: React.ReactNode;
   className?: string;

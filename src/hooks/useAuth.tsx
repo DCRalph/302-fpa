@@ -1,5 +1,11 @@
 "use client";
 
+// Auth provider hook
+// Client-only provider that wraps an internal `AuthProviderInner` via dynamic import
+// to avoid SSR. It exposes `useAuth()` which returns session + dbUser + status flags.
+// Note: this hook triggers a `me` query invalidation whenever the client session
+// changes so the UI stays in sync with auth state.
+
 import { createContext, useContext, type ReactNode, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { api } from "~/trpc/react";

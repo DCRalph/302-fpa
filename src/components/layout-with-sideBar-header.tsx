@@ -1,5 +1,9 @@
 import { SidebarProvider } from "./ui/sidebar";
 
+// Simple layout wrapper that provides a sidebar and header slots. The `sidebar`
+// and `header` props are expected to be pre-built React nodes (so the caller can
+// pass different sidebar configurations). This keeps layout composition flexible.
+
 
 interface LayoutWithSideBarHeaderProps {
   children: React.ReactNode;
@@ -13,10 +17,8 @@ export function LayoutWithSideBarHeader({ children, sidebar, header: header }: L
       <div className="bg-sidebar flex h-screen w-full">
         {sidebar}
         <div className="flex flex-1 flex-col w-full overflow-x-hidden md:mt-2 rounded-none sm:rounded-tl-xl bg-page-background">
-          {/* <div className="shadow-glass"> */}
           {header}
           {children}
-          {/* </div> */}
         </div>
       </div>
     </SidebarProvider>

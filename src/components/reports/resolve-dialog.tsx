@@ -1,5 +1,10 @@
 "use client";
 
+// ResolveDialog
+// Small, focused dialog used by admins to resolve a report. It requires an Action
+// (Delete content / Dismiss / Other) and accepts an optional admin note. Keep UI
+// logic minimal here — mutation and invalidation are handled by the caller.
+
 import type { ReportAction } from "@prisma/client";
 
 import { Button } from "~/components/ui/button";

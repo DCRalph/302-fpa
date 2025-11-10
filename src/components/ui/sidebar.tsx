@@ -1,5 +1,15 @@
 "use client"
 
+// Sidebar primitives
+// This file exports a lightweight Sidebar system composed of a provider and many
+// slot-based subcomponents (Header, Content, Menu, Trigger, etc.). It handles
+// desktop vs mobile presentation, keyboard shortcuts, persistent open state (cookie),
+// and provides a consistent API for building sidebars throughout the app.
+//
+// Keep changes here conservative: many components rely on the data-* attributes for
+// styling (Tailwind). Add comments where logic is non-obvious rather than changing
+// behavior.
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"

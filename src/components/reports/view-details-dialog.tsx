@@ -1,5 +1,10 @@
 "use client";
 
+// ViewDetailsDialog
+// Read-only dialog showing full report details: who reported, the target (post/comment),
+// reason, markdown-rendered details, and resolution metadata (action/admin note). Designed
+// for admins to inspect a report prior to taking action; all updates happen elsewhere.
+
 import { Badge } from "~/components/ui/badge";
 import {
   Dialog,

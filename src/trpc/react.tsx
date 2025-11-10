@@ -1,5 +1,11 @@
 "use client";
 
+// tRPC + React integration helper
+// Exports `api` (typed tRPC hooks) and `TRPCReactProvider` which sets up a
+// singleton QueryClient and a tRPC client (with logger + http batch stream link).
+// Keep the provider client-side only — server-side usage of tRPC is handled via
+// the server caller helpers in `src/server`.
+
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { httpBatchStreamLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";

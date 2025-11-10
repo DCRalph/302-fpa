@@ -21,12 +21,14 @@ describe('Home Router Tests', () => {
       expect(result.key).toBe('conferenceTitle');
       expect(result.value).toBeDefined();
 
-      // Parse the JSON value
-      const titleData = JSON.parse(result.value) as ConferenceTitle;
-      expect(titleData.title).toBeDefined();
-      expect(titleData.subtitle).toBeDefined();
-      expect(typeof titleData.title).toBe('string');
-      expect(typeof titleData.subtitle).toBe('string');
+  // Parse the JSON value
+  const titleData = JSON.parse(result.value) as ConferenceTitle;
+  // The current type uses titleLine1 / titleLine2 instead of a single `title` field.
+  expect(titleData.titleLine1).toBeDefined();
+  expect(titleData.titleLine2).toBeDefined();
+  expect(titleData.subtitle).toBeDefined();
+  expect(typeof titleData.titleLine1).toBe('string');
+  expect(typeof titleData.titleLine2).toBe('string');
     });
 
     test('should create default title if none exists', async () => {
@@ -35,11 +37,12 @@ describe('Home Router Tests', () => {
       const result = await regularUser.caller.home.getConferenceTitle();
 
       expect(result).toBeDefined();
-      const titleData = JSON.parse(result.value) as ConferenceTitle;
+  const titleData = JSON.parse(result.value) as ConferenceTitle;
 
-      // Should have default values
-      expect(titleData.title).toBeDefined();
-      expect(titleData.subtitle).toBeDefined();
+  // Should have default values (use the current field names)
+  expect(titleData.titleLine1).toBeDefined();
+  expect(titleData.titleLine2).toBeDefined();
+  expect(titleData.subtitle).toBeDefined();
     });
 
     test('should work without authentication', async () => {
