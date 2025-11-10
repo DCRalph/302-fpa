@@ -32,7 +32,7 @@ import {
   User2,
   Shield,
   XCircle,
-  Trash,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { Spinner } from "~/components/ui/spinner";
@@ -386,7 +386,7 @@ export default function EditMemberPage() {
                     </>
                   ) : (
                     <>
-                      <Trash className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" />
                       Delete
                     </>
                   )}

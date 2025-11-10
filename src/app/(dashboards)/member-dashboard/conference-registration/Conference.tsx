@@ -97,8 +97,11 @@ export default function ConferenceRegistration() {
       } else {
         toast.success("File uploaded successfully");
       }
-
-      await utils.member.registration.getRegistrationFiles.invalidate();
+      
+      await Promise.all([
+        utils.member.files.list.invalidate(),
+        utils.member.registration.getRegistrationFiles.invalidate(),
+      ])
 
       setIsUploading(false);
     },
