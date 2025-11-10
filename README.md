@@ -46,23 +46,36 @@ Create a `.env` file in the root directory with the following variables:
 # Database
 DATABASE_URL="postgresql://user:password@localhost:5432/fpa302?schema=public"
 
-# Stack Auth Configuration
-# Get these from your Stack Auth dashboard: https://app.stack-auth.com/
-NEXT_PUBLIC_STACK_API_URL="https://api.stack-auth.com"
-NEXT_PUBLIC_STACK_PROJECT_ID="your-stack-project-id"
-NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY="your-publishable-client-key"
-STACK_SECRET_SERVER_KEY="your-secret-server-key"
+# App
+NODE_ENV=development
+APP_URL="https://fpa.w-g.co"
+
+# Auth / Sessions
+BETTER_AUTH_SECRET="your-secret-server-key"
+
+# OAuth (optional)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# Email (Resend)
+RESEND_API_KEY="your-resend-api-key"
+RESEND_FROM_EMAIL="noreply@fpa.w-g.co"
+RESEND_REPLY_EMAIL="legal@dcralph.com"
 ```
 
 ### Environment Variable Descriptions
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL database connection string | Yes |
-| `NEXT_PUBLIC_STACK_API_URL` | Stack Auth API endpoint URL | Yes |
-| `NEXT_PUBLIC_STACK_PROJECT_ID` | Your Stack Auth project identifier | Yes |
-| `NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY` | Stack Auth client-side publishable key | Yes |
-| `STACK_SECRET_SERVER_KEY` | Stack Auth server-side secret key (keep secure!) | Yes |
+| `DATABASE_URL` | PostgreSQL database connection string (e.g. `postgresql://user:pass@host:5432/dbname?schema=public`). Used by Prisma to connect to the database. | Yes |
+| `NODE_ENV` | Application environment. One of `development`, `test`, or `production`. Defaults to `development` when unset. | No (defaults to `development`) |
+| `BETTER_AUTH_SECRET` | Server secret used by the authentication/session layer (keep this secret). | Yes |
+| `GOOGLE_CLIENT_ID` | OAuth client ID for Google sign-in (if Google auth is enabled). | No (only if using Google OAuth) |
+| `GOOGLE_CLIENT_SECRET` | OAuth client secret for Google sign-in (if Google auth is enabled). | No (only if using Google OAuth) |
+| `RESEND_API_KEY` | API key for the Resend email service used for transactional emails. | Yes (if sending emails)
+| `RESEND_FROM_EMAIL` | Default "from" email address for outgoing messages (e.g. `no-reply@example.com`). | Yes (if sending emails)
+| `RESEND_REPLY_EMAIL` | Reply-to address for outgoing emails. Optional. | No |
+| `APP_URL` | Public application URL (e.g. `https://example.com`). Used for building absolute callback and email links. | Yes |
 
 > **Note:** Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Never put sensitive secrets in these variables.
 
