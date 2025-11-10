@@ -6,7 +6,7 @@ import { api } from "~/trpc/react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { Folder, File, Download, Calendar, HardDrive, Tag, User, Image, FileText, Archive, ExternalLink, BookOpen } from "lucide-react";
+import { Folder, File, Download, Calendar, HardDrive, Tag, User, Image, FileText, Archive, ExternalLink, BookOpen, Trash } from "lucide-react";
 import Link from "next/link";
 import { type RouterOutputs } from "~/trpc/react";
 import { useState } from "react";
@@ -189,6 +189,7 @@ export default function MyFilesPage() {
                           onClick={() => setDeleteDialogOpen(true)}
                           className="w-full sm:w-auto text-destructive hover:text-destructive"
                         >
+                          <Trash className="h-3 w-3" />
                           {deleteFileMutation.isPending ? 'Deleting...' : 'Delete'}
                         </Button>
 
