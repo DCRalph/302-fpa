@@ -28,7 +28,10 @@ function AvatarImage({
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
-      className={cn("aspect-square size-full", className)}
+      // Use object-cover so images are cropped to fill the avatar without stretching.
+      // When consumers want the full image visible they can pass a className with
+      // "object-contain" to override.
+      className={cn("aspect-square size-full object-cover object-center", className)}
       {...props}
     />
   )
