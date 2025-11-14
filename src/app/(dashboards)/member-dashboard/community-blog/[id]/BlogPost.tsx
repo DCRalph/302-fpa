@@ -23,7 +23,6 @@ import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import Image from "next/image";
-import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "nextjs-toploader/app";
