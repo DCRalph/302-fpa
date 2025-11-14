@@ -41,6 +41,7 @@ import {
 import { toast } from "sonner";
 
 import Image from "next/image";
+import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 import Link from "next/link";
 
 import Markdown from "react-markdown";
@@ -244,25 +245,21 @@ function BlogPostCard({ post }: { post: BlogPost }) {
       <CardContent className="">
         {/* Author Info */}
         <div className="mb-4 flex items-center space-x-3">
-          <div
-            className={`flex h-10 w-10 items-center justify-center rounded-full ${post.author?.image ? "" : "bg-gray-200"} text-black`}
-          >
-            <span className="text-sm font-medium">
+          <div>
+            <Avatar className="h-10 w-10">
               {post.author?.image ? (
-                <Image
-                  src={post.author.image}
-                  alt=""
-                  className="rounded-full"
-                  width={40}
-                  height={40}
-                />
+                <AvatarImage src={post.author.image} alt={post.author?.name ?? ""} />
               ) : (
-                (post.author?.name ?? "?")
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
+                <AvatarFallback>
+                  <span className="text-sm font-medium">
+                    {(post.author?.name ?? "?")
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </span>
+                </AvatarFallback>
               )}
-            </span>
+            </Avatar>
           </div>
           <div className="flex-1">
             <p className="text-foreground font-medium">

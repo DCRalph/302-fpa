@@ -9,7 +9,8 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
-import Image from "next/image";
+// Avatar used for user profile images
+import UserAvatar from "~/components/UserAvatar";
 import { useState } from "react";
 import {
   MoreVertical,
@@ -119,26 +120,8 @@ function CommentItem({
         className={`${isNested ? "bg-muted/30" : "bg-muted/50"} flex space-x-3 rounded-lg p-3 sm:flex-row`}
       >
         {/* Avatar */}
-        <div
-          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${comment.author?.image ? "" : "bg-gray-300"
-            } text-black`}
-        >
-          {comment.author?.image ? (
-            <Image
-              src={comment.author.image}
-              alt=""
-              className="rounded-full"
-              width={32}
-              height={32}
-            />
-          ) : (
-            <span className="text-xs font-medium">
-              {(comment.author?.name ?? "?")
-                .split(" ")
-                .map((n: string) => n[0])
-                .join("")}
-            </span>
-          )}
+        <div className="flex-shrink-0">
+          <UserAvatar src={comment.author?.image ?? null} name={comment.author?.name} className="h-8 w-8" />
         </div>
 
         {/* Main Content */}

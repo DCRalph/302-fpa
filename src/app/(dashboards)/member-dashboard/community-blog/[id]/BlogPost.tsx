@@ -23,6 +23,7 @@ import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import Image from "next/image";
+import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "nextjs-toploader/app";
@@ -40,6 +41,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import ReportDialog from "~/components/community-blog/report-dialog";
 import DeleteDialog from "~/components/delete-dialog";
+import UserAvatar from "~/components/UserAvatar";
 
 type BlogPost = NonNullable<RouterOutputs["member"]["blog"]["getById"]>;
 
@@ -323,25 +325,22 @@ export default function BlogPost({ post }: BlogPostProps) {
         <CardContent className="p-6">
           {/* Author Info */}
           <div className="mb-6 flex items-center space-x-3">
-            <div
-              className={`flex h-12 w-12 items-center justify-center rounded-full ${post.author?.image ? "" : "bg-gray-200"} text-black`}
-            >
-              <span className="text-sm font-medium">
+            <div>
+              {/* <Avatar className="h-12 w-12">
                 {post.author?.image ? (
-                  <Image
-                    src={post.author.image}
-                    alt=""
-                    className="rounded-full"
-                    width={48}
-                    height={48}
-                  />
+                  <AvatarImage src={post.author.image} alt={post.author?.name ?? ""} />
                 ) : (
-                  (post.author?.name ?? "?")
-                    .split(" ")
-                    .map((n: string) => n?.[0] ?? "")
-                    .join("")
+                  <AvatarFallback>
+                    <span className="text-sm font-medium">
+                      {(post.author?.name ?? "?")
+                        .split(" ")
+                        .map((n: string) => n?.[0] ?? "")
+                        .join("")}
+                    </span>
+                  </AvatarFallback>
                 )}
-              </span>
+              </Avatar> */}
+              <UserAvatar src={post.author?.image ?? null} name={post.author?.name ?? "Member"} className="h-12 w-12" />
             </div>
             <div className="flex-1">
               <p className="text-foreground text-lg font-medium">

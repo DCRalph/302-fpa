@@ -26,12 +26,11 @@ import {
   Settings2,
   LogIn,
   UserPlus,
-  User,
   ExternalLink,
   Edit,
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
+import UserAvatar from "~/components/UserAvatar";
 import { useAuth } from "~/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
@@ -80,19 +79,7 @@ export function UserDropdown({ detailed = false }) {
             `hover:bg-foreground/10 flex cursor-pointer items-center justify-center gap-3 rounded-md p-2 transition-colors duration-200`,
           )}
         >
-          {dbUser?.image ? (
-            <Image
-              src={dbUser.image}
-              alt=""
-              className="h-8 w-8 rounded-full"
-              width={32}
-              height={32}
-            />
-          ) : (
-            <div className="bg-muted flex h-8 w-8 items-center justify-center rounded-full">
-              <User className="text-muted-foreground h-4 w-4" />
-            </div>
-          )}
+          <UserAvatar src={dbUser?.image ?? null} name={dbUser?.name ?? dbUser?.email} className="h-8 w-8" />
           {detailed && (
             <div className="hidden flex-col overflow-hidden md:flex">
               {authLoading ? (

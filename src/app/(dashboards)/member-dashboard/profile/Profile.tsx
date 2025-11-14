@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  User,
   Mail,
   Phone,
   IdCard,
@@ -11,7 +10,8 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "~/components/ui/card";
 import { useAuth } from "~/hooks/useAuth";
-import Image from "next/image";
+// Avatar component used for profile images
+import UserAvatar from "~/components/UserAvatar";
 import { useState } from "react";
 import { TabButton } from "~/components/tab-button";
 import { BasicInfoTab } from "./basic-info-tab";
@@ -34,19 +34,9 @@ export default function Profile() {
         <Card className="from-gradient-blue via-gradient-purple to-gradient-red border-0 bg-gradient-to-r from-25% via-50% to-75% py-12 text-white shadow-lg">
           <CardContent className="mx-auto justify-center text-center lg:mx-0 lg:flex lg:justify-start lg:text-left">
             <div className="flex justify-center">
-              {dbUser?.image ? (
-                <Image
-                  src={dbUser.image}
-                  alt=""
-                  className="mx-12 mb-4 h-[137px] w-[137px] rounded-full"
-                  width={137}
-                  height={137}
-                />
-              ) : (
-                <div className="bg-gray-200 mx-12 mb-4 flex h-[137px] w-[137px] items-center justify-center rounded-full">
-                  <User className="text-gray-700" size={48} />
-                </div>
-              )}
+              <div className="mx-12 mb-8">
+                <UserAvatar src={dbUser?.image ?? null} name={dbUser?.name ?? dbUser?.email} className="h-[137px] w-[137px]" size={48} />
+              </div>
             </div>
             <div className="space-y-1 pl-4">
               <h1 className="text-3xl font-bold">{dbUser?.name}</h1>

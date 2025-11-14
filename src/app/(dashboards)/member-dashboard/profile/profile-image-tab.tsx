@@ -4,7 +4,8 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { useAuth } from "~/hooks/useAuth";
 import { User, Upload, X } from "lucide-react";
-import Image from "next/image";
+// Avatar used for profile images
+import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 import { useState, useRef } from "react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
@@ -118,15 +119,19 @@ export function ProfileImageTab() {
                 <CardContent className="space-y-6">
                     <div className="flex flex-col items-center space-y-6">
                         {/* Current Profile Image */}
-                        {previewUrl ? (
-                            <div className="relative">
-                                <Image
-                                    src={previewUrl}
-                                    alt="Preview"
-                                    className="mx-12 mb-8 h-[137px] w-[137px] rounded-full object-cover"
-                                    width={137}
-                                    height={137}
-                                />
+                        <div className="relative">
+                            <Avatar className="mx-12 mb-8 h-[137px] w-[137px]">
+                                {previewUrl ? (
+                                    <AvatarImage src={previewUrl} alt="Preview" />
+                                ) : dbUser?.image ? (
+                                    <AvatarImage src={dbUser.image} alt={dbUser?.name ?? ""} />
+                                ) : (
+                                    <AvatarFallback>
+                                        <User className="text-muted-foreground" size={48} />
+                                    </AvatarFallback>
+                                )}
+                            </Avatar>
+                            {previewUrl && (
                                 <Button
                                     variant="destructive"
                                     size="sm"
@@ -135,20 +140,8 @@ export function ProfileImageTab() {
                                 >
                                     <X className="h-3 w-3" />
                                 </Button>
-                            </div>
-                        ) : dbUser?.image ? (
-                            <Image
-                                src={dbUser.image}
-                                alt=""
-                                className="mx-12 mb-8 h-[137px] w-[137px] rounded-full object-cover"
-                                width={137}
-                                height={137}
-                            />
-                        ) : (
-                            <div className="bg-muted flex h-[137px] w-[137px] items-center justify-center rounded-full">
-                                <User className="text-muted-foreground" size={48} />
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                         <div className="space-y-5 text-center">
                             <p className="text-foreground">
