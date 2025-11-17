@@ -24,6 +24,7 @@ import {
   Upload,
   File,
   X,
+  Ticket,
 } from "lucide-react";
 import { useState } from "react";
 import { Separator } from "~/components/ui/separator";
@@ -36,6 +37,7 @@ import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import InformationPanels from "./infomation-panels";
 import { Spinner } from "~/components/ui/spinner";
+import Link from "next/link";
 
 export default function ConferenceRegistration() {
 
@@ -97,7 +99,7 @@ export default function ConferenceRegistration() {
       } else {
         toast.success("File uploaded successfully");
       }
-      
+
       await Promise.all([
         utils.member.files.list.invalidate(),
         utils.member.registration.getRegistrationFiles.invalidate(),
@@ -557,15 +559,31 @@ export default function ConferenceRegistration() {
                 {/* Action Buttons */}
                 <Separator />
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1" onClick={() => { const element = document.getElementById("bank-details-section"); element?.scrollIntoView({ behavior: "smooth", block: "center" }); }}>
-                    View Payment Details
+                  <Button variant="outline" size="sm" className="flex-1" asChild>
+                    <Link href="/member-dashboard/payment-details">
+                      View Payment Details
+                    </Link>
                   </Button>
+                  {existingRegistration.status !== "cancelled" && (
+                    <Button variant="outline" size="sm" className="flex-1" asChild>
+                      <Link href="/member-dashboard/ticket-download">
+                        <Ticket className="mr-2 h-4 w-4" />
+                        View Ticket
+                      </Link>
+                    </Button>
+                  )}
                   {existingRegistration.status === "confirmed" && existingRegistration.paymentStatus === "unpaid" && (
-                    <Button size="sm" className="flex-1">Make Payment</Button>
+                    <Button size="sm" className="flex-1" asChild>
+                      <Link href="/member-dashboard/payment-details">
+                        Make Payment
+                      </Link>
+                    </Button>
                   )}
                   {existingRegistration.status === "pending" && (
-                    <Button variant="secondary" size="sm" className="flex-1" onClick={() => { const element = document.getElementById("contact-section"); element?.scrollIntoView({ behavior: "smooth", block: "center" }); }}>
-                      Contact Support
+                    <Button variant="secondary" size="sm" className="flex-1" asChild>
+                      <Link href="/member-dashboard/contact-support">
+                        Contact Support
+                      </Link>
                     </Button>
                   )}
                 </div>
