@@ -245,6 +245,30 @@ export const memberRegistrationRouter = createTRPCRouter({
     return reg;
   }),
 
+  getMyLatestWithConference: protectedProcedure.query(async ({ ctx }) => {
+    const reg = await ctx.db.registration.findFirst({
+      where: { userId: ctx.dbUser.id },
+      orderBy: { createdAt: "desc" },
+      include: {
+        ticketType: true,
+        payments: true,
+        conference: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            startDate: true,
+            endDate: true,
+            location: true,
+            priceCents: true,
+            currency: true,
+          },
+        },
+      },
+    });
+    return reg;
+  }),
+
   cancel: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
