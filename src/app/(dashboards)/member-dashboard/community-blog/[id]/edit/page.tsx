@@ -1,6 +1,6 @@
 import EditPostPage from "./EditPost";
 import { MemberAuth } from "../../../member-auth";
-import notFound from "../../../not-found";
+import notFound from "../../../../not-found";
 import { api } from "~/trpc/server";
 
 interface BlogPostPageProps {

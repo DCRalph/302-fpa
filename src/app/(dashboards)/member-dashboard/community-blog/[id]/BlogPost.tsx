@@ -41,6 +41,7 @@ import {
 import ReportDialog from "~/components/community-blog/report-dialog";
 import DeleteDialog from "~/components/delete-dialog";
 import UserAvatar from "~/components/UserAvatar";
+import ImageModal from "~/components/community-blog/image-modal";
 
 type BlogPost = NonNullable<RouterOutputs["member"]["blog"]["getById"]>;
 
@@ -55,6 +56,8 @@ export default function BlogPost({ post }: BlogPostProps) {
   const [commentText, setCommentText] = useState("");
   const [localLikeCount, setLocalLikeCount] = useState(post._count?.likes ?? 0);
   const [isLiked, setIsLiked] = useState(post.isLikedByUser ?? false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
 
   // Editing state - initialize from query params
   const [isEditing, setIsEditing] = useState(false);
@@ -274,6 +277,12 @@ export default function BlogPost({ post }: BlogPostProps) {
     id: string;
     type: "post" | "comment";
   } | null>(null);
+
+  // Handle image click
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImageUrl(imageUrl);
+    setImageModalOpen(true);
+  };
 
   // Submit a report
   const handleReportSubmit = async (payload: {
@@ -525,7 +534,28 @@ export default function BlogPost({ post }: BlogPostProps) {
                 </h1>
 
                 <div className="prose prose-lg prose-blog dark:prose-invert text-foreground max-w-full">
-                  <Markdown remarkPlugins={[remarkGfm]}>
+                  <Markdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      img: ({ src, alt }) => {
+                        const imageSrc = typeof src === "string" ? src : "";
+                        if (!imageSrc) return null;
+                        return (
+                          <span className="relative block w-full cursor-pointer hover:opacity-90 transition-opacity">
+                            <Image
+                              src={imageSrc}
+                              alt={alt ?? ""}
+                              width={800}
+                              height={600}
+                              className="object-contain w-full h-auto"
+                              unoptimized
+                              onClick={() => handleImageClick(imageSrc)}
+                            />
+                          </span>
+                        );
+                      },
+                    }}
+                  >
                     {post.content}
                   </Markdown>
                 </div>
@@ -535,7 +565,10 @@ export default function BlogPost({ post }: BlogPostProps) {
             {/* Cover Image */}
             {post.coverImageUrl && (
               <div className="mt-8 overflow-hidden rounded-lg">
-                <div className="relative w-full h-64 lg:h-[480px]">
+                <div
+                  className="relative w-full h-64 lg:h-[480px] cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => handleImageClick(post.coverImageUrl!)}
+                >
                   <Image
                     src={post.coverImageUrl}
                     alt="Post cover"
@@ -669,6 +702,14 @@ export default function BlogPost({ post }: BlogPostProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Image Modal */}
+      <ImageModal
+        open={imageModalOpen}
+        onOpenChange={setImageModalOpen}
+        imageUrl={selectedImageUrl}
+        alt="Post image"
+      />
     </div>
   );
 }

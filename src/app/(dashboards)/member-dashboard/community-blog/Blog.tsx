@@ -55,6 +55,7 @@ import CommentItem from "~/components/community-blog/comment-item";
 import { Skeleton } from "~/components/ui/skeleton";
 import ReportDialog from "~/components/community-blog/report-dialog";
 import DeleteDialog from "~/components/delete-dialog";
+import ImageModal from "~/components/community-blog/image-modal";
 
 type BlogPost = RouterOutputs["member"]["blog"]["list"]["posts"][number];
 
@@ -67,6 +68,8 @@ function BlogPostCard({ post }: { post: BlogPost }) {
   const [commentText, setCommentText] = useState("");
   const [localLikeCount, setLocalLikeCount] = useState(post._count.likes);
   const [isLiked, setIsLiked] = useState(post.isLikedByUser);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
 
   const utils = api.useUtils();
 
@@ -209,6 +212,12 @@ function BlogPostCard({ post }: { post: BlogPost }) {
     id: string;
     type: "post" | "comment";
   } | null>(null);
+
+  // Handle image click
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImageUrl(imageUrl);
+    setImageModalOpen(true);
+  };
 
   // Submit a report
   const handleReportSubmit = async (payload: {
@@ -360,6 +369,14 @@ function BlogPostCard({ post }: { post: BlogPost }) {
             title="Delete this post?"
             description="This action cannot be undone. This will permanently delete your post and remove it from the community blog."
           />
+
+          {/* Image Modal */}
+          <ImageModal
+            open={imageModalOpen}
+            onOpenChange={setImageModalOpen}
+            imageUrl={selectedImageUrl}
+            alt="Post image"
+          />
         </div>
 
         {/* Post Content */}
@@ -370,13 +387,39 @@ function BlogPostCard({ post }: { post: BlogPost }) {
             </h3>
           </Link>
           <div className="prose prose-blog dark:prose-invert text-foreground mt-1 max-w-full">
-            <Markdown remarkPlugins={[remarkGfm]}>{post.content}</Markdown>
+            <Markdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                img: ({ src, alt }) => {
+                  const imageSrc = typeof src === "string" ? src : "";
+                  if (!imageSrc) return null;
+                  return (
+                    <span className="relative block w-full cursor-pointer hover:opacity-90 transition-opacity">
+                      <Image
+                        src={imageSrc}
+                        alt={alt ?? ""}
+                        width={800}
+                        height={600}
+                        className="object-contain w-full h-auto"
+                        unoptimized
+                        onClick={() => handleImageClick(imageSrc)}
+                      />
+                    </span>
+                  );
+                },
+              }}
+            >
+              {post.content}
+            </Markdown>
           </div>
 
           {/* Cover Image */}
           {post.coverImageUrl && (
             <div className="mt-6 overflow-hidden rounded-lg">
-              <div className="relative h-64 w-full sm:h-80 lg:h-64">
+              <div
+                className="relative h-64 w-full sm:h-80 lg:h-64 cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => handleImageClick(post.coverImageUrl!)}
+              >
                 <Image
                   src={post.coverImageUrl}
                   alt="Post cover"
